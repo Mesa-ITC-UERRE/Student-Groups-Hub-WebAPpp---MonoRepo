@@ -1,4 +1,4 @@
-import { getMsalInstance, apiRequest, loginRequest } from "@/lib/msal";
+import { msalInstance, apiRequest, loginRequest } from "@/lib/msal";
 import type {
   User,
   Group,
@@ -22,19 +22,18 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 // ─── Token acquisition ────────────────────────────────────────────────────────
 
 async function getAccessToken(): Promise<string> {
-  const msal = getMsalInstance();
-  const account = msal.getActiveAccount();
+  const account = msalInstance.getActiveAccount();
 
   if (!account) {
-    await msal.loginRedirect(loginRequest);
+    await msalInstance.loginRedirect(loginRequest);
     throw new Error("Redirecting to login");
   }
 
   try {
-    const result = await msal.acquireTokenSilent({ ...apiRequest, account });
+    const result = await msalInstance.acquireTokenSilent({ ...apiRequest, account });
     return result.accessToken;
   } catch {
-    await msal.acquireTokenRedirect({ ...apiRequest, account });
+    await msalInstance.acquireTokenRedirect({ ...apiRequest, account });
     throw new Error("Redirecting to acquire token");
   }
 }

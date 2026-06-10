@@ -2,7 +2,7 @@ import { BookOpen, Calendar, Sparkles, Users } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { getMsalInstance, loginRequest } from "@/lib/msal";
+import { msalInstance, loginRequest } from "@/lib/msal";
 
 const highlights = [
   { icon: Users, title: "120+ Grupos", description: "Encuentra tu comunidad entre más de cien grupos activos." },
@@ -18,11 +18,7 @@ export default function LoginPage() {
   async function handleMicrosoftLogin() {
     setLoading(true);
     try {
-      sessionStorage.setItem("auth_return_to", returnTo);
-      // Do NOT override redirectUri here — MSAL uses the absolute URL from
-      // msalConfig.auth.redirectUri for both the authorization request AND
-      // the token exchange. They must be identical or Entra returns 400.
-      await getMsalInstance().loginRedirect({
+      await msalInstance.loginRedirect({
         ...loginRequest,
         state: returnTo,
       });
