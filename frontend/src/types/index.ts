@@ -1,3 +1,13 @@
+// ─── Pagination ───────────────────────────────────────────────────────────────
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
 // ─── Users ───────────────────────────────────────────────────────────────────
 
 export interface User {
@@ -20,7 +30,13 @@ export interface Group {
   slug: string;
   name: string;
   description: string | null;
+  category: string | null;
   logoUrl: string | null;
+  bannerUrl: string | null;
+  contactEmail: string | null;
+  contactInfo: string | null;
+  status: string;
+  memberCount: number;
   active: boolean;
   createdAt: string;
   updatedAt: string;

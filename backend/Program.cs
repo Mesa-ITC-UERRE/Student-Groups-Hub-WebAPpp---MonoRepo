@@ -39,6 +39,8 @@ builder.Services.AddControllers();
 
 // ─── Application Services ─────────────────────────────────────────────────────
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<GroupService>();
+builder.Services.AddScoped<GroupRegistrationRequestService>();
 
 // ─── Health checks ────────────────────────────────────────────────────────────
 builder.Services.AddHealthChecks()

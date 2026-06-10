@@ -37,7 +37,7 @@ export default function HomePage() {
   const [featuredGroups, setFeaturedGroups] = useState<Group[]>([]);
 
   useEffect(() => {
-    groupApi.getAll().then((groups) => setFeaturedGroups(groups.slice(0, 6))).catch(() => {});
+    groupApi.getAll({ pageSize: 6 }).then((res) => setFeaturedGroups(res.data)).catch(() => {});
   }, []);
 
   return (

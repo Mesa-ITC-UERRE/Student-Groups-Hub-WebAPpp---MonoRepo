@@ -14,6 +14,7 @@ import type {
   Notification,
   Report,
   RoleAssignment,
+  PaginatedResponse,
 } from "@/types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
@@ -87,10 +88,13 @@ export const userApi = {
 // ─── Groups ───────────────────────────────────────────────────────────────────
 
 export const groupApi = {
-  getAll: (params?: { search?: string; category?: string }) => {
-    const qs = new URLSearchParams(params as Record<string, string>).toString();
-    return publicFetch<Group[]>(`/api/groups${qs ? `?${qs}` : ""}`);
+  getAll: (params?: { search?: string; category?: string; page?: number; pageSize?: number }) => {
+    const qs = new URLSearchParams(
+      Object.fromEntries(Object.entries(params ?? {}).filter(([, v]) => v !== undefined)) as Record<string, string>
+    ).toString();
+    return publicFetch<PaginatedResponse<Group>>(`/api/groups${qs ? `?${qs}` : ""}`);
   },
+  getCategories: () => publicFetch<string[]>("/api/groups/categories"),
   getBySlug: (slug: string) => publicFetch<Group>(`/api/groups/${slug}`),
   getMembers: (groupId: string) => publicFetch<GroupMember[]>(`/api/groups/${groupId}/members`),
   getPendingMemberships: (groupId: string) =>
