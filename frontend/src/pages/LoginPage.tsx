@@ -18,13 +18,12 @@ export default function LoginPage() {
   async function handleMicrosoftLogin() {
     setLoading(true);
     try {
-      // Persist returnTo in sessionStorage before the redirect.
-      // Entra ID navigates away from this page entirely, so anything in
-      // React state is lost. The callback page reads this back.
       sessionStorage.setItem("auth_return_to", returnTo);
+      // Do NOT override redirectUri here — MSAL uses the absolute URL from
+      // msalConfig.auth.redirectUri for both the authorization request AND
+      // the token exchange. They must be identical or Entra returns 400.
       await getMsalInstance().loginRedirect({
         ...loginRequest,
-        redirectUri: `${window.location.origin}/auth/callback`,
         state: returnTo,
       });
     } catch (error) {
