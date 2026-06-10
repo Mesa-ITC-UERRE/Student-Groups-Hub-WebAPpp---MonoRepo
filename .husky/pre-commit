@@ -1,0 +1,3 @@
+#!/bin/sh
+# Run frontend linting on staged frontend files
+cd frontend && bun run lint

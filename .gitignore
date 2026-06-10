@@ -1,0 +1,33 @@
+# ── Node / Bun ────────────────────────────────────────────────────────────────
+node_modules/
+dist/
+.next/
+.output/
+bun.lock
+
+# ── Environment secrets ───────────────────────────────────────────────────────
+.env.local
+.env.*.local
+.env.production
+
+# ── .NET / C# ────────────────────────────────────────────────────────────────
+backend/bin/
+backend/obj/
+backend/*.user
+backend/.vs/
+backend/appsettings.Development.json
+
+# ── IDEs ─────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Build artifacts ───────────────────────────────────────────────────────────
+*.log
+playwright-report/
+test-results/
+coverage/

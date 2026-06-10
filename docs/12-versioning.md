@@ -1,0 +1,225 @@
+# 12 — Versioning & Commit Conventions
+
+## Rule #1
+
+> **Never use `git commit -m "..."` directly.**
+> All commits must go through `bun run cm` (frontend) or `cz commit` (backend).
+> This ensures the CHANGELOG is always accurate and version bumps are automatic.
+
+---
+
+## Tooling
+
+| Tool | Purpose |
+|---|---|
+| **Commitizen** | Interactive CLI for writing conventional commits |
+| **commitlint** | Validates commit message format via Husky `commit-msg` hook |
+| **Husky** | Runs linting + format on `pre-commit`; validates message on `commit-msg` |
+| **`cz bump`** | Bumps version in config files, generates/updates CHANGELOG.md, creates git tag |
+
+---
+
+## Conventional Commits Format
+
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Examples
+
+```
+feat(groups): add category filter to groups listing page
+fix(auth): resolve msal token refresh loop on expired session
+docs(api): update group registration request endpoint contract
+chore(deps): upgrade @azure/msal-browser to v5.7.0
+refactor(membership): extract join button into reusable component
+perf(events): add debounce to event search input
+style(ui): fix card hover shadow inconsistency
+test(auth): add test case for non-institutional account login
+ci: add github actions workflow for frontend build
+revert: revert "feat(groups): add map view for events"
+```
+
+---
+
+## Commit Types
+
+| Type | When to use | Version bump |
+|---|---|---|
+| `feat` | New feature, new page, new API endpoint, new component | **MINOR** |
+| `fix` | Bug fix, validation correction, broken layout | **PATCH** |
+| `docs` | Changes to documentation only | none |
+| `style` | Whitespace, formatting, CSS tweaks (no logic change) | none |
+| `refactor` | Code restructuring with no behavior change | none |
+| `perf` | Performance improvement | none |
+| `test` | Adding or fixing tests | none |
+| `chore` | Build config, dependencies, tooling, CI | none |
+| `ci` | CI/CD pipeline changes | none |
+| `revert` | Reverts a previous commit | none |
+
+### Breaking Changes
+
+Add `!` after the type, or add `BREAKING CHANGE:` in the footer:
+
+```
+feat!: remove category field from group creation form
+
+BREAKING CHANGE: category is now assigned by admin after group approval
+```
+
+This triggers a **MAJOR** version bump.
+
+---
+
+## Scopes (recommended)
+
+Use scopes to indicate which part of the codebase is affected.
+
+### Frontend scopes
+
+| Scope | Area |
+|---|---|
+| `auth` | Login, logout, auth callback, MSAL |
+| `groups` | Groups listing, detail, registration |
+| `membership` | Join requests, approval, member list |
+| `events` | Event CRUD, listing, detail |
+| `rsvp` | Event RSVP / participation |
+| `dashboard` | Role-specific dashboards |
+| `notifications` | Bell, dropdown, mark-read |
+| `admin` | Admin panel pages |
+| `profile` | User profile page |
+| `ui` | Shared components, design system |
+| `router` | Routing, guards, redirects |
+| `api` | API client layer (`lib/api.ts`) |
+| `types` | TypeScript type definitions |
+| `deps` | Dependency updates |
+
+### Backend scopes
+
+| Scope | Area |
+|---|---|
+| `auth` | JWT validation, security config |
+| `users` | User controller, service, entity |
+| `groups` | Group controller, service, entity |
+| `membership` | Membership controller, service |
+| `events` | Event controller, service |
+| `rsvp` | RSVP controller, service |
+| `notifications` | Notification service, email |
+| `admin` | Admin endpoints |
+| `db` | Migrations, schema changes |
+| `config` | Application config, CORS, env |
+
+---
+
+## Daily Workflow
+
+```bash
+# 1. Create a feature branch
+git checkout -b feat/group-membership
+
+# 2. Make your changes and stage them
+git add .
+
+# 3. Commit interactively (frontend)
+bun run cm
+# OR (backend, once cz is configured)
+cz commit
+
+# The CLI will prompt:
+# ? Select the type of change: feat
+# ? What is the scope: membership
+# ? Write a short description: add pending membership request endpoint
+# ? Is there a breaking change? No
+# → Produces: feat(membership): add pending membership request endpoint
+
+# 4. Push your branch
+git push origin feat/group-membership
+
+# 5. Open a PR → merge to dev → merge to main
+```
+
+---
+
+## Releasing a Version (end of each phase)
+
+```bash
+# Make sure you are on main and up to date
+git checkout main
+git pull
+
+# Bump version — commitizen reads all commits since last tag,
+# determines the correct bump (patch/minor/major),
+# updates version in config files, writes CHANGELOG.md, creates tag
+cz bump
+
+# Push the bump commit + the new tag
+git push && git push --tags
+```
+
+### What `cz bump` does automatically
+
+1. Reads all commits since the last tag
+2. Determines version bump (patch/minor/major) from commit types
+3. Updates `version` in `.cz.toml`
+4. Updates `version` in `package.json` (frontend)
+5. Appends a new section to `CHANGELOG.md` with all changes grouped by type
+6. Creates a commit: `bump: version 0.3.0 → 0.4.0`
+7. Creates a git tag: `frontend-v0.4.0`
+
+---
+
+## CHANGELOG Format
+
+Auto-generated by `cz bump`. Example output:
+
+```markdown
+## frontend-v0.4.0 (2026-07-15)
+
+### Features
+
+- **membership**: add pending membership request endpoint
+- **membership**: add approve and reject endpoints with leader scope check
+- **ui**: build join button with pending/accepted state display
+
+### Bug Fixes
+
+- **auth**: fix redirect loop when returnTo param is missing
+
+### Refactor
+
+- **api**: extract membership api calls into dedicated groupMembershipApi object
+```
+
+---
+
+## Files Modified by `cz bump`
+
+### Frontend
+- `.cz.toml` → `version` field
+- `package.json` → `version` field
+- `CHANGELOG.md` → new section prepended
+
+### Backend (once configured)
+- `.cz.toml` or `pyproject.toml` → `version` field
+- `CHANGELOG.md` → new section prepended
+
+---
+
+## What NOT to do
+
+```bash
+# ❌ Never do this
+git commit -m "fixed stuff"
+git commit -m "WIP"
+git commit -m "changes"
+git commit -m "update"
+
+# ✅ Always do this
+bun run cm   # (or cz commit)
+```
+
+Commits that bypass commitlint will be **rejected by the Husky `commit-msg` hook**.
