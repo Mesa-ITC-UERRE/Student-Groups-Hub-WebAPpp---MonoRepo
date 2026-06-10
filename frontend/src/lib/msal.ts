@@ -94,8 +94,8 @@ export const msalConfig: Configuration = {
   auth: {
     clientId: import.meta.env.VITE_ENTRA_CLIENT_ID,
     authority: `https://login.microsoftonline.com/${import.meta.env.VITE_ENTRA_TENANT_ID}`,
-    redirectUri: `${window.location.origin}/auth/callback`,
-    postLogoutRedirectUri: `${window.location.origin}/login`,
+    redirectUri: "http://localhost:5173/auth/callback",
+    postLogoutRedirectUri: "http://localhost:5173/login",
   },
   cache: {
     cacheLocation: "localStorage",
@@ -126,6 +126,7 @@ export function getMsalInstance(): PublicClientApplication {
 
 export const loginRequest = {
   scopes: ["openid", "profile", "email"],
+  prompt: "select_account",
 };
 
 export const apiRequest = {
