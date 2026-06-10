@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using StudentGroupsHub.Data;
 using StudentGroupsHub.Middleware;
+using StudentGroupsHub.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // ─── Controllers + FluentValidation ──────────────────────────────────────────
 builder.Services.AddControllers();
+
+// ─── Application Services ─────────────────────────────────────────────────────
+builder.Services.AddScoped<UserService>();
 
 // ─── Health checks ────────────────────────────────────────────────────────────
 builder.Services.AddHealthChecks()

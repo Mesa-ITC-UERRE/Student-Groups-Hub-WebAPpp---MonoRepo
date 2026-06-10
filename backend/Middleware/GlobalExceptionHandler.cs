@@ -11,20 +11,28 @@ public static class GlobalExceptionHandlerExtensions
         {
             errorApp.Run(async context =>
             {
-                context.Response.StatusCode = 500;
+                var feature = context.Features.Get<IExceptionHandlerFeature>();
+                var ex = feature?.Error;
+
+                var (statusCode, message) = ex switch
+                {
+                    InvalidOperationException => (400, ex.Message),
+                    UnauthorizedAccessException => (403, "Acceso no autorizado."),
+                    KeyNotFoundException => (404, "Recurso no encontrado."),
+                    _ => (500, "Ocurrió un error interno. Por favor intenta de nuevo.")
+                };
+
+                context.Response.StatusCode = statusCode;
                 context.Response.ContentType = "application/json";
 
-                var feature = context.Features.Get<IExceptionHandlerFeature>();
-                if (feature?.Error is not null)
+                var error = new
                 {
-                    var error = new
-                    {
-                        status = 500,
-                        message = "Ocurrió un error interno. Por favor intenta de nuevo.",
-                        timestamp = DateTime.UtcNow
-                    };
-                    await context.Response.WriteAsync(JsonSerializer.Serialize(error));
-                }
+                    status = statusCode,
+                    message,
+                    timestamp = DateTime.UtcNow
+                };
+
+                await context.Response.WriteAsync(JsonSerializer.Serialize(error));
             });
         });
         return app;

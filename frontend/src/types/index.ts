@@ -6,7 +6,9 @@ export interface User {
   email: string;
   displayName: string | null;
   avatarUrl: string | null;
+  role: "student" | "group_leader" | "admin";
   isPlatformAdmin: boolean;
+  status: string;
   createdAt: string;
   updatedAt: string;
 }

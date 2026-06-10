@@ -3,11 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { InteractionStatus } from "@azure/msal-browser";
 import { Bell, Users, ExternalLink, CheckCircle2, Clock, XCircle } from "lucide-react";
-import { userApi, groupRegistrationApi, notificationApi } from "@/lib/api";
-import type { User, GroupRegistrationRequest, Notification } from "@/types";
+import { groupRegistrationApi, notificationApi } from "@/lib/api";
+import type { GroupRegistrationRequest, Notification } from "@/types";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 const STATUS_STYLES: Record<string, string> = {
   approved: "bg-green-100 text-green-700",
@@ -23,10 +24,10 @@ const STATUS_ICONS: Record<string, React.ElementType> = {
 
 export default function DashboardPage() {
   const isAuthenticated = useIsAuthenticated();
-  const { instance, inProgress } = useMsal();
+  const { inProgress } = useMsal();
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
-  const [user, setUser] = useState<User | null>(null);
   const [registrationRequests, setRegistrationRequests] = useState<GroupRegistrationRequest[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,12 +42,10 @@ export default function DashboardPage() {
     }
     async function load() {
       try {
-        const [me, reqs, notifs] = await Promise.all([
-          userApi.me(),
+        const [reqs, notifs] = await Promise.all([
           groupRegistrationApi.getMine(),
           notificationApi.getMine(),
         ]);
-        setUser(me);
         setRegistrationRequests(reqs);
         setNotifications(notifs);
       } catch (err: unknown) {
@@ -74,8 +73,7 @@ export default function DashboardPage() {
   }
 
   function handleSignOut() {
-    document.cookie = "msal_authenticated=; path=/; max-age=0";
-    instance.logoutRedirect({ postLogoutRedirectUri: "/" });
+    signOut();
   }
 
   const unreadCount = notifications.filter((n) => !n.read).length;
