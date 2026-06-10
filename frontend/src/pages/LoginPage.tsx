@@ -18,9 +18,13 @@ export default function LoginPage() {
   async function handleMicrosoftLogin() {
     setLoading(true);
     try {
+      // Persist returnTo in sessionStorage before the redirect.
+      // Entra ID navigates away from this page entirely, so anything in
+      // React state is lost. The callback page reads this back.
+      sessionStorage.setItem("auth_return_to", returnTo);
       await getMsalInstance().loginRedirect({
         ...loginRequest,
-        redirectUri: "/auth/callback",
+        redirectUri: `${window.location.origin}/auth/callback`,
         state: returnTo,
       });
     } catch (error) {

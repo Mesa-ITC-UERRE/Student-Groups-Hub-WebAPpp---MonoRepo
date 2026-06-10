@@ -9,7 +9,11 @@ export default function MsalProviderWrapper({ children }: { children: ReactNode 
 
   useEffect(() => {
     const pca = getMsalInstance();
-    setInstance(pca);
+    // initialize() MUST be called before any MSAL operation.
+    // It internally calls handleRedirectPromise(), which processes the
+    // Entra ID redirect response and stores tokens + accounts in the cache.
+    // Only after this resolves is it safe to render <MsalProvider>.
+    pca.initialize().then(() => setInstance(pca));
   }, []);
 
   if (!instance) {

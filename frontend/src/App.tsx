@@ -19,24 +19,28 @@ const queryClient = new QueryClient({
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <MsalProviderWrapper>
-        <AuthProvider>
-          <BrowserRouter>
+    // BrowserRouter is outermost so routing context is available everywhere,
+    // including inside MsalProviderWrapper and AuthProvider if they ever need
+    // to use navigation hooks.
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <MsalProviderWrapper>
+          <AuthProvider>
             <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/auth/callback" element={<AuthCallbackPage />} />
-            <Route path="/groups" element={<GroupsPage />} />
-            <Route path="/groups/:slug" element={<GroupDetailPage />} />
-            <Route path="/groups/register" element={<RegisterGroupPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            {/* Catch-all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-          </BrowserRouter>
-        </AuthProvider>
-      </MsalProviderWrapper>
-    </QueryClientProvider>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              <Route path="/groups" element={<GroupsPage />} />
+              {/* /groups/register must come BEFORE /groups/:slug */}
+              <Route path="/groups/register" element={<RegisterGroupPage />} />
+              <Route path="/groups/:slug" element={<GroupDetailPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              {/* Catch-all */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </AuthProvider>
+        </MsalProviderWrapper>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 }
