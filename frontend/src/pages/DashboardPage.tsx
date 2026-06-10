@@ -24,7 +24,7 @@ const STATUS_ICONS: Record<string, React.ElementType> = {
 
 export default function DashboardPage() {
   const isAuthenticated = useIsAuthenticated();
-  const { inProgress } = useMsal();
+  const { instance, inProgress } = useMsal();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
@@ -35,8 +35,16 @@ export default function DashboardPage() {
   const [markingAll, setMarkingAll] = useState(false);
 
   useEffect(() => {
+    // Wait for MSAL to finish ALL interactions (startup, handleRedirect, etc.)
+    // before deciding auth state. During startup, inProgress is 'startup' then
+    // 'handleRedirect' — useIsAuthenticated() is false during both even if tokens
+    // exist. Redirecting here would bounce a freshly-logged-in user back to /login.
     if (inProgress !== InteractionStatus.None) return;
-    if (!isAuthenticated) {
+
+    // Double-check with the synchronous account cache as a fallback.
+    // useIsAuthenticated() can lag one render behind the actual token state.
+    const hasAccounts = instance.getAllAccounts().length > 0;
+    if (!isAuthenticated && !hasAccounts) {
       navigate("/login?returnTo=/dashboard", { replace: true });
       return;
     }
