@@ -18,10 +18,13 @@ export default function LoginPage() {
   async function handleMicrosoftLogin() {
     setLoading(true);
     try {
-      await msalInstance.loginRedirect({
-        ...loginRequest,
-        state: returnTo,
-      });
+      // loginPopup opens a small Microsoft window, handles the entire
+      // auth flow inside it, and returns the result directly — no redirect
+      // URI matching, no callback page, no double handleRedirectPromise.
+      const response = await msalInstance.loginPopup(loginRequest);
+      msalInstance.setActiveAccount(response.account);
+      // Navigate to the returnTo destination
+      window.location.href = returnTo;
     } catch (error) {
       console.error("Login error:", error);
       setLoading(false);
