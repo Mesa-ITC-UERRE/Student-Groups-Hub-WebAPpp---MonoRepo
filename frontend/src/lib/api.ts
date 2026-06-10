@@ -1,4 +1,4 @@
-import { msalInstance, apiRequest, loginRequest } from "@/lib/msal";
+import { supabase } from "@/lib/supabase";
 import type {
   User,
   Group,
@@ -22,20 +22,9 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 // ─── Token acquisition ────────────────────────────────────────────────────────
 
 async function getAccessToken(): Promise<string> {
-  const account = msalInstance.getActiveAccount();
-
-  if (!account) {
-    await msalInstance.loginRedirect(loginRequest);
-    throw new Error("Redirecting to login");
-  }
-
-  try {
-    const result = await msalInstance.acquireTokenSilent({ ...apiRequest, account });
-    return result.accessToken;
-  } catch {
-    await msalInstance.acquireTokenRedirect({ ...apiRequest, account });
-    throw new Error("Redirecting to acquire token");
-  }
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Not authenticated");
+  return session.access_token;
 }
 
 // ─── Core fetch wrappers ──────────────────────────────────────────────────────

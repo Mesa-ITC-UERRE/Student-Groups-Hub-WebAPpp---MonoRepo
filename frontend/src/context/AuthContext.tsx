@@ -1,57 +1,73 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { useIsAuthenticated, useMsal } from "@azure/msal-react";
-import { InteractionStatus } from "@azure/msal-browser";
+import type { Session } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 import { userApi } from "@/lib/api";
-import { msalInstance } from "@/lib/msal";
 import type { User } from "@/types";
 
 interface AuthContextValue {
+  session: Session | null;
   user: User | null;
-  isLoading: boolean;
   isAuthenticated: boolean;
+  isLoading: boolean;
   refetch: () => Promise<void>;
-  signOut: () => void;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const isAuthenticated = useIsAuthenticated();
-  const { inProgress } = useMsal();
+  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   async function fetchUser() {
-    setIsLoading(true);
     try {
       const me = await userApi.me();
       setUser(me);
     } catch {
       setUser(null);
-    } finally {
-      setIsLoading(false);
     }
   }
 
   useEffect(() => {
-    if (inProgress !== InteractionStatus.None) return;
-    if (isAuthenticated) {
-      fetchUser();
-    } else {
-      setUser(null);
-    }
-  }, [isAuthenticated, inProgress]);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        fetchUser().finally(() => setIsLoading(false));
+      } else {
+        setIsLoading(false);
+      }
+    });
 
-  function signOut() {
-    msalInstance.logoutRedirect({ postLogoutRedirectUri: "/" });
+    // Listen for auth changes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        if (session) {
+          fetchUser();
+        } else {
+          setUser(null);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
   }
 
   return (
     <AuthContext.Provider
       value={{
+        session,
         user,
+        isAuthenticated: !!session,
         isLoading,
-        isAuthenticated,
         refetch: fetchUser,
         signOut,
       }}

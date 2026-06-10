@@ -1,37 +1,26 @@
 using System.Security.Claims;
-using StudentGroupsHub.Models;
 
 namespace StudentGroupsHub.Extensions;
 
 public static class ClaimsPrincipalExtensions
 {
     /// <summary>
-    /// Extracts the Entra ID Object ID (oid claim) from the JWT.
+    /// Returns the Supabase user UUID from the 'sub' claim.
     /// </summary>
-    public static string GetEntraOid(this ClaimsPrincipal principal)
+    public static string GetSupabaseUserId(this ClaimsPrincipal principal)
     {
-        return principal.FindFirstValue("oid")
-            ?? principal.FindFirstValue("http://schemas.microsoft.com/identity/claims/objectidentifier")
-            ?? throw new InvalidOperationException("OID claim not found in token.");
+        return principal.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? principal.FindFirstValue("sub")
+            ?? throw new InvalidOperationException("Sub claim not found in token.");
     }
 
     /// <summary>
-    /// Extracts the email from the JWT (preferred_username or email claim).
+    /// Returns the email from the token claims.
     /// </summary>
     public static string GetEmail(this ClaimsPrincipal principal)
     {
-        return principal.FindFirstValue("preferred_username")
-            ?? principal.FindFirstValue("email")
+        return principal.FindFirstValue("email")
             ?? principal.FindFirstValue(ClaimTypes.Email)
             ?? throw new InvalidOperationException("Email claim not found in token.");
-    }
-
-    /// <summary>
-    /// Extracts the display name from the JWT (name claim).
-    /// </summary>
-    public static string? GetDisplayName(this ClaimsPrincipal principal)
-    {
-        return principal.FindFirstValue("name")
-            ?? principal.FindFirstValue(ClaimTypes.Name);
     }
 }

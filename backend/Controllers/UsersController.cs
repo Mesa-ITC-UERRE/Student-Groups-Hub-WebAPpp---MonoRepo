@@ -11,16 +11,13 @@ namespace StudentGroupsHub.Controllers;
 [Authorize]
 public class UsersController(UserService userService) : ControllerBase
 {
-    // GET /api/users/me
-    // Creates the user record on first call (upsert by Entra OID).
+    // GET /api/users/me — upserts user from Supabase JWT on first call
     [HttpGet("me")]
     public async Task<IActionResult> GetMe()
     {
-        var oid = User.GetEntraOid();
+        var supabaseId = User.GetSupabaseUserId();
         var email = User.GetEmail();
-        var displayName = User.GetDisplayName();
-
-        var user = await userService.UpsertFromTokenAsync(oid, email, displayName);
+        var user = await userService.UpsertFromTokenAsync(supabaseId, email);
         return Ok(UserService.ToResponse(user));
     }
 
@@ -28,10 +25,9 @@ public class UsersController(UserService userService) : ControllerBase
     [HttpPatch("me")]
     public async Task<IActionResult> UpdateMe([FromBody] UpdateUserRequest request)
     {
-        var oid = User.GetEntraOid();
-        var existing = await userService.GetByEntraOidAsync(oid);
+        var supabaseId = User.GetSupabaseUserId();
+        var existing = await userService.GetBySupabaseIdAsync(supabaseId);
         if (existing is null) return NotFound();
-
         var updated = await userService.UpdateAsync(existing.Id, request.DisplayName, request.AvatarUrl);
         return Ok(UserService.ToResponse(updated!));
     }
@@ -41,15 +37,6 @@ public class UsersController(UserService userService) : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var user = await userService.GetByIdAsync(id);
-        if (user is null) return NotFound();
-        return Ok(UserService.ToResponse(user));
-    }
-
-    // GET /api/users/by-entra/{oid}
-    [HttpGet("by-entra/{oid}")]
-    public async Task<IActionResult> GetByEntraOid(string oid)
-    {
-        var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return NotFound();
         return Ok(UserService.ToResponse(user));
     }

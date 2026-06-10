@@ -1,7 +1,6 @@
 import { Menu, X, Bell, ChevronDown, User, LogOut, LayoutDashboard } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import { useIsAuthenticated } from "@azure/msal-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 
@@ -14,8 +13,7 @@ const navLinks = [
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const isAuthenticated = useIsAuthenticated();
-  const { user, signOut } = useAuth();
+  const { isAuthenticated, user, signOut } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 

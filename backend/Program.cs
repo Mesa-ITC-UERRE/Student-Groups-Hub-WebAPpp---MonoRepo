@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using StudentGroupsHub.Data;
 using StudentGroupsHub.Middleware;
 using StudentGroupsHub.Services;
@@ -19,13 +21,24 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ─── Authentication — Microsoft Entra ID JWT Bearer ───────────────────────────
+// ─── Authentication — Supabase JWT (HS256) ────────────────────────────────────
+var jwtSecret = builder.Configuration["Supabase:JwtSecret"]
+    ?? throw new InvalidOperationException("Supabase:JwtSecret is not configured.");
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = $"https://login.microsoftonline.com/{builder.Configuration["AzureAd:TenantId"]}/v2.0";
-        options.Audience = builder.Configuration["AzureAd:Audience"];
-        options.TokenValidationParameters.ValidateIssuer = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidateIssuer = true,
+            ValidIssuer = $"https://dzxjxarbpjiwffpkduev.supabase.co/auth/v1",
+            ValidateAudience = true,
+            ValidAudience = "authenticated",
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30),
+        };
     });
 
 builder.Services.AddAuthorization();
@@ -34,7 +47,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ─── Controllers + FluentValidation ──────────────────────────────────────────
+// ─── Controllers ──────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 
 // ─── Application Services ─────────────────────────────────────────────────────
@@ -46,7 +59,6 @@ builder.Services.AddScoped<GroupRegistrationRequestService>();
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>();
 
-// ─── OpenAPI ──────────────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();

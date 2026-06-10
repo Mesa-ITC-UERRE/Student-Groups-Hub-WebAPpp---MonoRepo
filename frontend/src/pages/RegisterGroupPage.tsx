@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useIsAuthenticated } from "@azure/msal-react";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { groupRegistrationApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -8,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterGroupPage() {
-  const isAuthenticated = useIsAuthenticated();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ proposedGroupName: "", proposedDescription: "", contactEmail: "" });

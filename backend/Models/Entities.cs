@@ -6,7 +6,8 @@ namespace StudentGroupsHub.Models;
 public class User
 {
     [Key] public Guid Id { get; set; } = Guid.NewGuid();
-    [Required, MaxLength(128)] public string EntraOid { get; set; } = string.Empty;
+    /// <summary>Supabase auth.users UUID (sub claim in JWT)</summary>
+    [Required, MaxLength(128)] public string SupabaseId { get; set; } = string.Empty;
     [Required, MaxLength(255)] public string Email { get; set; } = string.Empty;
     [MaxLength(255)] public string? DisplayName { get; set; }
     public string? AvatarUrl { get; set; }

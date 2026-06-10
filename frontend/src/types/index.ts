@@ -12,7 +12,7 @@ export interface PaginatedResponse<T> {
 
 export interface User {
   id: string;
-  entraOid: string;
+  supabaseId: string;
   email: string;
   displayName: string | null;
   avatarUrl: string | null;

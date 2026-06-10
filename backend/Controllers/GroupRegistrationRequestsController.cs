@@ -17,8 +17,8 @@ public class GroupRegistrationRequestsController(
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateGroupRegistrationRequest request)
     {
-        var oid = User.GetEntraOid();
-        var user = await userService.GetByEntraOidAsync(oid);
+        var oid = User.GetSupabaseUserId();
+        var user = await userService.GetBySupabaseIdAsync(oid);
         if (user is null) return Unauthorized();
 
         var req = await requestService.CreateAsync(
@@ -35,8 +35,8 @@ public class GroupRegistrationRequestsController(
     [HttpGet("mine")]
     public async Task<IActionResult> GetMine()
     {
-        var oid = User.GetEntraOid();
-        var user = await userService.GetByEntraOidAsync(oid);
+        var oid = User.GetSupabaseUserId();
+        var user = await userService.GetBySupabaseIdAsync(oid);
         if (user is null) return Unauthorized();
 
         var reqs = await requestService.GetByUserAsync(user.Id);
@@ -47,8 +47,8 @@ public class GroupRegistrationRequestsController(
     [HttpGet]
     public async Task<IActionResult> GetAllPending()
     {
-        var oid = User.GetEntraOid();
-        var user = await userService.GetByEntraOidAsync(oid);
+        var oid = User.GetSupabaseUserId();
+        var user = await userService.GetBySupabaseIdAsync(oid);
         if (user is null || user.Role != "admin") return Forbid();
 
         var reqs = await requestService.GetAllPendingAsync();
@@ -59,8 +59,8 @@ public class GroupRegistrationRequestsController(
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var oid = User.GetEntraOid();
-        var currentUser = await userService.GetByEntraOidAsync(oid);
+        var oid = User.GetSupabaseUserId();
+        var currentUser = await userService.GetBySupabaseIdAsync(oid);
         if (currentUser is null) return Unauthorized();
 
         var req = await requestService.GetByIdAsync(id);
@@ -77,8 +77,8 @@ public class GroupRegistrationRequestsController(
     [HttpPatch("{id:guid}/approve")]
     public async Task<IActionResult> Approve(Guid id, [FromBody] ReviewDecisionRequest? body)
     {
-        var oid = User.GetEntraOid();
-        var user = await userService.GetByEntraOidAsync(oid);
+        var oid = User.GetSupabaseUserId();
+        var user = await userService.GetBySupabaseIdAsync(oid);
         if (user is null || user.Role != "admin") return Forbid();
 
         var req = await requestService.ApproveAsync(id, user.Id, body?.DecisionNotes);
@@ -91,8 +91,8 @@ public class GroupRegistrationRequestsController(
     [HttpPatch("{id:guid}/reject")]
     public async Task<IActionResult> Reject(Guid id, [FromBody] ReviewDecisionRequest? body)
     {
-        var oid = User.GetEntraOid();
-        var user = await userService.GetByEntraOidAsync(oid);
+        var oid = User.GetSupabaseUserId();
+        var user = await userService.GetBySupabaseIdAsync(oid);
         if (user is null || user.Role != "admin") return Forbid();
 
         var req = await requestService.RejectAsync(id, user.Id, body?.DecisionNotes);

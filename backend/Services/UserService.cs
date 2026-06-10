@@ -8,19 +8,20 @@ namespace StudentGroupsHub.Services;
 public class UserService(AppDbContext db)
 {
     /// <summary>
-    /// Returns the user matching the Entra OID, creating one on first login (upsert).
-    /// Display name is synced from the JWT on every login.
+    /// Returns the user matching the Supabase UUID (sub claim), creating one on first call.
     /// </summary>
-    public async Task<User> UpsertFromTokenAsync(string entraOid, string email, string? displayName)
+    public async Task<User> UpsertFromTokenAsync(string supabaseId, string email)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.EntraOid == entraOid);
+        var user = await db.Users.FirstOrDefaultAsync(u => u.SupabaseId == supabaseId);
 
         if (user is null)
         {
+            // Derive a display name from the email prefix on first login
+            var displayName = email.Split('@')[0].Replace('.', ' ').Replace('_', ' ');
             user = new User
             {
                 Id = Guid.NewGuid(),
-                EntraOid = entraOid,
+                SupabaseId = supabaseId,
                 Email = email,
                 DisplayName = displayName,
                 Role = "student",
@@ -32,8 +33,6 @@ public class UserService(AppDbContext db)
         }
         else
         {
-            // Sync display name from Entra on every call (user may have changed it in M365)
-            user.DisplayName = displayName ?? user.DisplayName;
             user.Email = email;
             user.UpdatedAt = DateTime.UtcNow;
         }
@@ -45,8 +44,8 @@ public class UserService(AppDbContext db)
     public async Task<User?> GetByIdAsync(Guid id)
         => await db.Users.FindAsync(id);
 
-    public async Task<User?> GetByEntraOidAsync(string entraOid)
-        => await db.Users.FirstOrDefaultAsync(u => u.EntraOid == entraOid);
+    public async Task<User?> GetBySupabaseIdAsync(string supabaseId)
+        => await db.Users.FirstOrDefaultAsync(u => u.SupabaseId == supabaseId);
 
     public async Task<User?> UpdateAsync(Guid id, string? displayName, string? avatarUrl)
     {
@@ -62,7 +61,7 @@ public class UserService(AppDbContext db)
     }
 
     public static UserResponse ToResponse(User u) => new(
-        u.Id, u.EntraOid, u.Email, u.DisplayName, u.AvatarUrl,
+        u.Id, u.SupabaseId, u.Email, u.DisplayName, u.AvatarUrl,
         u.Role, u.Status,
         IsPlatformAdmin: u.Role == "admin",
         u.CreatedAt, u.UpdatedAt

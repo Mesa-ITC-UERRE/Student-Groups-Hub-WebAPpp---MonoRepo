@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useIsAuthenticated, useMsal } from "@azure/msal-react";
-import { InteractionStatus } from "@azure/msal-browser";
 import { Bell, Users, ExternalLink, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { groupRegistrationApi, notificationApi } from "@/lib/api";
 import type { GroupRegistrationRequest, Notification } from "@/types";
@@ -23,10 +21,8 @@ const STATUS_ICONS: Record<string, React.ElementType> = {
 };
 
 export default function DashboardPage() {
-  const isAuthenticated = useIsAuthenticated();
-  const { instance, inProgress } = useMsal();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, signOut } = useAuth();
 
   const [registrationRequests, setRegistrationRequests] = useState<GroupRegistrationRequest[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -35,16 +31,8 @@ export default function DashboardPage() {
   const [markingAll, setMarkingAll] = useState(false);
 
   useEffect(() => {
-    // Wait for MSAL to finish ALL interactions (startup, handleRedirect, etc.)
-    // before deciding auth state. During startup, inProgress is 'startup' then
-    // 'handleRedirect' — useIsAuthenticated() is false during both even if tokens
-    // exist. Redirecting here would bounce a freshly-logged-in user back to /login.
-    if (inProgress !== InteractionStatus.None) return;
-
-    // Double-check with the synchronous account cache as a fallback.
-    // useIsAuthenticated() can lag one render behind the actual token state.
-    const hasAccounts = instance.getAllAccounts().length > 0;
-    if (!isAuthenticated && !hasAccounts) {
+    if (authLoading) return;
+    if (!isAuthenticated) {
       navigate("/login?returnTo=/dashboard", { replace: true });
       return;
     }
@@ -63,7 +51,7 @@ export default function DashboardPage() {
       }
     }
     load();
-  }, [isAuthenticated, inProgress, navigate]);
+  }, [isAuthenticated, authLoading, navigate]);
 
   async function handleMarkAllRead() {
     setMarkingAll(true);
@@ -82,9 +70,7 @@ export default function DashboardPage() {
 
   function handleSignOut() {
     signOut();
-  }
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  }  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="flex min-h-screen flex-col">

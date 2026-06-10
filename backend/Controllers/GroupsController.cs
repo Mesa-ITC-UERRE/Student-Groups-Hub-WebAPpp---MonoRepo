@@ -65,8 +65,8 @@ public class GroupsController(GroupService groupService, UserService userService
     [Authorize]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateGroupRequest request)
     {
-        var oid = User.GetEntraOid();
-        var user = await userService.GetByEntraOidAsync(oid);
+        var oid = User.GetSupabaseUserId();
+        var user = await userService.GetBySupabaseIdAsync(oid);
         if (user is null) return Unauthorized();
 
         // Must be admin OR the leader of this group
@@ -88,8 +88,8 @@ public class GroupsController(GroupService groupService, UserService userService
     [Authorize]
     public async Task<IActionResult> SetStatus(Guid id, [FromBody] SetGroupStatusRequest request)
     {
-        var oid = User.GetEntraOid();
-        var user = await userService.GetByEntraOidAsync(oid);
+        var oid = User.GetSupabaseUserId();
+        var user = await userService.GetBySupabaseIdAsync(oid);
         if (user is null || user.Role != "admin") return Forbid();
 
         var ok = await groupService.SetStatusAsync(id, request.Status);

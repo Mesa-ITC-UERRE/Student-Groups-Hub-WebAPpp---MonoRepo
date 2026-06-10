@@ -24,7 +24,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.ToTable("users");
             e.HasKey(u => u.Id);
-            e.HasIndex(u => u.EntraOid).IsUnique();
+            e.HasIndex(u => u.SupabaseId).IsUnique();
             e.HasIndex(u => u.Email).IsUnique();
             e.Property(u => u.Role).HasDefaultValue("student");
             e.Property(u => u.Status).HasDefaultValue("active");
