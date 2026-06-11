@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using StudentGroupsHub.Data;
 using StudentGroupsHub.Middleware;
 using StudentGroupsHub.Services;
@@ -21,23 +20,35 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ─── Authentication — Supabase JWT (HS256) ────────────────────────────────────
-var jwtSecret = builder.Configuration["Supabase:JwtSecret"]
-    ?? throw new InvalidOperationException("Supabase:JwtSecret is not configured.");
+// ─── Authentication — Supabase JWT (ES256 via JWKS) ──────────────────────────
+var supabaseUrl = builder.Configuration["Supabase:Url"]
+    ?? throw new InvalidOperationException("Supabase:Url is not configured.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Authority = $"{supabaseUrl}/auth/v1";
+        options.MetadataAddress = $"{supabaseUrl}/auth/v1/.well-known/openid-configuration";
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
             ValidateIssuer = true,
-            ValidIssuer = $"https://dzxjxarbpjiwffpkduev.supabase.co/auth/v1",
+            ValidIssuer = $"{supabaseUrl}/auth/v1",
             ValidateAudience = true,
             ValidAudience = "authenticated",
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30),
+        };
+        // Supabase does not expose a standard OIDC discovery document — use JWKS directly
+        options.ConfigurationManager = null;
+        options.TokenValidationParameters.IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
+        {
+            // Fetch JWKS from Supabase and return matching key
+            var jwksUri = $"{supabaseUrl}/auth/v1/.well-known/jwks.json";
+            var handler = new System.Net.Http.HttpClient();
+            var jwksJson = handler.GetStringAsync(jwksUri).GetAwaiter().GetResult();
+            var jwks = new Microsoft.IdentityModel.Tokens.JsonWebKeySet(jwksJson);
+            return jwks.Keys;
         };
     });
 
