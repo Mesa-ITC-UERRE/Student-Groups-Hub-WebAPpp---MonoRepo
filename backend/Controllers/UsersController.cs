@@ -11,13 +11,14 @@ namespace StudentGroupsHub.Controllers;
 [Authorize]
 public class UsersController(UserService userService) : ControllerBase
 {
-    // GET /api/users/me — upserts user from Supabase JWT on first call
+    // GET /api/users/me — upserts user from Entra ID JWT on first call
     [HttpGet("me")]
     public async Task<IActionResult> GetMe()
     {
-        var supabaseId = User.GetSupabaseUserId();
-        var email = User.GetEmail();
-        var user = await userService.UpsertFromTokenAsync(supabaseId, email);
+        var oid         = User.GetEntraOid();
+        var email       = User.GetEmail();
+        var displayName = User.GetDisplayName();
+        var user        = await userService.UpsertFromTokenAsync(oid, email, displayName);
         return Ok(UserService.ToResponse(user));
     }
 
@@ -25,8 +26,8 @@ public class UsersController(UserService userService) : ControllerBase
     [HttpPatch("me")]
     public async Task<IActionResult> UpdateMe([FromBody] UpdateUserRequest request)
     {
-        var supabaseId = User.GetSupabaseUserId();
-        var existing = await userService.GetBySupabaseIdAsync(supabaseId);
+        var oid      = User.GetEntraOid();
+        var existing = await userService.GetByEntraOidAsync(oid);
         if (existing is null) return NotFound();
         var updated = await userService.UpdateAsync(existing.Id, request.DisplayName, request.AvatarUrl);
         return Ok(UserService.ToResponse(updated!));

@@ -108,6 +108,12 @@ public class GroupService(AppDbContext db)
         => await db.RoleAssignments.AnyAsync(r =>
             r.UserId == userId && r.GroupId == groupId && r.PermissionRole == "leader");
 
+    public async Task<List<Guid>> GetLeaderIdsAsync(Guid groupId)
+        => await db.RoleAssignments
+            .Where(r => r.GroupId == groupId && r.PermissionRole == "leader")
+            .Select(r => r.UserId)
+            .ToListAsync();
+
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private async Task<string> GenerateUniqueSlugAsync(string name, Guid? excludeId = null)

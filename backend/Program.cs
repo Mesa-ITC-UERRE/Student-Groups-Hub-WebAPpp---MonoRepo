@@ -13,48 +13,32 @@ builder.Services.AddCors(options =>
     options.AddPolicy("FrontendPolicy", policy =>
     {
         var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-                      ?? ["http://localhost:5173"];
+                      ?? ["https://localhost:7013"];
         policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-// ─── Authentication — Supabase JWT (ES256 via JWKS) ──────────────────────────
-var supabaseUrl = builder.Configuration["Supabase:Url"]
-    ?? throw new InvalidOperationException("Supabase:Url is not configured.");
-
+// ─── Authentication — Entra ID OIDC JWT Bearer ────────────────────────────────
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = $"{supabaseUrl}/auth/v1";
-        options.MetadataAddress = $"{supabaseUrl}/auth/v1/.well-known/openid-configuration";
+        var tenantId = builder.Configuration["EntraId:TenantId"];
+        options.Authority = $"https://login.microsoftonline.com/{tenantId}/v2.0";
+        options.Audience  = builder.Configuration["EntraId:Audience"];
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = true,
-            ValidIssuer = $"{supabaseUrl}/auth/v1",
+            ValidateIssuer   = true,
             ValidateAudience = true,
-            ValidAudience = "authenticated",
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromSeconds(30),
-        };
-        // Supabase does not expose a standard OIDC discovery document — use JWKS directly
-        options.ConfigurationManager = null;
-        options.TokenValidationParameters.IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
-        {
-            // Fetch JWKS from Supabase and return matching key
-            var jwksUri = $"{supabaseUrl}/auth/v1/.well-known/jwks.json";
-            var handler = new System.Net.Http.HttpClient();
-            var jwksJson = handler.GetStringAsync(jwksUri).GetAwaiter().GetResult();
-            var jwks = new Microsoft.IdentityModel.Tokens.JsonWebKeySet(jwksJson);
-            return jwks.Keys;
+            ClockSkew        = TimeSpan.FromSeconds(30),
         };
     });
 
 builder.Services.AddAuthorization();
 
-// ─── Database — EF Core + Supabase PostgreSQL ─────────────────────────────────
+// ─── Database ─────────────────────────────────────────────────────────────────
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -65,6 +49,10 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GroupService>();
 builder.Services.AddScoped<GroupRegistrationRequestService>();
+builder.Services.AddScoped<MembershipService>();
+builder.Services.AddScoped<EventService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<DashboardService>();
 
 // ─── Health checks ────────────────────────────────────────────────────────────
 builder.Services.AddHealthChecks()

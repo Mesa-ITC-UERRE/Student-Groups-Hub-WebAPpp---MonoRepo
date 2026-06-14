@@ -2,7 +2,7 @@ namespace StudentGroupsHub.DTOs.Responses;
 
 public record UserResponse(
     Guid Id,
-    string SupabaseId,
+    string EntraOid,
     string Email,
     string? DisplayName,
     string? AvatarUrl,
