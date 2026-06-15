@@ -28,10 +28,9 @@ Platform for managing student groups, events, members, and participation at **Un
 ## Repository Structure
 
 ```
-MESA ITC/
-├── docs/                          ← This documentation
-├── student-groups-hub-fronted/    ← React/Next.js frontend prototype (U-ERRE branding)
-└── (backend — to be created)      ← ASP.NET Core 8 Web API
+StudentGroupsBlazor/
+├── docs/                     ← This documentation
+└── StudentGroupsHub/         ← Blazor Web App (.NET 10)
 ```
 
 ---
@@ -41,8 +40,8 @@ MESA ITC/
 - **University:** Universidad Regiomontana (U-ERRE)
 - **Platform name:** Student Groups Hub
 - **UI Language:** Spanish
+- **Frontend:** Blazor Web App (.NET 10) — InteractiveServer render mode
 - **Auth provider:** Microsoft Entra ID (single tenant — `@uerre.mx`)
+- **Backend API:** ASP.NET Core 10 REST API (separate `student-groups-hub` repo)
 - **Database:** Supabase (PostgreSQL)
-- **File storage:** Supabase Storage
-- **Email:** Resend
-- **Deployment:** Azure Static Web Apps (frontend) + Azure App Service (backend)
+- **Deployment:** Azure App Service (Blazor + backend)

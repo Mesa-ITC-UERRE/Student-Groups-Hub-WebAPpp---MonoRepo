@@ -1,22 +1,4 @@
-# ── Node / Bun ────────────────────────────────────────────────────────────────
-node_modules/
-dist/
-.next/
-.output/
-bun.lock
-
-# ── Environment secrets ───────────────────────────────────────────────────────
-.env.local
-.env.*.local
-.env.production
-
-# ── .NET / C# ────────────────────────────────────────────────────────────────
-backend/bin/
-backend/obj/
-backend/*.user
-backend/.vs/
-backend/appsettings.Development.json
-
+# ── .NET / C# (Blazor) ───────────────────────────────────────────────────────
 blazor/bin/
 blazor/obj/
 blazor/*.user
@@ -32,8 +14,5 @@ blazor/appsettings.Development.json
 .DS_Store
 Thumbs.db
 
-# ── Build artifacts ───────────────────────────────────────────────────────────
+# ── Logs ─────────────────────────────────────────────────────────────────────
 *.log
-playwright-report/
-test-results/
-coverage/
