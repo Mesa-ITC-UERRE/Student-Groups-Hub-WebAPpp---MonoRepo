@@ -1,0 +1,222 @@
+@page "/groups"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@attribute [Authorize]
+@inject GroupApiService GroupService
+
+<PageTitle>Grupos Estudiantiles — Student Groups Hub</PageTitle>
+
+<div class="page-header">
+    <div class="container-uerre">
+        <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
+            <div>
+                <h1 class="text-white fw-bold mb-1" style="font-size:clamp(1.5rem,4vw,2.25rem);">
+                    Grupos Estudiantiles
+                </h1>
+                <p class="mb-0" style="color:rgba(255,255,255,.7);font-size:.9375rem;">
+                    @(_total > 0 ? $"{_total} grupo{(_total != 1 ? "s" : "")} activo{(_total != 1 ? "s" : "")} en U-ERRE"
+                                 : "Explora los grupos de la Universidad Regiomontana")
+                </p>
+            </div>
+            <a href="/groups/register"
+               class="btn btn-light fw-semibold rounded-pill px-4 flex-shrink-0"
+               style="color:var(--uerre-purple);font-family:'Montserrat',sans-serif;font-size:.875rem;">
+                + Crear grupo
+            </a>
+        </div>
+
+        <!-- Search -->
+        <div class="mt-4 search-input-wrapper" style="max-width:440px;">
+            <span class="search-icon">&#128270;</span>
+            <input type="search" class="form-control rounded-pill py-2"
+                   style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);
+                          color:#fff;padding-left:2.5rem !important;"
+                   placeholder="Buscar grupos..."
+                   value="@_search" @oninput="OnSearchChanged" />
+        </div>
+    </div>
+</div>
+
+<section class="py-4 py-md-5" style="background:var(--uerre-surface);">
+    <div class="container-uerre">
+
+        <!-- Category chips -->
+        @if (_categories.Count > 0)
+        {
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <button class="filter-chip @(_selectedCategory is null ? "active" : "")"
+                        type="button" @onclick="() => SelectCategory(null)">
+                    Todos
+                </button>
+                @foreach (var cat in _categories)
+                {
+                    <button class="filter-chip @(_selectedCategory == cat ? "active" : "")"
+                            type="button" @onclick="() => SelectCategory(cat)">
+                        @cat
+                    </button>
+                }
+            </div>
+        }
+
+        @if (_loading)
+        {
+            <!-- Skeleton grid -->
+            <div class="row g-4">
+                @for (int i = 0; i < 6; i++)
+                {
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <div class="card-uerre no-hover p-4">
+                            <div class="skeleton mb-3" style="height:3px;"></div>
+                            <div class="d-flex gap-3 mb-3">
+                                <div class="skeleton flex-shrink-0" style="width:48px;height:48px;border-radius:12px;"></div>
+                                <div class="flex-grow-1">
+                                    <div class="skeleton mb-2" style="height:14px;width:70%;"></div>
+                                    <div class="skeleton" style="height:11px;width:40%;"></div>
+                                </div>
+                            </div>
+                            <div class="skeleton mb-2" style="height:11px;"></div>
+                            <div class="skeleton mb-4" style="height:11px;width:80%;"></div>
+                            <div class="d-flex justify-content-between">
+                                <div class="skeleton" style="height:11px;width:30%;"></div>
+                                <div class="skeleton" style="height:11px;width:20%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else if (_groups.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-icon">&#9632;</div>
+                <h5 class="fw-bold mb-1">
+                    @(_search.Length > 0 || _selectedCategory is not null ? "Sin resultados" : "No hay grupos activos")
+                </h5>
+                <p class="text-muted small mb-3">
+                    @(_search.Length > 0 || _selectedCategory is not null
+                        ? "Intenta con otros filtros de búsqueda."
+                        : "Sé el primero en crear un grupo.")
+                </p>
+                @if (_search.Length > 0 || _selectedCategory is not null)
+                {
+                    <button class="btn btn-uerre-outline btn-sm rounded-pill px-4"
+                            type="button" @onclick="ClearFilters">
+                        Limpiar filtros
+                    </button>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var (group, i) in _groups.Select((g, i) => (g, i)))
+                {
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <a href="/groups/@group.Slug" class="text-decoration-none d-block h-100">
+                            <div class="card-uerre h-100 d-flex flex-column">
+                                <!-- Accent bar -->
+                                <div style="height:3px;background:@GradientFor(i);flex-shrink:0;"></div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <!-- Header -->
+                                    <div class="d-flex align-items-start gap-3 mb-3">
+                                        <div class="group-icon" style="background:@GradientFor(i);">
+                                            @group.Name.Substring(0,1).ToUpper()
+                                        </div>
+                                        <div class="min-w-0 flex-grow-1">
+                                            <h6 class="fw-bold mb-0 text-dark line-clamp-1">@group.Name</h6>
+                                            @if (group.Category is not null)
+                                            {
+                                                <span class="tag-uerre mt-1 d-inline-block">@group.Category</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Description -->
+                                    @if (group.Description is not null)
+                                    {
+                                        <p class="text-muted small line-clamp-2 mb-0 flex-grow-1"
+                                           style="line-height:1.6;">@group.Description</p>
+                                    }
+
+                                    <!-- Footer -->
+                                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3"
+                                         style="border-top:1px solid var(--uerre-border);">
+                                        <span class="small text-muted">
+                                            &#9651; @group.MemberCount @(group.MemberCount == 1 ? "miembro" : "miembros")
+                                        </span>
+                                        <span class="small fw-600 text-purple" style="opacity:.7;transition:opacity .2s;">
+                                            Ver grupo →
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private List<GroupModel> _groups = [];
+    private List<string> _categories = [];
+    private bool _loading = true;
+    private string _search = "";
+    private string? _selectedCategory;
+    private int _total;
+    private CancellationTokenSource? _debounce;
+
+    private static readonly string[] _gradients =
+    [
+        "linear-gradient(135deg,#7c3aed,#4338ca)",
+        "linear-gradient(135deg,#f43f5e,#be185d)",
+        "linear-gradient(135deg,#f59e0b,#d97706)",
+        "linear-gradient(135deg,#10b981,#0d9488)",
+        "linear-gradient(135deg,#0ea5e9,#2563eb)",
+        "linear-gradient(135deg,#a855f7,#7c3aed)",
+    ];
+    private static string GradientFor(int i) => _gradients[i % _gradients.Length];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _categories = await GroupService.GetCategoriesAsync();
+        await LoadGroupsAsync();
+    }
+
+    private async Task LoadGroupsAsync()
+    {
+        _loading = true;
+        StateHasChanged();
+        try
+        {
+            var result = await GroupService.GetAllAsync(
+                search: _search.Length > 0 ? _search : null,
+                category: _selectedCategory);
+            _groups = result?.Data ?? [];
+            _total  = result?.Total ?? 0;
+        }
+        catch { _groups = []; _total = 0; }
+        finally { _loading = false; }
+    }
+
+    private async Task OnSearchChanged(ChangeEventArgs e)
+    {
+        _search = e.Value?.ToString() ?? "";
+        _debounce?.Cancel();
+        _debounce = new CancellationTokenSource();
+        try { await Task.Delay(350, _debounce.Token); await LoadGroupsAsync(); }
+        catch (TaskCanceledException) { }
+    }
+
+    private async Task SelectCategory(string? cat)
+    {
+        _selectedCategory = cat;
+        await LoadGroupsAsync();
+    }
+
+    private async Task ClearFilters()
+    {
+        _search = ""; _selectedCategory = null;
+        await LoadGroupsAsync();
+    }
+}

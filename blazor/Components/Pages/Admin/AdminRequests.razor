@@ -1,0 +1,97 @@
+@page "/admin/requests"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject GroupRegistrationApiService RegistrationService
+@attribute [Authorize(Policy = "AdminOnly")]
+
+<PageTitle>Solicitudes de Grupos — Admin</PageTitle>
+
+<section class="hero-gradient py-4 text-white">
+    <div class="container" style="max-width:1200px;">
+        <a href="/admin" class="text-white-50 text-decoration-none small mb-2 d-inline-block">&larr; Panel Admin</a>
+        <h1 class="fw-bold mb-0" style="font-family:'Montserrat',sans-serif;">Solicitudes de Grupos</h1>
+    </div>
+</section>
+
+<section class="py-5" style="background:var(--uerre-surface);">
+    <div class="container" style="max-width:1200px;">
+
+        @if (_loading)
+        {
+            <div class="d-flex justify-content-center py-5"><div class="spinner-uerre"></div></div>
+        }
+        else if (_requests.Count == 0)
+        {
+            <div class="text-center py-5">
+                <div class="mb-3 text-success" style="font-size:2.5rem;line-height:1;">&#10003;</div>
+                <p class="mt-2 text-muted">No hay solicitudes pendientes.</p>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex flex-column gap-3">
+                @foreach (var req in _requests)
+                {
+                    <div class="card-uerre p-4">
+                        <div class="d-flex flex-column flex-md-row align-items-md-start gap-3">
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold text-dark mb-1">@req.ProposedGroupName</h6>
+                                @if (req.ProposedDescription is not null)
+                                {
+                                    <p class="text-muted small mb-2">@req.ProposedDescription</p>
+                                }
+                                <div class="d-flex flex-wrap gap-3" style="font-size:.75rem;color:var(--uerre-muted);">
+                                    <span>@req.ContactEmail</span>
+                                    @if (req.RequestedByDisplayName is not null)
+                                    {
+                                        <span>@req.RequestedByDisplayName</span>
+                                    }
+                                    <span>&#128198; @req.CreatedAt.ToString("dd MMM yyyy")</span>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 flex-shrink-0">
+                                <button class="btn btn-success rounded-3 px-4"
+                                        @onclick="() => Approve(req.Id)" disabled="@_acting">
+                                    Aprobar
+                                </button>
+                                <button class="btn btn-outline-danger rounded-3 px-4"
+                                        @onclick="() => Reject(req.Id)" disabled="@_acting">
+                                    Rechazar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private List<GroupRegistrationRequestModel> _requests = [];
+    private bool _loading = true, _acting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try { _requests = await RegistrationService.GetAllPendingAsync(); }
+        catch { _requests = []; }
+        finally { _loading = false; }
+    }
+
+    private async Task Approve(Guid id)
+    {
+        _acting = true;
+        await RegistrationService.ApproveAsync(id);
+        _requests.RemoveAll(r => r.Id == id);
+        _acting = false;
+        StateHasChanged();
+    }
+
+    private async Task Reject(Guid id)
+    {
+        _acting = true;
+        await RegistrationService.RejectAsync(id);
+        _requests.RemoveAll(r => r.Id == id);
+        _acting = false;
+        StateHasChanged();
+    }
+}

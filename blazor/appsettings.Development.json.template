@@ -1,0 +1,36 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Debug",
+      "Microsoft.AspNetCore": "Information",
+      "Microsoft.EntityFrameworkCore.Database.Command": "Information"
+    }
+  },
+
+  "EntraId": {
+    "Instance": "https://login.microsoftonline.com/",
+    "Domain": "YOUR_DOMAIN",
+    "TenantId": "YOUR_TENANT_ID",
+    "ClientId": "YOUR_CLIENT_ID",
+    "Audience": "api://YOUR_CLIENT_ID",
+    "CallbackPath": "/signin-oidc",
+    "SignedOutCallbackPath": "/signout-oidc",
+    "DisableInstanceDiscovery": true,
+    "ClientSecret": "YOUR_ENTRA_CLIENT_SECRET — Azure Portal > App registrations > Certificates & secrets > New client secret"
+  },
+
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=aws-REGION.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.YOUR_PROJECT_REF;Password=YOUR_DB_PASSWORD;SSL Mode=Require;Trust Server Certificate=true;Maximum Pool Size=20;Minimum Pool Size=1;Connection Idle Lifetime=30;Keepalive=15;Command Timeout=30"
+  },
+
+  "Supabase": {
+    "Url": "https://YOUR_PROJECT_REF.supabase.co",
+    "ServiceKey": "sb_secret_... — Supabase Dashboard > Project Settings > API > Secret keys",
+    "StorageBucket": "student-groups-assets"
+  },
+
+  "Resend": {
+    "ApiKey": "re_... — resend.com Dashboard > API Keys",
+    "FromEmail": "noreply@your-domain.com"
+  }
+}

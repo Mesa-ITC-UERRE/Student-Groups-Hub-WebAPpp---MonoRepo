@@ -1,0 +1,150 @@
+@page "/groups/register"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject GroupRegistrationApiService RegistrationService
+@inject NavigationManager Nav
+@attribute [Authorize]
+
+<PageTitle>Solicitar Grupo — Student Groups Hub</PageTitle>
+
+<section class="hero-gradient py-4 text-white">
+    <div class="container max-w-xl">
+        <a href="/groups" class="text-white-50 text-decoration-none small mb-3 d-inline-flex align-items-center gap-1">
+            ← Grupos
+        </a>
+        <h1 class="fw-bold mb-1" style="font-family:'Montserrat',sans-serif;">Solicitar Nuevo Grupo</h1>
+        <p style="color:rgba(255,255,255,.7);" class="mb-0">
+            Completa el formulario. El equipo de U-ERRE revisará tu solicitud y te notificará.
+        </p>
+    </div>
+</section>
+
+<section class="py-5" style="background:var(--uerre-surface);">
+    <div class="container max-w-xl">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+
+                @if (_success)
+                {
+                    <div class="card-uerre p-5 text-center">
+                        <div class="mb-3 text-success" style="font-size:2.5rem;line-height:1;">&#10003;</div>
+                        <h4 class="fw-bold mb-2">¡Solicitud enviada!</h4>
+                        <p class="text-muted mb-4">
+                            Tu solicitud ha sido recibida. Te notificaremos cuando sea revisada.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="/dashboard" class="btn btn-uerre-outline">Ver mis solicitudes</a>
+                            <a href="/groups" class="btn btn-uerre-primary">Explorar grupos</a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-uerre p-4 p-md-5">
+                        @if (_error is not null)
+                        {
+                            <div class="alert alert-danger rounded-3 small">@_error</div>
+                        }
+
+                        <EditForm Model="_form" OnValidSubmit="HandleSubmit" FormName="register-group">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">
+                                    Nombre del grupo <span class="text-danger">*</span>
+                                </label>
+                                <InputText @bind-Value="_form.ProposedGroupName"
+                                           class="form-control rounded-3"
+                                           placeholder="Ej. Club de Robótica U-ERRE"
+                                           maxlength="200" />
+                                <ValidationMessage For="() => _form.ProposedGroupName" class="small text-danger" />
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Descripción del grupo</label>
+                                <InputTextArea @bind-Value="_form.ProposedDescription"
+                                              class="form-control rounded-3"
+                                              rows="4"
+                                              placeholder="¿De qué trata el grupo? ¿Qué actividades realizarán?" />
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">
+                                    Correo de contacto <span class="text-danger">*</span>
+                                </label>
+                                <InputText @bind-Value="_form.ContactEmail"
+                                           type="email"
+                                           class="form-control rounded-3"
+                                           placeholder="tu.nombre@uerre.mx" />
+                                <ValidationMessage For="() => _form.ContactEmail" class="small text-danger" />
+                                <div class="form-text">Te contactaremos a este correo con el resultado.</div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-3 pt-2">
+                                <a href="/groups" class="btn btn-uerre-outline">Cancelar</a>
+                                <button type="submit" class="btn btn-uerre-primary px-4" disabled="@_submitting">
+                                    @if (_submitting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2"></span>
+                                        <span>Enviando...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Enviar solicitud</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private readonly RegisterGroupForm _form = new();
+    private bool _submitting;
+    private bool _success;
+    private string? _error;
+
+    private async Task HandleSubmit()
+    {
+        _submitting = true;
+        _error = null;
+
+        try
+        {
+            var request = new CreateGroupRegistrationRequest(
+                _form.ProposedGroupName.Trim(),
+                string.IsNullOrWhiteSpace(_form.ProposedDescription) ? null : _form.ProposedDescription.Trim(),
+                _form.ContactEmail.Trim());
+
+            var result = await RegistrationService.CreateAsync(request);
+            if (result is not null)
+                _success = true;
+            else
+                _error = "Error al enviar la solicitud. Por favor intenta de nuevo.";
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private class RegisterGroupForm
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "El nombre del grupo es requerido.")]
+        [System.ComponentModel.DataAnnotations.MaxLength(200)]
+        public string ProposedGroupName { get; set; } = "";
+
+        public string? ProposedDescription { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "El correo de contacto es requerido.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Ingresa un correo válido.")]
+        public string ContactEmail { get; set; } = "";
+    }
+}

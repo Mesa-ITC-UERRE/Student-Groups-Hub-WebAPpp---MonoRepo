@@ -1,0 +1,315 @@
+@* Administration timeline tab — shown inside any group detail page *@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject GroupTermApiService TermService
+@inject AuthenticationStateProvider AuthState
+
+@if (_loading)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="spinner-uerre"></div>
+    </div>
+}
+else if (_terms.Count == 0 && !_showAddTerm)
+{
+    <div class="empty-state">
+        <div class="empty-icon" style="font-size:2rem;color:var(--uerre-muted);">&#9632;</div>
+        <h5 class="fw-bold mb-1">Sin administraciones registradas</h5>
+        <p class="text-muted small mb-3">
+            Las administraciones permiten llevar un historial de quiénes han formado parte del grupo.
+        </p>
+        @if (CanManage)
+        {
+            <button class="btn btn-uerre-primary rounded-pill px-4" type="button"
+                    @onclick="() => _showAddTerm = true">
+                + Registrar primera administración
+            </button>
+        }
+    </div>
+}
+else
+{
+    <!-- Add term form -->
+    @if (CanManage)
+    {
+        <div class="d-flex justify-content-end mb-4">
+            @if (!_showAddTerm)
+            {
+                <button class="btn btn-uerre-primary rounded-pill px-4 btn-sm" type="button"
+                        @onclick="() => _showAddTerm = true">
+                    + Nueva administración
+                </button>
+            }
+        </div>
+    }
+
+    @if (_showAddTerm)
+    {
+        <div class="card-uerre no-hover p-4 mb-5">
+            <h6 class="fw-bold mb-3">Nueva Administración</h6>
+            @if (_termError is not null)
+            {
+                <div class="alert alert-danger rounded-3 small py-2">@_termError</div>
+            }
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Nombre / Período <span class="text-danger">*</span></label>
+                    <input class="form-control" placeholder="Ej. Administración 2025-2026"
+                           @bind="_newTermLabel" />
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label">Fecha inicio <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" @bind="_newTermStart" />
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label">Fecha fin</label>
+                    <input type="date" class="form-control" @bind="_newTermEnd" />
+                    <div class="form-text">Dejar vacío si es la administración actual.</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Notas</label>
+                    <textarea class="form-control" rows="2" placeholder="Descripción o logros de este período..."
+                              @bind="_newTermNotes"></textarea>
+                </div>
+            </div>
+            <div class="d-flex gap-2 justify-content-end mt-3">
+                <button class="btn btn-uerre-outline btn-sm rounded-pill px-4" type="button"
+                        @onclick="CancelAddTerm">Cancelar</button>
+                <button class="btn btn-uerre-primary btn-sm rounded-pill px-4" type="button"
+                        @onclick="SaveTerm" disabled="@_saving">
+                    @if (_saving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                    Guardar
+                </button>
+            </div>
+        </div>
+    }
+
+    <!-- Timeline -->
+    <div class="timeline-container">
+        @foreach (var term in _terms)
+        {
+            <div class="timeline-item @(term.IsCurrent ? "timeline-current" : "")">
+                <!-- Timeline dot + line -->
+                <div class="timeline-dot @(term.IsCurrent ? "timeline-dot-active" : "timeline-dot-past")"></div>
+
+                <!-- Content -->
+                <div class="timeline-content">
+                    <div class="d-flex flex-column flex-md-row align-items-md-start justify-content-between gap-2 mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1">@term.Label</h5>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="small text-muted">&#128198; @term.DateRange</span>
+                                <span class="rounded-pill px-2 py-1 small fw-600"
+                                      style="font-size:.7rem;@term.StatusCss">
+                                    @term.StatusLabel
+                                </span>
+                            </div>
+                            @if (term.Notes is not null)
+                            {
+                                <p class="text-muted small mt-2 mb-0" style="max-width:560px;">@term.Notes</p>
+                            }
+                        </div>
+                        @if (CanManage)
+                        {
+                            <div class="d-flex gap-2 flex-shrink-0">
+                                <button class="btn btn-sm btn-uerre-outline rounded-pill"
+                                        type="button" @onclick="() => StartAddMember(term.Id)">
+                                    + Miembro
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger rounded-pill"
+                                        type="button" @onclick="() => DeleteTerm(term.Id)">
+                                    Eliminar
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Add member inline form -->
+                    @if (_addMemberTermId == term.Id)
+                    {
+                        <div class="card-uerre no-hover p-3 mb-3">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-12 col-sm-4">
+                                    <label class="form-label small fw-600 mb-1">Nombre completo</label>
+                                    <input class="form-control form-control-sm" placeholder="Ana García López"
+                                           @bind="_newMemberName" />
+                                </div>
+                                <div class="col-12 col-sm-4">
+                                    <label class="form-label small fw-600 mb-1">Cargo / Rol</label>
+                                    <input class="form-control form-control-sm" placeholder="Presidenta, Tesorero..."
+                                           @bind="_newMemberRole" list="role-suggestions" />
+                                    <datalist id="role-suggestions">
+                                        <option value="Presidente" />
+                                        <option value="Presidenta" />
+                                        <option value="Vicepresidente" />
+                                        <option value="Vicepresidenta" />
+                                        <option value="Secretario General" />
+                                        <option value="Secretaria General" />
+                                        <option value="Tesorero" />
+                                        <option value="Tesorera" />
+                                        <option value="Vocal" />
+                                        <option value="Vocal de Deportes" />
+                                        <option value="Vocal de Cultura" />
+                                        <option value="Vocal de Tecnología" />
+                                        <option value="Vocal de Vinculación" />
+                                        <option value="Coordinador" />
+                                        <option value="Representante" />
+                                    </datalist>
+                                </div>
+                                <div class="col-6 col-sm-2">
+                                    <label class="form-label small fw-600 mb-1">Orden</label>
+                                    <input type="number" class="form-control form-control-sm" min="0"
+                                           @bind="_newMemberOrder" />
+                                </div>
+                                <div class="col-6 col-sm-2 d-flex gap-1">
+                                    <button class="btn btn-uerre-primary btn-sm flex-grow-1"
+                                            type="button" @onclick="() => SaveMember(term.Id)"
+                                            disabled="@_saving">
+                                        @if (_saving) { <span class="spinner-border spinner-border-sm"></span> }
+                                        else { <span>OK</span> }
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm"
+                                            type="button" @onclick="CancelAddMember">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Members grid -->
+                    @if (term.Members.Count > 0)
+                    {
+                        <div class="row g-2">
+                            @foreach (var m in term.Members)
+                            {
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="term-member-card">
+                                        <div class="term-member-avatar">@m.Initial</div>
+                                        <div class="min-w-0">
+                                            <div class="fw-600 small text-dark line-clamp-1">@m.DisplayName</div>
+                                            <div class="term-member-role">@m.RoleLabel</div>
+                                        </div>
+                                        @if (CanManage)
+                                        {
+                                            <button class="btn-close btn-close-sm ms-auto flex-shrink-0"
+                                                    style="font-size:.5rem;"
+                                                    type="button"
+                                                    @onclick="() => RemoveMember(m.Id)"
+                                                    title="Eliminar"></button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted small fst-italic mt-2">
+                            Sin miembros registrados en esta administración.
+                            @if (CanManage) { <span>Haz clic en "+ Miembro" para agregar.</span> }
+                        </p>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public Guid GroupId { get; set; }
+    [Parameter] public bool CanManage { get; set; }
+
+    private List<GroupTermModel> _terms = [];
+    private bool _loading = true;
+
+    // Add term form
+    private bool _showAddTerm;
+    private string _newTermLabel = "";
+    private DateOnly _newTermStart = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly? _newTermEnd;
+    private string? _newTermNotes;
+    private string? _termError;
+
+    // Add member form
+    private Guid? _addMemberTermId;
+    private string _newMemberName  = "";
+    private string _newMemberRole  = "";
+    private int    _newMemberOrder = 0;
+
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _terms = await TermService.GetTermsAsync(GroupId);
+        _loading = false;
+    }
+
+    private async Task SaveTerm()
+    {
+        if (string.IsNullOrWhiteSpace(_newTermLabel))
+        {
+            _termError = "El nombre de la administración es requerido.";
+            return;
+        }
+        _saving = true; _termError = null;
+        try
+        {
+            await TermService.CreateTermAsync(
+                GroupId, _newTermLabel.Trim(),
+                _newTermStart, _newTermEnd, _newTermNotes?.Trim());
+            CancelAddTerm();
+            await LoadAsync();
+        }
+        catch (Exception ex) { _termError = ex.Message; }
+        finally { _saving = false; }
+    }
+
+    private void CancelAddTerm()
+    {
+        _showAddTerm   = false;
+        _newTermLabel  = "";
+        _newTermStart  = DateOnly.FromDateTime(DateTime.Today);
+        _newTermEnd    = null;
+        _newTermNotes  = null;
+        _termError     = null;
+    }
+
+    private void StartAddMember(Guid termId)
+    {
+        _addMemberTermId = termId;
+        _newMemberName   = "";
+        _newMemberRole   = "";
+        _newMemberOrder  = (_terms.FirstOrDefault(t => t.Id == termId)?.Members.Count ?? 0) + 1;
+    }
+
+    private async Task SaveMember(Guid termId)
+    {
+        if (string.IsNullOrWhiteSpace(_newMemberName) || string.IsNullOrWhiteSpace(_newMemberRole))
+            return;
+        _saving = true;
+        try
+        {
+            await TermService.AddMemberAsync(
+                termId, _newMemberName.Trim(),
+                _newMemberRole.Trim(), _newMemberOrder);
+            CancelAddMember();
+            await LoadAsync();
+        }
+        finally { _saving = false; }
+    }
+
+    private void CancelAddMember() => _addMemberTermId = null;
+
+    private async Task RemoveMember(Guid memberId)
+    {
+        await TermService.RemoveMemberAsync(memberId);
+        await LoadAsync();
+    }
+
+    private async Task DeleteTerm(Guid termId)
+    {
+        await TermService.DeleteTermAsync(termId);
+        await LoadAsync();
+    }
+}

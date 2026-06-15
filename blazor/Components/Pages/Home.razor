@@ -1,0 +1,493 @@
+﻿@page "/"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject GroupApiService GroupService
+
+<PageTitle>Student Groups Hub — U-ERRE</PageTitle>
+
+<AuthorizeView>
+
+    <!-- ══════════════════════════════════════════════════════════
+         AUTHENTICATED VIEW — full platform, no login prompts
+         ══════════════════════════════════════════════════════════ -->
+    <Authorized>
+        <!-- Hero — authenticated, no login CTA -->
+        <section class="hero-gradient text-white position-relative overflow-hidden"
+                 style="padding-top:4.5rem;padding-bottom:5rem;">
+            <div class="hero-blob-1"></div>
+            <div class="hero-blob-2"></div>
+            <div class="container-uerre position-relative" style="z-index:1;">
+                <div class="row align-items-center g-5">
+                    <div class="col-12 col-lg-7">
+                        <div class="animate-fade-up mb-3">
+                            <span class="rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2"
+                                  style="border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);
+                                         backdrop-filter:blur(8px);font-size:.7rem;font-weight:600;
+                                         letter-spacing:.08em;text-transform:uppercase;">
+                                • Bienvenido, @context.User.Identity?.Name?.Split(' ')[0]
+                            </span>
+                        </div>
+                        <h1 class="animate-fade-up delay-1 fw-bold text-white lh-1 mb-3"
+                            style="font-family:'Montserrat',sans-serif;
+                                   font-size:clamp(2rem,5vw,3.5rem);letter-spacing:-.02em;">
+                            Tu comunidad<br />universitaria
+                            <span class="d-block" style="color:#fbbf24;">empieza aquí.</span>
+                        </h1>
+                        <p class="animate-fade-up delay-2 mb-4 lh-lg"
+                           style="color:rgba(255,255,255,.75);max-width:440px;font-size:1.0625rem;">
+                            Descubre grupos, únete a eventos y conecta con estudiantes que
+                            comparten tus intereses en U-ERRE.
+                        </p>
+                        <div class="animate-fade-up delay-3 d-flex flex-wrap gap-3">
+                            <a href="/groups" class="btn btn-light btn-lg px-4 fw-bold"
+                               style="color:#5b21b6;border-radius:12px;
+                                      font-family:'Montserrat',sans-serif;font-size:.875rem;">
+                                Explorar Grupos →
+                            </a>
+                            <a href="/dashboard" class="btn btn-lg px-4 fw-semibold"
+                               style="border:1.5px solid rgba(255,255,255,.25);
+                                      background:rgba(255,255,255,.1);color:#fff;
+                                      border-radius:12px;backdrop-filter:blur(8px);font-size:.875rem;">
+                                Mi Panel
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Floating cards — desktop only -->
+                    <div class="col-lg-5 d-none d-lg-block position-relative" style="height:320px;" aria-hidden="true">
+                        <div class="position-absolute top-50 start-50 translate-middle rounded-circle"
+                             style="width:240px;height:240px;background:rgba(139,92,246,.18);filter:blur(70px);"></div>
+                        <div class="hero-float-card animate-float" style="right:-1rem;top:1rem;width:230px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center"
+                                     style="width:38px;height:38px;background:linear-gradient(135deg,#7c3aed,#4338ca);">
+                                    <span>R</span>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-white small">Robótica U-ERRE</div>
+                                    <div style="font-size:.7rem;color:rgba(255,255,255,.55);">48 miembros</div>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="rounded-pill px-2 py-1"
+                                      style="background:rgba(245,158,11,.2);color:#fbbf24;font-size:.65rem;font-weight:600;">
+                                    Hackathon pronto
+                                </span>
+                            </div>
+                        </div>
+                        <div class="hero-float-card animate-float float-delay-1"
+                             style="left:1rem;top:8rem;width:200px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center"
+                                     style="width:38px;height:38px;background:linear-gradient(135deg,#f43f5e,#be185d);">
+                                    <span>M</span>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-white small">Ensamble Musical</div>
+                                    <div style="font-size:.7rem;color:rgba(255,255,255,.55);">32 miembros</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hero-float-card animate-float float-delay-2"
+                             style="right:-1rem;bottom:.5rem;width:180px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center"
+                                     style="width:34px;height:34px;background:linear-gradient(135deg,#10b981,#0d9488);">
+                                    <span>D</span>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-white" style="font-size:.8rem;">Debate</div>
+                                    <div style="font-size:.65rem;color:rgba(255,255,255,.55);">35 miembros</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="position-absolute bottom-0 start-0 end-0" style="line-height:0;">
+                <svg viewBox="0 0 1440 48" fill="none" preserveAspectRatio="none"
+                     style="display:block;width:100%;height:48px;">
+                    <path d="M0 48h1440V24C1280 0 1120 42 960 30S640 0 480 15 160 48 0 24v24z" fill="white"/>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Stats band -->
+        <section class="bg-white py-3">
+            <div class="container-uerre">
+                <div class="stats-band px-4 px-md-5 py-4 py-md-5">
+                    <div class="row g-4 text-center position-relative" style="z-index:1;">
+                        @foreach (var s in _stats)
+                        {
+                            <div class="col-6 col-md-3">
+                                <div class="stat-value">@s.Value</div>
+                                <div class="stat-label mt-1">@s.Label</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Groups -->
+        <section style="background:var(--uerre-surface);padding:4.5rem 0;">
+            <div class="container-uerre">
+                <div class="text-center mb-5">
+                    <span class="section-label">Comunidad</span>
+                    <h2 class="mt-3 mb-2">Grupos Destacados</h2>
+                    <p class="text-muted mx-auto" style="max-width:520px;">
+                        Encuentra tu lugar. Únete a grupos donde podrás crecer y compartir.
+                    </p>
+                </div>
+
+                @if (_loadingGroups)
+                {
+                    <div class="row g-4">
+                        @for (int i = 0; i < 6; i++)
+                        {
+                            <div class="col-12 col-sm-6 col-lg-4">
+                                <div class="card-uerre no-hover p-4">
+                                    <div class="skeleton mb-3" style="height:3px;"></div>
+                                    <div class="d-flex gap-3 mb-3">
+                                        <div class="skeleton flex-shrink-0" style="width:48px;height:48px;border-radius:12px;"></div>
+                                        <div class="flex-grow-1">
+                                            <div class="skeleton mb-2" style="height:14px;width:70%;"></div>
+                                            <div class="skeleton" style="height:11px;width:40%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="skeleton mb-2" style="height:11px;"></div>
+                                    <div class="skeleton" style="height:11px;width:75%;"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-4">
+                        @foreach (var (group, i) in (_groups ?? []).Select((g, i) => (g, i)))
+                        {
+                            <div class="col-12 col-sm-6 col-lg-4">
+                                <a href="/groups/@group.Slug" class="text-decoration-none d-block h-100">
+                                    <div class="card-uerre h-100 d-flex flex-column">
+                                        <div style="height:3px;background:@GradientFor(i);flex-shrink:0;"></div>
+                                        <div class="p-4 d-flex flex-column flex-grow-1">
+                                            <div class="d-flex align-items-start gap-3 mb-3">
+                                                <div class="group-icon" style="background:@GradientFor(i);">
+                                                    @group.Name.Substring(0,1).ToUpper()
+                                                </div>
+                                                <div class="min-w-0 flex-grow-1">
+                                                    <h6 class="fw-bold mb-0 text-dark line-clamp-1">@group.Name</h6>
+                                                    @if (group.Category is not null)
+                                                    {
+                                                        <span class="tag-uerre mt-1 d-inline-block">@group.Category</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            @if (group.Description is not null)
+                                            {
+                                                <p class="text-muted small line-clamp-2 mb-0 flex-grow-1"
+                                                   style="line-height:1.6;">@group.Description</p>
+                                            }
+                                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3"
+                                                 style="border-top:1px solid var(--uerre-border);">
+                                                <span class="small text-muted">
+                                                    &#9651; @group.MemberCount @(group.MemberCount == 1 ? "miembro" : "miembros")
+                                                </span>
+                                                <span class="small fw-600 text-purple">Ver →</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                    <div class="text-center mt-5">
+                        <a href="/groups" class="btn btn-uerre-outline px-5">Ver todos los grupos →</a>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <!-- Upcoming Events -->
+        <section class="bg-white" style="padding:4.5rem 0;">
+            <div class="container-uerre">
+                <div class="text-center mb-5">
+                    <span class="section-label" style="background:#fef3c7;color:#b45309;">Próximamente</span>
+                    <h2 class="mt-3 mb-2">Eventos que Vienen</h2>
+                    <p class="text-muted mx-auto" style="max-width:520px;">
+                        No te pierdas lo que está pasando en tu campus.
+                    </p>
+                </div>
+                <div class="row g-4">
+                    @foreach (var evt in _events)
+                    {
+                        <div class="col-12 col-md-6">
+                            <a href="/events/@evt.Title" class="text-decoration-none">
+                                <div class="card-event">
+                                    <div class="event-date-badge">
+                                        <span class="event-date-month">@evt.Month</span>
+                                        <span class="event-date-day">@evt.Day</span>
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <h6 class="fw-bold mb-1 text-dark">@evt.Title</h6>
+                                        <p class="fw-600 mb-2 text-purple" style="font-size:.78rem;">@evt.Group</p>
+                                        <div class="d-flex flex-wrap gap-3 text-muted-sm">
+                                            <span>&#8987; @evt.Time</span>
+                                            <span>> @evt.Location</span>
+                                            <span>&#9651; @evt.Spots lugares</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    </Authorized>
+
+    <!-- ══════════════════════════════════════════════════════════
+         GUEST VIEW — preview only, locked behind login prompt
+         ══════════════════════════════════════════════════════════ -->
+    <NotAuthorized>
+        <!-- Hero — guest, prominent login CTA -->
+        <section class="hero-gradient text-white position-relative overflow-hidden"
+                 style="padding-top:5rem;padding-bottom:6rem;">
+            <div class="hero-blob-1"></div>
+            <div class="hero-blob-2"></div>
+            <div class="container-uerre position-relative" style="z-index:1;">
+                <div class="row align-items-center g-5">
+                    <div class="col-12 col-lg-6">
+                        <div class="animate-fade-up mb-4">
+                            <span class="rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2"
+                                  style="border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);
+                                         backdrop-filter:blur(8px);font-size:.7rem;font-weight:600;
+                                         letter-spacing:.08em;text-transform:uppercase;">
+                                • Para estudiantes, por estudiantes
+                            </span>
+                        </div>
+                        <h1 class="animate-fade-up delay-1 fw-bold text-white lh-1 mb-3"
+                            style="font-family:'Montserrat',sans-serif;
+                                   font-size:clamp(2.25rem,5vw,3.75rem);letter-spacing:-.02em;">
+                            Tu comunidad<br />universitaria
+                            <span class="d-block" style="color:#fbbf24;">empieza aquí.</span>
+                        </h1>
+                        <p class="animate-fade-up delay-2 mb-4 lh-lg"
+                           style="color:rgba(255,255,255,.75);max-width:440px;font-size:1.0625rem;">
+                            Descubre grupos, únete a eventos y conecta con estudiantes que
+                            comparten tus intereses en U-ERRE.
+                        </p>
+                        <div class="animate-fade-up delay-3 d-flex flex-wrap gap-3 mb-4">
+                            <a href="MicrosoftIdentity/Account/SignIn"
+                               class="btn btn-light btn-lg px-5 fw-bold"
+                               style="color:#5b21b6;border-radius:12px;
+                                      font-family:'Montserrat',sans-serif;font-size:.9375rem;
+                                      box-shadow:0 6px 20px rgba(255,255,255,.2);">
+                                Iniciar Sesión →
+                            </a>
+                        </div>
+                        <!-- Social proof -->
+                        <div class="animate-fade-up delay-4 d-flex align-items-center gap-3">
+                            <div class="avatar-stack">
+                                <div class="avatar-item" style="background:#f43f5e;">MA</div>
+                                <div class="avatar-item" style="background:#0ea5e9;">LC</div>
+                                <div class="avatar-item" style="background:#f59e0b;">RG</div>
+                                <div class="avatar-item" style="background:#10b981;">JP</div>
+                            </div>
+                            <p class="mb-0 small" style="color:rgba(255,255,255,.7);">
+                                <strong class="text-white">+3,400</strong> estudiantes ya son parte
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Floating cards -->
+                    <div class="col-lg-6 d-none d-lg-block position-relative" style="height:340px;" aria-hidden="true">
+                        <div class="position-absolute top-50 start-50 translate-middle rounded-circle"
+                             style="width:260px;height:260px;background:rgba(139,92,246,.18);filter:blur(70px);"></div>
+                        <div class="hero-float-card animate-float" style="right:-1rem;top:1rem;width:240px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center"
+                                     style="width:40px;height:40px;background:linear-gradient(135deg,#7c3aed,#4338ca);">
+                                    <span>R</span>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-white small">Robótica U-ERRE</div>
+                                    <div style="font-size:.7rem;color:rgba(255,255,255,.55);">48 miembros</div>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="rounded-pill px-2 py-1"
+                                      style="background:rgba(245,158,11,.2);color:#fbbf24;font-size:.65rem;font-weight:600;">
+                                    Hackathon pronto
+                                </span>
+                            </div>
+                        </div>
+                        <div class="hero-float-card animate-float float-delay-1"
+                             style="left:2rem;top:8rem;width:210px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center"
+                                     style="width:40px;height:40px;background:linear-gradient(135deg,#f43f5e,#be185d);">
+                                    <span>M</span>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-white small">Ensamble Musical</div>
+                                    <div style="font-size:.7rem;color:rgba(255,255,255,.55);">32 miembros</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hero-float-card animate-float float-delay-2"
+                             style="right:-2rem;bottom:0;width:185px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center"
+                                     style="width:36px;height:36px;background:linear-gradient(135deg,#10b981,#0d9488);">
+                                    <span>D</span>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-white" style="font-size:.8rem;">Debate</div>
+                                    <div style="font-size:.65rem;color:rgba(255,255,255,.55);">35 miembros</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="position-absolute bottom-0 start-0 end-0" style="line-height:0;">
+                <svg viewBox="0 0 1440 48" fill="none" preserveAspectRatio="none"
+                     style="display:block;width:100%;height:48px;">
+                    <path d="M0 48h1440V24C1280 0 1120 42 960 30S640 0 480 15 160 48 0 24v24z" fill="white"/>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Stats band -->
+        <section class="bg-white py-3">
+            <div class="container-uerre">
+                <div class="stats-band px-4 px-md-5 py-4 py-md-5">
+                    <div class="row g-4 text-center position-relative" style="z-index:1;">
+                        @foreach (var s in _stats)
+                        {
+                            <div class="col-6 col-md-3">
+                                <div class="stat-value">@s.Value</div>
+                                <div class="stat-label mt-1">@s.Label</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Locked content preview -->
+        <section style="background:var(--uerre-surface);padding:4.5rem 0;">
+            <div class="container-uerre">
+                <div class="text-center mb-5">
+                    <span class="section-label">Comunidad</span>
+                    <h2 class="mt-3 mb-2">Grupos Destacados</h2>
+                    <p class="text-muted mx-auto" style="max-width:520px;">
+                        Inicia sesión para ver los grupos y unirte a la comunidad.
+                    </p>
+                </div>
+
+                <!-- Blurred / locked preview cards -->
+                <div class="row g-4" style="pointer-events:none;user-select:none;">
+                    @foreach (var (g, i) in _previewGroups.Select((g, i) => (g, i)))
+                    {
+                        <div class="col-12 col-sm-6 col-lg-4" style="filter:blur(4px);opacity:.55;">
+                            <div class="card-uerre h-100 d-flex flex-column">
+                                <div style="height:3px;background:@GradientFor(i);flex-shrink:0;"></div>
+                                <div class="p-4 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex align-items-start gap-3 mb-3">
+                                        <div class="group-icon" style="background:@GradientFor(i);">@g[0]</div>
+                                        <div class="min-w-0">
+                                            <h6 class="fw-bold mb-0 text-dark">@g</h6>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-0 flex-grow-1">
+                                        Inicia sesión para ver la descripción y unirte al grupo.
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3"
+                                         style="border-top:1px solid var(--uerre-border);">
+                                        <span class="small text-muted">&#9651; — miembros</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Login gate overlay -->
+                <div class="text-center mt-5">
+                    <div class="card-uerre no-hover p-5 mx-auto" style="max-width:480px;">
+                        <div class="empty-icon" style="font-size:2rem;color:var(--uerre-muted);">&#9632;</div>
+                        <h4 class="fw-bold mb-2">Acceso exclusivo para estudiantes U-ERRE</h4>
+                        <p class="text-muted small mb-4">
+                            Inicia sesión con tu cuenta institucional para explorar todos los grupos,
+                            unirte a actividades y ver el historial de administraciones.
+                        </p>
+                        <a href="MicrosoftIdentity/Account/SignIn"
+                           class="btn btn-uerre-primary w-100 py-2 fw-bold"
+                           style="font-family:'Montserrat',sans-serif;">
+                            Iniciar Sesión con cuenta U-ERRE →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </NotAuthorized>
+
+</AuthorizeView>
+
+@code {
+    private List<GroupModel>? _groups;
+    private bool _loadingGroups = true;
+
+    private static readonly (string Value, string Label)[] _stats =
+    [
+        ("120+", "Grupos Activos"),
+        ("3,400", "Estudiantes"),
+        ("280",   "Eventos este año"),
+        ("95%",   "Satisfacción"),
+    ];
+
+    // Static preview group names shown blurred to guests
+    private static readonly string[] _previewGroups =
+    [
+        "Robótica U-ERRE",
+        "Ensamble Musical",
+        "Club de Diseño",
+        "Debate y Oratoria",
+        "Startup Lab U-ERRE",
+        "Voluntariado U-ERRE",
+    ];
+
+    private static readonly (string Title, string Group, string Day, string Month,
+                               string Time, string Location, int Spots)[] _events =
+    [
+        ("Hackathon Spring 2026",    "Robótica U-ERRE",   "12", "Abr", "09:00 AM", "Lab de Innovación",   15),
+        ("Concierto Acústico",       "Ensamble Musical",  "18", "Abr", "07:00 PM", "Auditorio Principal", 80),
+        ("Workshop: Figma Avanzado", "Club de Diseño",    "22", "Abr", "04:00 PM", "Sala Creativa B3",    25),
+        ("Torneo de Debate Interno", "Debate & Oratoria", "28", "Abr", "10:00 AM", "Aula Magna",          40),
+    ];
+
+    private static readonly string[] _gradients =
+    [
+        "linear-gradient(135deg,#7c3aed,#4338ca)",
+        "linear-gradient(135deg,#f43f5e,#be185d)",
+        "linear-gradient(135deg,#f59e0b,#d97706)",
+        "linear-gradient(135deg,#10b981,#0d9488)",
+        "linear-gradient(135deg,#0ea5e9,#2563eb)",
+        "linear-gradient(135deg,#a855f7,#7c3aed)",
+    ];
+
+    private static string GradientFor(int i) => _gradients[i % _gradients.Length];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await GroupService.GetAllAsync(pageSize: 6);
+            _groups = result?.Data ?? [];
+        }
+        catch { _groups = []; }
+        finally { _loadingGroups = false; }
+    }
+}

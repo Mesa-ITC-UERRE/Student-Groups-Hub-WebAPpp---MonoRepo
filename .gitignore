@@ -17,6 +17,12 @@ backend/*.user
 backend/.vs/
 backend/appsettings.Development.json
 
+blazor/bin/
+blazor/obj/
+blazor/*.user
+blazor/.vs/
+blazor/appsettings.Development.json
+
 # ── IDEs ─────────────────────────────────────────────────────────────────────
 .vscode/
 .idea/

@@ -1,0 +1,335 @@
+@page "/admin/users"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject AdminApiService AdminService
+@attribute [Authorize(Policy = "AdminOnly")]
+
+<PageTitle>Gestionar Usuarios — Admin</PageTitle>
+
+<div class="page-header">
+    <div class="container-uerre">
+        <a href="/admin" class="text-white-50 text-decoration-none small mb-2 d-inline-block">
+            &larr; Panel Admin
+        </a>
+        <h1 class="text-white fw-bold mb-1" style="font-size:clamp(1.5rem,4vw,2.25rem);">
+            Gestionar Usuarios
+        </h1>
+        <p class="mb-0" style="color:rgba(255,255,255,.7);">
+            Busca, filtra y administra las cuentas de la plataforma.
+        </p>
+    </div>
+</div>
+
+<section class="py-4 py-md-5" style="background:var(--uerre-surface);">
+    <div class="container-uerre">
+
+        <div class="d-flex flex-wrap gap-3 mb-4">
+            <div class="search-input-wrapper" style="flex:1;min-width:220px;max-width:360px;">
+                <span class="search-icon">&#128270;</span>
+                <input type="search" class="form-control rounded-3"
+                       placeholder="Buscar por email o nombre..."
+                       value="@_search" @oninput="OnSearch" />
+            </div>
+            <select class="form-select rounded-3" style="max-width:180px;" @onchange="OnRoleFilter">
+                <option value="">Todos los roles</option>
+                <option value="student">Estudiante</option>
+                <option value="group_leader">Líder de Grupo</option>
+                <option value="admin">Administrador</option>
+            </select>
+        </div>
+
+        @if (_loading)
+        {
+            <div class="d-flex justify-content-center py-5"><div class="spinner-uerre"></div></div>
+        }
+        else if (_users.Count == 0)
+        {
+            <p class="text-center text-muted py-4">No se encontraron usuarios.</p>
+        }
+        else
+        {
+            <div class="card-uerre overflow-hidden mb-4">
+                <table class="table table-uerre mb-0">
+                    <thead>
+                        <tr>
+                            <th class="py-3 px-4">Usuario</th>
+                            <th class="py-3 px-4">Rol</th>
+                            <th class="py-3 px-4">Estado</th>
+                            <th class="py-3 px-4 text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in _users)
+                        {
+                            <tr>
+                                <td class="py-3 px-4 align-middle">
+                                    <div class="fw-semibold small text-dark">@user.DisplayLabel</div>
+                                    <div class="text-muted" style="font-size:.7rem;">@user.Email</div>
+                                </td>
+                                <td class="py-3 px-4 align-middle">
+                                    <span class="rounded-pill px-2 py-1 small fw-600"
+                                          style="font-size:.7rem;@RoleCss(user.Role)">
+                                        @RoleLabel(user.Role)
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 align-middle">
+                                    <span class="badge rounded-pill @(user.Status == "active" ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger")"
+                                          style="font-size:.7rem;">
+                                        @(user.Status == "active" ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 align-middle text-end">
+                                    <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                        <!-- Role promotion -->
+                                        @if (user.Role == "student")
+                                        {
+                                            <button class="btn btn-xs btn-uerre-outline rounded-2"
+                                                    @onclick="() => PromoteToLeader(user.Id)"
+                                                    disabled="@_acting"
+                                                    title="Promover a Líder de Grupo">
+                                                &rarr; Líder
+                                            </button>
+                                        }
+                                        @if (user.Role != "admin")
+                                        {
+                                            <button class="btn btn-xs rounded-2"
+                                                    style="background:var(--uerre-navy);color:#fff;border:none;"
+                                                    @onclick="() => PromoteToAdmin(user.Id)"
+                                                    disabled="@_acting"
+                                                    title="Promover a Administrador">
+                                                &rarr; Admin
+                                            </button>
+                                        }
+                                        @if (user.Role == "group_leader" || user.Role == "admin")
+                                        {
+                                            <button class="btn btn-xs btn-outline-secondary rounded-2"
+                                                    @onclick="() => DemoteToStudent(user.Id)"
+                                                    disabled="@_acting"
+                                                    title="Quitar rol, volver a Estudiante">
+                                                Estudiante
+                                            </button>
+                                        }
+                                        <!-- Status toggle -->
+                                        @if (user.Status == "active")
+                                        {
+                                            <button class="btn btn-xs btn-outline-danger rounded-2"
+                                                    @onclick="() => Deactivate(user.Id)"
+                                                    disabled="@_acting">
+                                                Desactivar
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-xs btn-outline-success rounded-2"
+                                                    @onclick="() => Activate(user.Id)"
+                                                    disabled="@_acting">
+                                                Activar
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (_totalPages > 1)
+            {
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    @for (int p = 1; p <= _totalPages; p++)
+                    {
+                        var pageNum = p;
+                        <button class="btn btn-sm @(_page == pageNum ? "btn-uerre-primary" : "btn-uerre-outline") rounded-2"
+                                type="button" @onclick="() => GoToPage(pageNum)">
+                            @pageNum
+                        </button>
+                    }
+                </div>
+            }
+        }
+    </div>
+</section>
+
+@code {
+    private List<UserModel> _users = [];
+    private bool _loading = true, _acting;
+    private string _search = "", _roleFilter = "";
+    private int _page = 1, _totalPages = 1;
+    private CancellationTokenSource? _debounce;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true; StateHasChanged();
+        try
+        {
+            var result = await AdminService.GetUsersAsync(
+                search: _search.Length > 0 ? _search : null,
+                role: _roleFilter.Length > 0 ? _roleFilter : null,
+                page: _page);
+            _users      = result?.Data ?? [];
+            _totalPages = result?.TotalPages ?? 1;
+        }
+        catch { _users = []; }
+        finally { _loading = false; }
+    }
+
+    private async Task OnSearch(ChangeEventArgs e)
+    {
+        _search = e.Value?.ToString() ?? "";
+        _debounce?.Cancel(); _debounce = new CancellationTokenSource();
+        try { await Task.Delay(350, _debounce.Token); _page = 1; await LoadAsync(); }
+        catch (TaskCanceledException) { }
+    }
+
+    private async Task OnRoleFilter(ChangeEventArgs e)
+    {
+        _roleFilter = e.Value?.ToString() ?? ""; _page = 1; await LoadAsync();
+    }
+
+    private async Task SetRole(Guid id, string role)
+    {
+        _acting = true;
+        await AdminService.SetRoleAsync(id, role);
+        await LoadAsync();
+        _acting = false;
+    }
+
+    private Task PromoteToLeader(Guid id) => SetRole(id, "group_leader");
+    private Task PromoteToAdmin(Guid id)  => SetRole(id, "admin");
+    private Task DemoteToStudent(Guid id) => SetRole(id, "student");
+
+    private async Task Deactivate(Guid id)
+    {
+        _acting = true;
+        await AdminService.SetStatusAsync(id, "inactive");
+        await LoadAsync();
+        _acting = false;
+    }
+
+    private async Task Activate(Guid id)
+    {
+        _acting = true;
+        await AdminService.SetStatusAsync(id, "active");
+        await LoadAsync();
+        _acting = false;
+    }
+
+    private async Task GoToPage(int page) { _page = page; await LoadAsync(); }
+
+    private static string RoleLabel(string role) => role switch
+    {
+        "admin"        => "Administrador",
+        "group_leader" => "Líder de Grupo",
+        _              => "Estudiante"
+    };
+
+    private static string RoleCss(string role) => role switch
+    {
+        "admin"        => "background:var(--uerre-navy);color:#fff;",
+        "group_leader" => "background:var(--uerre-tag-bg);color:var(--uerre-purple);",
+        _              => "background:#f3f4f6;color:#6b7280;"
+    };
+}
+
+<section class="py-5" style="background:var(--uerre-surface);">
+    <div class="container" style="max-width:1200px;">
+
+        <div class="d-flex flex-wrap gap-3 mb-4">
+            <input type="search" class="form-control rounded-3" style="max-width:280px;"
+                   placeholder="Buscar por email o nombre..."
+                   value="@_search" @oninput="OnSearch" />
+            <select class="form-select rounded-3" style="max-width:160px;" @onchange="OnRoleFilter">
+                <option value="">Todos los roles</option>
+                <option value="student">Estudiante</option>
+                <option value="group_leader">Líder</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+
+        @if (_loading)
+        {
+            <div class="d-flex justify-content-center py-5"><div class="spinner-uerre"></div></div>
+        }
+        else if (_users.Count == 0)
+        {
+            <p class="text-center text-muted py-4">No se encontraron usuarios.</p>
+        }
+        else
+        {
+            <div class="card-uerre overflow-hidden">
+                <table class="table table-hover mb-0">
+                    <thead style="background:var(--uerre-surface);">
+                        <tr>
+                            <th class="py-3 px-4 small fw-bold text-muted border-0">Usuario</th>
+                            <th class="py-3 px-4 small fw-bold text-muted border-0">Rol</th>
+                            <th class="py-3 px-4 small fw-bold text-muted border-0">Estado</th>
+                            <th class="py-3 px-4 small fw-bold text-muted border-0 text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in _users)
+                        {
+                            <tr>
+                                <td class="py-3 px-4 align-middle">
+                                    <div class="fw-semibold small text-dark">@user.DisplayLabel</div>
+                                    <div class="text-muted" style="font-size:.7rem;">@user.Email</div>
+                                </td>
+                                <td class="py-3 px-4 align-middle">
+                                    <span class="tag-uerre">@user.Role</span>
+                                </td>
+                                <td class="py-3 px-4 align-middle">
+                                    <span class="badge rounded-pill @(user.Status == "active" ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger")">
+                                        @user.Status
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 align-middle text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        @if (user.Role != "group_leader")
+                                        {
+                                            <button class="btn btn-xs btn-uerre-outline"
+                                                    @onclick="() => PromoteToLeader(user.Id)">
+                                                → Líder
+                                            </button>
+                                        }
+                                        @if (user.Status == "active")
+                                        {
+                                            <button class="btn btn-xs btn-outline-danger rounded-2"
+                                                    @onclick="() => Deactivate(user.Id)">
+                                                Desactivar
+                                            </button>
+                                        }
+        else
+                                        {
+                                            <button class="btn btn-xs btn-outline-success rounded-2"
+                                                    @onclick="() => Activate(user.Id)">
+                                                Activar
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (_totalPages > 1)
+            {
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    @for (int p = 1; p <= _totalPages; p++)
+                    {
+                        var pageNum = p;
+                        <button class="btn btn-sm @(_page == pageNum ? "btn-uerre-primary" : "btn-uerre-outline") rounded-2"
+                                @onclick="() => GoToPage(pageNum)">
+                            @pageNum
+                        </button>
+                    }
+                </div>
+            }
+        }
+    </div>
+</section>
+

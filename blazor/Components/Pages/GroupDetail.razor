@@ -1,0 +1,263 @@
+@page "/groups/{Slug}"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject GroupApiService GroupService
+@inject EventApiService EventService
+@inject AuthenticationStateProvider AuthState
+@attribute [Authorize]
+
+<PageTitle>@(_group?.Name ?? "Grupo") — Student Groups Hub</PageTitle>
+
+@if (_loading)
+{
+    <div class="spinner-center"><div class="spinner-uerre"></div></div>
+}
+else if (_group is null)
+{
+    <div class="container-uerre py-5">
+        <div class="alert rounded-3 border-0" style="background:#fee2e2;color:#991b1b;">
+            No se encontró el grupo solicitado.
+        </div>
+    </div>
+}
+else
+{
+    <!-- Hero banner -->
+    <section class="page-header"
+             style="@(_group.BannerUrl is not null
+                ? $"background:linear-gradient(rgba(76,29,149,.88),rgba(124,58,237,.88)),url({_group.BannerUrl});background-size:cover;background-position:center;"
+                : "")">
+        <div class="container-uerre">
+            <a href="/groups" class="d-inline-flex align-items-center gap-1 mb-3 text-decoration-none"
+               style="color:rgba(255,255,255,.6);font-size:.8125rem;transition:color .15s;"
+               onmouseover="this.style.color='rgba(255,255,255,.9)'"
+               onmouseout="this.style.color='rgba(255,255,255,.6)'">
+                ← Todos los grupos
+            </a>
+
+            <div class="d-flex flex-column flex-md-row align-items-start gap-4">
+                <!-- Logo -->
+                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                     style="width:68px;height:68px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);
+                            border:1px solid rgba(255,255,255,.2);">
+                    @if (_group.LogoUrl is not null)
+                    {
+                        <img src="@_group.LogoUrl" alt="@_group.Name"
+                             class="rounded-3" style="width:60px;height:60px;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <span class="fw-800 fs-3 text-white" style="font-family:'Montserrat',sans-serif;">
+                            @_group.Name.Substring(0,1)
+                        </span>
+                    }
+                </div>
+
+                <!-- Info -->
+                <div class="flex-grow-1">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <h1 class="fw-bold text-white mb-0" style="font-family:'Montserrat',sans-serif;font-size:clamp(1.375rem,4vw,1.875rem);">
+                            @_group.Name
+                        </h1>
+                        @if (_group.Category is not null)
+                        {
+                            <span class="rounded-pill px-3 py-1"
+                                  style="background:rgba(255,255,255,.15);color:#fff;font-size:.72rem;font-weight:600;letter-spacing:.03em;">
+                                @_group.Category
+                            </span>
+                        }
+                    </div>
+
+                    @if (_group.Description is not null)
+                    {
+                        <p class="mb-3" style="color:rgba(255,255,255,.75);max-width:560px;font-size:.9375rem;line-height:1.6;">
+                            @_group.Description
+                        </p>
+                    }
+
+                    <div class="d-flex flex-wrap gap-4" style="font-size:.8125rem;color:rgba(255,255,255,.65);">
+                        <span>
+                            &#9651; <strong class="text-white">@_members.Count</strong>
+                            @(_members.Count == 1 ? "miembro" : "miembros")
+                        </span>
+                        @if (_events.Count > 0)
+                        {
+                            <span>&#128198; <strong class="text-white">@_events.Count</strong> eventos</span>
+                        }
+                        @if (_group.ContactEmail is not null)
+                        {
+                            <a href="mailto:@_group.ContactEmail"
+                               style="color:rgba(255,255,255,.65);text-decoration:none;">
+                                @_group.ContactEmail
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <!-- Join button -->
+                <div class="flex-shrink-0 mt-1">
+                    <JoinButton GroupId="@_group.Id" InitialStatus="@_membershipStatus" OnJoined="OnJoined" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tabs -->
+    <div class="bg-white border-bottom" style="border-color:var(--uerre-border)!important;">
+        <div class="container-uerre">
+            <ul class="nav" style="gap:.25rem;">
+                <li class="nav-item">
+                    <button class="nav-link @(_activeTab == "members" ? "active fw-600 text-purple" : "text-muted")"
+                            type="button" @onclick='() => _activeTab = "members"'
+                            style="border:none;background:none;padding:.875rem 1rem;font-size:.875rem;
+                                   border-bottom:@(_activeTab == "members" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
+                        Miembros
+                        <span class="badge rounded-pill ms-1 text-white"
+                              style="background:var(--uerre-purple);font-size:.65rem;">@_members.Count</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link @(_activeTab == "terms" ? "active fw-600 text-purple" : "text-muted")"
+                            type="button" @onclick='() => _activeTab = "terms"'
+                            style="border:none;background:none;padding:.875rem 1rem;font-size:.875rem;
+                                   border-bottom:@(_activeTab == "terms" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
+                        Administraciones
+                    </button>
+                </li>
+                @if (_events.Count > 0)
+                {
+                    <li class="nav-item">
+                        <button class="nav-link @(_activeTab == "events" ? "active fw-600 text-purple" : "text-muted")"
+                                type="button" @onclick='() => _activeTab = "events"'
+                                style="border:none;background:none;padding:.875rem 1rem;font-size:.875rem;
+                                       border-bottom:@(_activeTab == "events" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
+                            Eventos
+                            <span class="badge rounded-pill ms-1 text-white"
+                                  style="background:var(--uerre-gold);font-size:.65rem;">@_events.Count</span>
+                        </button>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tab content -->
+    <section class="py-4 py-md-5" style="background:var(--uerre-surface);">
+        <div class="container-uerre">
+
+            @if (_activeTab == "members")
+            {
+                @if (_members.Count == 0)
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon" style="font-size:2rem;color:var(--uerre-muted);">&#9632;</div>
+                        <h5 class="fw-bold mb-1">Sin miembros aún</h5>
+                        <p class="text-muted small">Este grupo aún no tiene miembros aprobados.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-3">
+                        @foreach (var member in _members)
+                        {
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                <div class="card-uerre no-hover p-3 d-flex align-items-center gap-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                         style="width:42px;height:42px;background:linear-gradient(135deg,var(--uerre-purple),var(--uerre-purple-vivid));font-size:.875rem;">
+                                        @member.Initial
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="fw-600 text-dark line-clamp-1 small">@member.DisplayLabel</div>
+                                        <div class="text-muted line-clamp-1" style="font-size:.72rem;">@member.Email</div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            }
+
+            @if (_activeTab == "events")
+            {
+                <div class="row g-4">
+                    @foreach (var ev in _events)
+                    {
+                        <div class="col-12 col-md-6">
+                            <a href="/events/@ev.Id" class="text-decoration-none">
+                                <div class="card-event">
+                                    <div class="event-date-badge">
+                                        <span class="event-date-month">@ev.MonthLabel</span>
+                                        <span class="event-date-day">@ev.DayLabel</span>
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <h6 class="fw-bold mb-1 text-dark line-clamp-1">@ev.Title</h6>
+                                        <div class="d-flex flex-wrap gap-3 text-muted-sm mt-2">
+                                            <span>&#8987; @ev.StartLocal</span>
+                                            @if (ev.Location is not null) { <span>> @ev.Location</span> }
+                                            @if (ev.SpotsLeft.HasValue) { <span>&#9651; @ev.SpotsLeft lugares</span> }
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (_activeTab == "terms")
+            {
+                <GroupTermsTab GroupId="@_group!.Id" CanManage="@_canManage" />
+            }
+
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    private GroupModel? _group;
+    private List<GroupMemberModel> _members = [];
+    private List<EventModel> _events = [];
+    private bool _loading = true;
+    private string? _membershipStatus;
+    private string _activeTab = "members";
+    private bool _canManage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        try
+        {
+            _group = await GroupService.GetBySlugAsync(Slug);
+            if (_group is not null)
+            {
+                var membersTask = GroupService.GetMembersAsync(_group.Id);
+                var eventsTask  = EventService.GetForGroupAsync(_group.Id);
+                await Task.WhenAll(membersTask, eventsTask);
+                _members = membersTask.Result;
+                _events  = eventsTask.Result;
+
+                // Determine if the current user can manage this group
+                var authState = await AuthState.GetAuthenticationStateAsync();
+                var user = authState.User;
+                if (user.Identity?.IsAuthenticated == true)
+                {
+                    var role = user.FindFirst("extension_Role")?.Value
+                            ?? user.FindFirst("roles")?.Value
+                            ?? "";
+                    _canManage = role == "admin"
+                        || _members.Any(m => m.UserId.ToString() == user.FindFirst("oid")?.Value
+                                          && m.Status == "accepted");
+                }
+            }
+        }
+        catch { _group = null; }
+        finally { _loading = false; }
+    }
+
+    private void OnJoined(string status)
+    {
+        _membershipStatus = status;
+        StateHasChanged();
+    }
+}

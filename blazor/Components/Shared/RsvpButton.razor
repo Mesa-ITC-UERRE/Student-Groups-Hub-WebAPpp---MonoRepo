@@ -1,0 +1,73 @@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject EventApiService EventService
+
+@if (_rsvpStatus == "going")
+{
+    <div class="d-flex align-items-center gap-2">
+        <span class="rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2"
+              style="background:#d1fae5;color:#065f46;font-size:.8rem;">
+            <span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;"></span>
+            Inscrito
+        </span>
+        <button class="btn btn-sm btn-outline-secondary rounded-pill" @onclick="HandleCancel">
+            Cancelar
+        </button>
+    </div>
+}
+else if (IsCanceled)
+{
+    <span class="badge bg-secondary px-3 py-2">Evento cancelado</span>
+}
+else if (!HasCapacity)
+{
+    <span class="badge px-3 py-2" style="background:var(--uerre-tag-bg);color:var(--uerre-tag-text);">Sin lugares</span>
+}
+else
+{
+    <button class="btn btn-uerre-primary px-4" @onclick="HandleRsvp" disabled="@_loading">
+        @if (_loading)
+        {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+        }
+        Asistiré
+    </button>
+}
+
+@if (_error is not null)
+{
+    <div class="small text-danger mt-1">@_error</div>
+}
+
+@code {
+    [Parameter, EditorRequired] public Guid EventId { get; set; }
+    [Parameter] public bool IsCanceled  { get; set; }
+    [Parameter] public bool HasCapacity { get; set; } = true;
+
+    private string? _rsvpStatus;
+    private bool _loading;
+    private string? _error;
+
+    private async Task HandleRsvp()
+    {
+        _loading = true; _error = null;
+        try
+        {
+            await EventService.UpsertRsvpAsync(EventId, "going");
+            _rsvpStatus = "going";
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _loading = false; }
+    }
+
+    private async Task HandleCancel()
+    {
+        _loading = true; _error = null;
+        try
+        {
+            await EventService.RemoveRsvpAsync(EventId);
+            _rsvpStatus = null;
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _loading = false; }
+    }
+}

@@ -1,0 +1,73 @@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject GroupApiService GroupService
+
+@if (_status == "accepted")
+{
+    <span class="badge rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2"
+          style="background:#d1fae5;color:#065f46;font-size:.8rem;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;"></span>
+        Miembro
+    </span>
+}
+else if (_status == "pending")
+{
+    <span class="badge rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2"
+          style="background:#fef3c7;color:#92400e;font-size:.8rem;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+        Solicitud pendiente
+    </span>
+}
+        else
+{
+    <button class="btn btn-uerre-primary px-4" @onclick="HandleJoin" disabled="@_loading">
+        @if (_loading)
+        {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            <span>Enviando...</span>
+        }
+        else
+        {
+            <span>Unirse al grupo</span>
+        }
+    </button>
+}
+
+@if (_error is not null)
+{
+    <div class="small text-danger mt-1">@_error</div>
+}
+
+@code {
+    [Parameter, EditorRequired] public Guid GroupId { get; set; }
+    [Parameter] public string? InitialStatus { get; set; }
+    [Parameter] public EventCallback<string> OnJoined { get; set; }
+
+    private string? _status;
+    private bool _loading;
+    private string? _error;
+
+    protected override void OnParametersSet() => _status = InitialStatus;
+
+    private async Task HandleJoin()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            var result = await GroupService.JoinAsync(GroupId);
+            if (result is not null)
+            {
+                _status = result.Status;
+                await OnJoined.InvokeAsync(_status);
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

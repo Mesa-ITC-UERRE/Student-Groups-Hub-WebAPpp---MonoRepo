@@ -1,0 +1,183 @@
+@page "/feur"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject GroupApiService GroupService
+@inject GroupTermApiService TermService
+@inject AuthenticationStateProvider AuthState
+@attribute [Authorize]
+
+<PageTitle>FEUR — Federación de Estudiantes U-ERRE</PageTitle>
+
+<!-- Hero -->
+<section class="page-header" style="padding:3.5rem 0 2.5rem;">
+    <div class="container-uerre">
+        <div class="d-flex align-items-start gap-4">
+            <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 text-white fw-bold"
+                 style="width:72px;height:72px;background:rgba(255,255,255,.15);
+                        backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);
+                        font-family:'Montserrat',sans-serif;font-size:1.375rem;">
+                F
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                    <h1 class="fw-bold text-white mb-0"
+                        style="font-family:'Montserrat',sans-serif;font-size:clamp(1.5rem,4vw,2.25rem);">
+                        FEUR
+                    </h1>
+                    <span class="rounded-pill px-3 py-1"
+                          style="background:rgba(255,255,255,.15);color:#fff;font-size:.75rem;font-weight:600;">
+                        Federación de Estudiantes U-ERRE
+                    </span>
+                </div>
+                <p style="color:rgba(255,255,255,.75);max-width:600px;font-size:.9375rem;line-height:1.6;"
+                   class="mb-3">
+                    Órgano representativo de todos los estudiantes de la Universidad Regiomontana.
+                    Promueve el bienestar estudiantil y coordina a los grupos del campus.
+                </p>
+                <div class="d-flex flex-wrap gap-4" style="font-size:.8125rem;color:rgba(255,255,255,.65);">
+                    <span><strong class="text-white">@_terms.Count</strong> administraciones</span>
+                    <span><a href="mailto:feur@uerre.mx" style="color:rgba(255,255,255,.65);">feur@uerre.mx</a></span>
+                    <a href="/groups/feur" style="color:rgba(255,255,255,.65);text-decoration:none;">
+                        Ver página del grupo →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Timeline nav -->
+<div class="bg-white border-bottom" style="border-color:var(--uerre-border)!important;">
+    <div class="container-uerre">
+        <ul class="nav" style="gap:.25rem;">
+            <li class="nav-item">
+                <button class="nav-link @(_activeTab == "timeline" ? "active fw-600 text-purple" : "text-muted")"
+                        type="button" @onclick='() => _activeTab = "timeline"'
+                        style="border:none;background:none;padding:.875rem 1rem;font-size:.875rem;
+                               border-bottom:@(_activeTab == "timeline" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
+                    Historial de Administraciones
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link @(_activeTab == "members" ? "active fw-600 text-purple" : "text-muted")"
+                        type="button" @onclick='() => _activeTab = "members"'
+                        style="border:none;background:none;padding:.875rem 1rem;font-size:.875rem;
+                               border-bottom:@(_activeTab == "members" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
+                    Miembros Actuales
+                </button>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<section class="py-4 py-md-5" style="background:var(--uerre-surface);">
+    <div class="container-uerre">
+
+        @if (_loading)
+        {
+            <div class="d-flex justify-content-center py-5"><div class="spinner-uerre"></div></div>
+        }
+        else if (_activeTab == "timeline")
+        {
+            @if (_feurGroup is not null)
+            {
+                <GroupTermsTab GroupId="@_feurGroup.Id" CanManage="@_canManage" />
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon" style="font-size:2rem;color:var(--uerre-muted);">&#9632;</div>
+                    <h5 class="fw-bold mb-1">FEUR no encontrada</h5>
+                    <p class="text-muted small">El grupo FEUR aún no ha sido registrado en la plataforma.</p>
+                </div>
+            }
+        }
+        else if (_activeTab == "members")
+        {
+            @if (_currentTerm is not null && _currentTerm.Members.Count > 0)
+            {
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-1">@_currentTerm.Label</h5>
+                    <span class="small text-muted">&#128198; @_currentTerm.DateRange</span>
+                </div>
+
+                <!-- Current officers highlighted -->
+                <div class="row g-3 mb-5">
+                    @foreach (var m in _currentTerm.Members.OrderBy(m => m.SortOrder))
+                    {
+                        var isPresident = m.RoleLabel.Contains("Presi", StringComparison.OrdinalIgnoreCase);
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                            <div class="card-uerre @(isPresident ? "" : "no-hover") p-4 text-center"
+                                 style="@(isPresident ? "border-color:var(--uerre-purple);border-width:2px;" : "")">
+                                @if (isPresident)
+                                {
+                                    <div class="mb-2">
+                                        <span class="rounded-pill px-2 py-1"
+                                              style="background:var(--uerre-tag-bg);color:var(--uerre-purple);font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">
+                                            Presidencia
+                                        </span>
+                                    </div>
+                                }
+                                <div class="mx-auto mb-2 rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
+                                     style="width:@(isPresident ? "52px" : "44px");height:@(isPresident ? "52px" : "44px");
+                                            background:linear-gradient(135deg,var(--uerre-purple),var(--uerre-purple-vivid));
+                                            font-family:'Montserrat',sans-serif;font-size:@(isPresident ? "1.125rem" : ".875rem");">
+                                    @m.Initial
+                                </div>
+                                <div class="fw-bold text-dark small">@m.DisplayName</div>
+                                <div style="font-size:.7rem;color:var(--uerre-purple);font-weight:600;
+                                            text-transform:uppercase;letter-spacing:.04em;">
+                                    @m.RoleLabel
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">&#9632;</div>
+                    <h5 class="fw-bold mb-1">Sin administración activa</h5>
+                    <p class="text-muted small">No hay una administración activa registrada actualmente.</p>
+                </div>
+            }
+        }
+
+    </div>
+</section>
+
+@code {
+    private GroupModel? _feurGroup;
+    private List<GroupTermModel> _terms = [];
+    private GroupTermModel? _currentTerm;
+    private List<GroupMemberModel> _currentMembers = [];
+    private bool _loading = true;
+    private string _activeTab = "timeline";
+    private bool _canManage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _feurGroup = await GroupService.GetBySlugAsync("feur");
+            if (_feurGroup is not null)
+            {
+                _terms = await TermService.GetTermsAsync(_feurGroup.Id);
+                _currentTerm = _terms.FirstOrDefault(t => t.IsCurrent) ?? _terms.FirstOrDefault();
+                _currentMembers = await GroupService.GetMembersAsync(_feurGroup.Id);
+
+                // Check if current user can manage
+                var authState = await AuthState.GetAuthenticationStateAsync();
+                var user = authState.User;
+                if (user.Identity?.IsAuthenticated == true)
+                {
+                    var role = user.FindFirst("extension_Role")?.Value
+                            ?? user.FindFirst("roles")?.Value ?? "";
+                    _canManage = role == "admin";
+                }
+            }
+        }
+        catch { _feurGroup = null; }
+        finally { _loading = false; }
+    }
+}

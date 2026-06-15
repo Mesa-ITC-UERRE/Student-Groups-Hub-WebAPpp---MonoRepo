@@ -1,0 +1,230 @@
+@page "/admin/groups"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject AdminApiService AdminService
+@attribute [Authorize(Policy = "AdminOnly")]
+
+<PageTitle>Gestionar Grupos — Admin</PageTitle>
+
+<div class="page-header">
+    <div class="container-uerre">
+        <a href="/admin" class="text-white-50 text-decoration-none small mb-2 d-inline-block">
+            &larr; Panel Admin
+        </a>
+        <h1 class="text-white fw-bold mb-1" style="font-size:clamp(1.5rem,4vw,2.25rem);">
+            Gestionar Grupos
+        </h1>
+        <p class="mb-0" style="color:rgba(255,255,255,.7);">
+            Todos los grupos de la plataforma — activos, pendientes e inactivos.
+        </p>
+    </div>
+</div>
+
+<section class="py-4 py-md-5" style="background:var(--uerre-surface);">
+    <div class="container-uerre">
+
+        <!-- Filters -->
+        <div class="d-flex flex-wrap gap-3 mb-4">
+            <div class="search-input-wrapper" style="flex:1;min-width:220px;max-width:360px;">
+                <span class="search-icon">&#128270;</span>
+                <input type="search" class="form-control rounded-3"
+                       placeholder="Buscar grupos..."
+                       value="@_search" @oninput="OnSearch" />
+            </div>
+            <select class="form-select rounded-3" style="max-width:180px;"
+                    @onchange="OnStatusFilter">
+                <option value="">Todos los estados</option>
+                <option value="active">Activos</option>
+                <option value="pending">Pendientes</option>
+                <option value="inactive">Inactivos</option>
+                <option value="rejected">Rechazados</option>
+            </select>
+        </div>
+
+        @if (_loading)
+        {
+            <div class="d-flex justify-content-center py-5"><div class="spinner-uerre"></div></div>
+        }
+        else if (_groups.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-icon" style="font-size:2rem;color:var(--uerre-muted);">&#128270;</div>
+                <h5 class="fw-bold mb-1">Sin resultados</h5>
+                <p class="text-muted small">Intenta con otros filtros.</p>
+            </div>
+        }
+        else
+        {
+            <div class="card-uerre overflow-hidden mb-4">
+                <table class="table table-uerre mb-0">
+                    <thead>
+                        <tr>
+                            <th class="py-3 px-4">Grupo</th>
+                            <th class="py-3 px-4">Categoría</th>
+                            <th class="py-3 px-4">Miembros</th>
+                            <th class="py-3 px-4">Estado</th>
+                            <th class="py-3 px-4">Creado</th>
+                            <th class="py-3 px-4 text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var group in _groups)
+                        {
+                            <tr>
+                                <td class="py-3 px-4 align-middle">
+                                    <div class="fw-semibold text-dark small">@group.Name</div>
+                                    <div class="text-muted" style="font-size:.7rem;">@group.Slug</div>
+                                </td>
+                                <td class="py-3 px-4 align-middle">
+                                    @if (group.Category is not null)
+                                    {
+                                        <span class="tag-uerre">@group.Category</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">—</span>
+                                    }
+                                </td>
+                                <td class="py-3 px-4 align-middle small text-muted">
+                                    @group.MemberCount
+                                </td>
+                                <td class="py-3 px-4 align-middle">
+                                    <span class="badge rounded-pill @StatusCss(group.Status)"
+                                          style="font-size:.7rem;">
+                                        @StatusLabel(group.Status)
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 align-middle small text-muted">
+                                    @group.CreatedAt.ToString("dd MMM yyyy")
+                                </td>
+                                <td class="py-3 px-4 align-middle text-end">
+                                    <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                        <a href="/groups/@group.Slug"
+                                           class="btn btn-xs btn-uerre-outline rounded-2">
+                                            Ver
+                                        </a>
+                                        @if (group.Status == "active")
+                                        {
+                                            <button class="btn btn-xs btn-outline-warning rounded-2"
+                                                    @onclick="() => Deactivate(group.Id)"
+                                                    disabled="@_acting">
+                                                Desactivar
+                                            </button>
+                                        }
+                                        else if (group.Status == "inactive")
+                                        {
+                                            <button class="btn btn-xs btn-outline-success rounded-2"
+                                                    @onclick="() => Activate(group.Id)"
+                                                    disabled="@_acting">
+                                                Activar
+                                            </button>
+                                        }
+                                        else if (group.Status == "pending")
+                                        {
+                                            <button class="btn btn-xs btn-outline-success rounded-2"
+                                                    @onclick="() => Activate(group.Id)"
+                                                    disabled="@_acting">
+                                                Aprobar
+                                            </button>
+                                            <button class="btn btn-xs btn-outline-danger rounded-2"
+                                                    @onclick="() => Reject(group.Id)"
+                                                    disabled="@_acting">
+                                                Rechazar
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (_totalPages > 1)
+            {
+                <div class="d-flex justify-content-center gap-2">
+                    @for (int p = 1; p <= Math.Min(_totalPages, 10); p++)
+                    {
+                        var pageNum = p;
+                        <button class="btn btn-sm @(_page == pageNum ? "btn-uerre-primary" : "btn-uerre-outline") rounded-2"
+                                type="button" @onclick="() => GoToPage(pageNum)">
+                            @pageNum
+                        </button>
+                    }
+                </div>
+            }
+        }
+    </div>
+</section>
+
+@code {
+    private List<GroupModel> _groups = [];
+    private bool _loading = true, _acting;
+    private string _search = "", _statusFilter = "";
+    private int _page = 1, _totalPages = 1;
+    private CancellationTokenSource? _debounce;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true; StateHasChanged();
+        try
+        {
+            var result = await AdminService.GetAllGroupsAdminAsync(
+                search: _search.Length > 0 ? _search : null,
+                status: _statusFilter.Length > 0 ? _statusFilter : null,
+                page: _page);
+            _groups     = result?.Data ?? [];
+            _totalPages = result?.TotalPages ?? 1;
+        }
+        catch { _groups = []; }
+        finally { _loading = false; }
+    }
+
+    private async Task OnSearch(ChangeEventArgs e)
+    {
+        _search = e.Value?.ToString() ?? "";
+        _debounce?.Cancel(); _debounce = new CancellationTokenSource();
+        try { await Task.Delay(350, _debounce.Token); _page = 1; await LoadAsync(); }
+        catch (TaskCanceledException) { }
+    }
+
+    private async Task OnStatusFilter(ChangeEventArgs e)
+    {
+        _statusFilter = e.Value?.ToString() ?? "";
+        _page = 1; await LoadAsync();
+    }
+
+    private async Task SetStatus(Guid groupId, string slug, string newStatus)
+    {
+        _acting = true;
+        await AdminService.SetGroupStatusAsync(groupId, newStatus);
+        await LoadAsync();
+        _acting = false;
+    }
+
+    private Task Activate(Guid id)  => SetStatus(id, "", "active");
+    private Task Deactivate(Guid id) => SetStatus(id, "", "inactive");
+    private Task Reject(Guid id)    => SetStatus(id, "", "rejected");
+
+    private async Task GoToPage(int page) { _page = page; await LoadAsync(); }
+
+    private static string StatusLabel(string status) => status switch
+    {
+        "active"   => "Activo",
+        "pending"  => "Pendiente",
+        "inactive" => "Inactivo",
+        "rejected" => "Rechazado",
+        _          => status
+    };
+
+    private static string StatusCss(string status) => status switch
+    {
+        "active"   => "bg-success-subtle text-success",
+        "pending"  => "bg-warning-subtle text-warning",
+        "inactive" => "bg-secondary-subtle text-secondary",
+        "rejected" => "bg-danger-subtle text-danger",
+        _          => "bg-secondary-subtle text-secondary"
+    };
+}

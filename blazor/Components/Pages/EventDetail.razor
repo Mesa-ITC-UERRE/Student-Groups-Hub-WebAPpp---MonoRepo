@@ -1,0 +1,69 @@
+@page "/events/{Id:guid}"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject EventApiService EventService
+@inject AuthenticationStateProvider AuthState
+@attribute [Authorize]
+
+<PageTitle>@(_event?.Title ?? "Evento") — Student Groups Hub</PageTitle>
+
+@if (_loading)
+{
+    <div class="d-flex justify-content-center align-items-center" style="min-height:50vh;">
+        <div class="spinner-uerre"></div>
+    </div>
+}
+else if (_event is null)
+{
+    <div class="container py-5"><div class="alert alert-danger rounded-3">Evento no encontrado.</div></div>
+}
+else
+{
+    <section class="hero-gradient py-4 py-md-5 text-white"
+             style="@(_event.BannerUrl is not null ? $"background-image:linear-gradient(rgba(76,29,149,.85),rgba(124,58,237,.85)),url({_event.BannerUrl});background-size:cover;" : "")">
+        <div class="container" style="max-width:1200px;">
+            <a href="/events" class="text-white-50 text-decoration-none small mb-3 d-inline-block">← Todos los eventos</a>
+            <div class="d-flex flex-column flex-md-row align-items-start gap-4">
+                <div class="event-date-badge flex-shrink-0">
+                    <span class="event-date-month">@_event.MonthLabel</span>
+                    <span class="event-date-day">@_event.DayLabel</span>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <h1 class="fw-bold text-white mb-0" style="font-family:'Montserrat',sans-serif;font-size:1.75rem;">@_event.Title</h1>
+                        @if (_event.IsCanceled)
+                        {
+                            <span class="badge bg-secondary">Cancelado</span>
+                        }
+                    </div>
+                    <p class="fw-semibold mb-2" style="color:rgba(255,255,255,.7);font-size:.875rem;">@_event.GroupName</p>
+                    <div class="d-flex flex-wrap gap-4 mb-3" style="color:rgba(255,255,255,.7);font-size:.875rem;">
+                        <span>&#8987; @_event.StartLocal</span>
+                        @if (_event.Location is not null) { <span>> @_event.Location</span> }
+                        @if (_event.SpotsLeft.HasValue) { <span>&#9651; @_event.SpotsLeft lugares disponibles</span> }
+                    </div>
+                    @if (_event.Description is not null)
+                    {
+                        <p style="color:rgba(255,255,255,.75);max-width:560px;">@_event.Description</p>
+                    }
+                </div>
+                <div class="flex-shrink-0">
+                    <RsvpButton EventId="_event.Id" IsCanceled="_event.IsCanceled" HasCapacity="_event.HasCapacity" />
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private EventModel? _event;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        try { _event = await EventService.GetByIdAsync(Id); }
+        catch { _event = null; }
+        finally { _loading = false; }
+    }
+}

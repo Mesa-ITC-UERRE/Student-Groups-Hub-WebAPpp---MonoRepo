@@ -1,0 +1,260 @@
+@page "/timeline"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject GroupApiService GroupService
+@inject GroupTermApiService TermService
+@attribute [Authorize]
+
+<PageTitle>Línea del Tiempo — Student Groups Hub</PageTitle>
+
+<div class="page-header">
+    <div class="container-uerre">
+        <h1 class="text-white fw-bold mb-1" style="font-size:clamp(1.5rem,4vw,2.25rem);">
+            Línea del Tiempo
+        </h1>
+        <p class="mb-0" style="color:rgba(255,255,255,.7);">
+            Historia de administraciones de todos los grupos estudiantiles de U-ERRE.
+        </p>
+    </div>
+</div>
+
+<section class="py-4 py-md-5" style="background:var(--uerre-surface);">
+    <div class="container-uerre">
+
+        @if (_loading)
+        {
+            <!-- Skeleton -->
+            <div class="d-flex justify-content-center py-5">
+                <div class="spinner-uerre"></div>
+            </div>
+        }
+        else if (_error is not null)
+        {
+            <div class="alert rounded-3 border-0 py-4 text-center"
+                 style="background:#fee2e2;color:#991b1b;">
+                <div class="mb-2 text-danger fw-bold" style="font-size:2rem;line-height:1;">!</div>
+                <strong>No se pudo cargar el historial.</strong><br />
+                <span class="small">@_error</span>
+                <div class="mt-3">
+                    <button class="btn btn-uerre-outline btn-sm rounded-pill px-4"
+                            type="button" @onclick="LoadAsync">
+                        Reintentar
+                    </button>
+                </div>
+            </div>
+        }
+        else if (!_allEntries.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-icon" style="font-size:2rem;color:var(--uerre-muted);">&#9632;</div>
+                <h5 class="fw-bold mb-1">Sin administraciones registradas</h5>
+                <p class="text-muted small">
+                    Los grupos aún no tienen administraciones registradas.<br />
+                    Los líderes de cada grupo pueden agregar su historial desde la página del grupo.
+                </p>
+            </div>
+        }
+        else
+        {
+            <!-- Year filter chips -->
+            @if (_years.Count > 1)
+            {
+                <div class="d-flex flex-wrap gap-2 mb-5">
+                    <button class="filter-chip @(_selectedYear == 0 ? "active" : "")"
+                            type="button" @onclick="() => _selectedYear = 0">
+                        Todos los años
+                    </button>
+                    @foreach (var year in _years)
+                    {
+                        <button class="filter-chip @(_selectedYear == year ? "active" : "")"
+                                type="button" @onclick="() => _selectedYear = year">
+                            @year
+                        </button>
+                    }
+                </div>
+            }
+
+            @foreach (var entry in FilteredEntries)
+            {
+                <div class="mb-5">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <a href="/groups/@entry.GroupSlug" class="text-decoration-none d-flex align-items-center gap-3">
+                            <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                 style="width:44px;height:44px;background:@entry.Gradient;
+                                        font-family:'Montserrat',sans-serif;font-size:1rem;
+                                        box-shadow:0 3px 10px rgba(0,0,0,.15);">
+                                @entry.GroupName.Substring(0,1)
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0 text-dark">@entry.GroupName</h5>
+                                @if (entry.Category is not null)
+                                {
+                                    <span class="tag-uerre">@entry.Category</span>
+                                }
+                            </div>
+                        </a>
+                        <span class="ms-auto small text-muted">
+                            @entry.Terms.Count @(entry.Terms.Count == 1 ? "administración" : "administraciones")
+                        </span>
+                    </div>
+
+                    <div class="timeline-container">
+                        @foreach (var term in entry.Terms)
+                        {
+                            <div class="timeline-item @(term.IsCurrent ? "timeline-current" : "")">
+                                <div class="timeline-dot @(term.IsCurrent ? "timeline-dot-active" : "timeline-dot-past")"></div>
+                                <div class="timeline-content">
+                                    <div class="d-flex flex-column flex-md-row align-items-md-start justify-content-between gap-2 mb-3">
+                                        <div>
+                                            <h6 class="fw-bold mb-1">@term.Label</h6>
+                                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                <span class="small text-muted">&#128198; @term.DateRange</span>
+                                                <span class="rounded-pill px-2 py-1 small fw-600"
+                                                      style="font-size:.7rem;@term.StatusCss">
+                                                    @term.StatusLabel
+                                                </span>
+                                            </div>
+                                            @if (term.Notes is not null)
+                                            {
+                                                <p class="text-muted small mt-1 mb-0"
+                                                   style="max-width:480px;">@term.Notes</p>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    @if (term.Members.Count > 0)
+                                    {
+                                        <div class="row g-2">
+                                            @foreach (var m in term.Members.OrderBy(x => x.SortOrder))
+                                            {
+                                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                                    <div class="term-member-card">
+                                                        <div class="term-member-avatar">@m.Initial</div>
+                                                        <div class="min-w-0">
+                                                            <div class="fw-600 small text-dark line-clamp-1">
+                                                                @m.DisplayName
+                                                            </div>
+                                                            <div class="term-member-role">@m.RoleLabel</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted small fst-italic mb-0">
+                                            Sin miembros registrados en esta administración.
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <hr style="border-color:var(--uerre-border);margin-top:1.5rem;" />
+                </div>
+            }
+        }
+    </div>
+</section>
+
+@code {
+    private record GroupTimelineEntry(
+        string GroupName, string GroupSlug, string? Category,
+        List<GroupTermModel> Terms, string Gradient);
+
+    private List<GroupTimelineEntry> _allEntries = [];
+    private List<int> _years = [];
+    private bool _loading = true;
+    private string? _error;
+    private int _selectedYear = 0;
+
+    private static readonly string[] _gradients =
+    [
+        "linear-gradient(135deg,#7c3aed,#4338ca)",
+        "linear-gradient(135deg,#f43f5e,#be185d)",
+        "linear-gradient(135deg,#f59e0b,#d97706)",
+        "linear-gradient(135deg,#10b981,#0d9488)",
+        "linear-gradient(135deg,#0ea5e9,#2563eb)",
+        "linear-gradient(135deg,#a855f7,#7c3aed)",
+    ];
+
+    private IEnumerable<GroupTimelineEntry> FilteredEntries =>
+        _selectedYear == 0
+            ? _allEntries
+            : _allEntries.Where(e => e.Terms.Any(t =>
+                t.StartDate.Year == _selectedYear ||
+                (t.EndDate.HasValue && t.EndDate.Value.Year == _selectedYear) ||
+                (!t.EndDate.HasValue && t.StartDate.Year <= _selectedYear)));
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error   = null;
+        StateHasChanged();
+
+        try
+        {
+            // Single batch query — all terms with members across all groups
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+
+            var allTerms = await TermService.GetAllTermsAsync();
+
+            if (allTerms.Count == 0)
+            {
+                _allEntries = [];
+                return;
+            }
+
+            // Group terms by GroupId, then look up group info
+            var termsByGroup = allTerms.GroupBy(t => t.GroupId).ToList();
+
+            // Fetch group details for groups that have terms (single query)
+            var groupIds = termsByGroup.Select(g => g.Key).ToList();
+            var groupsResult = await GroupService.GetAllAsync(pageSize: 100);
+            var groupMap = (groupsResult?.Data ?? [])
+                .ToDictionary(g => g.Id);
+
+            var entries = new List<GroupTimelineEntry>();
+            int idx = 0;
+            foreach (var grp in termsByGroup)
+            {
+                groupMap.TryGetValue(grp.Key, out var groupInfo);
+                var name = groupInfo?.Name ?? "Grupo desconocido";
+                var slug = groupInfo?.Slug ?? grp.Key.ToString();
+                var cat  = groupInfo?.Category;
+
+                entries.Add(new GroupTimelineEntry(
+                    name, slug, cat,
+                    grp.OrderByDescending(t => t.StartDate).ToList(),
+                    _gradients[idx % _gradients.Length]));
+                idx++;
+            }
+
+            // Sort: FEUR first, then alphabetical
+            _allEntries = entries
+                .OrderBy(e => e.GroupSlug == "feur" ? 0 : 1)
+                .ThenBy(e => e.GroupName)
+                .ToList();
+
+            _years = allTerms
+                .SelectMany(t => new[] {
+                    t.StartDate.Year,
+                    t.EndDate?.Year ?? DateTime.Today.Year })
+                .Distinct()
+                .OrderByDescending(y => y)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _error = "Intenta recargar la página. Si el error persiste, el servidor puede estar ocupado.";
+            Console.Error.WriteLine($"[Timeline] Error: {ex.Message}");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

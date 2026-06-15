@@ -1,0 +1,116 @@
+@* Student Dashboard sub-component *@
+
+<div class="row g-3 mb-5">
+    <div class="col-12 col-sm-6">
+        <a href="/groups" class="text-decoration-none">
+            <div class="card-uerre p-4 d-flex align-items-center gap-3">
+                <div class="rounded-3 d-flex align-items-center justify-content-center"
+                 style="width:44px;height:44px;background:var(--uerre-tag-bg);font-size:1.25rem;font-weight:700;color:var(--uerre-purple);">&#9651;</div>
+                <div>
+                    <div class="fw-bold small text-dark">Explorar Grupos</div>
+                    <div class="text-muted" style="font-size:.75rem;">Descubre y únete a grupos</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-12 col-sm-6">
+        <a href="/groups/register" class="text-decoration-none">
+            <div class="card-uerre p-4 d-flex align-items-center gap-3">
+                <div class="rounded-3 d-flex align-items-center justify-content-center"
+                     style="width:44px;height:44px;background:#d1fae5;">+</div>
+                <div>
+                    <div class="fw-bold small text-dark">Crear Grupo</div>
+                    <div class="text-muted" style="font-size:.75rem;">Solicitar registro</div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Mis Grupos -->
+@if (Data?.JoinedGroups?.Count > 0)
+{
+    <h5 class="fw-bold mb-3">Mis Grupos (@Data.JoinedGroups.Count)</h5>
+    <div class="row g-3 mb-5">
+        @foreach (var g in Data.JoinedGroups)
+        {
+            <div class="col-12 col-sm-6 col-md-4">
+                <a href="/groups/@g.Slug" class="text-decoration-none">
+                    <div class="card-uerre p-3 d-flex align-items-center gap-3">
+                        <div class="rounded-2 d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                             style="width:40px;height:40px;background:var(--uerre-purple);">
+                            @g.Name.Substring(0,1)
+                        </div>
+                        <div class="min-w-0">
+                            <div class="fw-bold small text-dark text-truncate">@g.Name</div>
+                            @if (g.Category is not null) { <span class="tag-uerre">@g.Category</span> }
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}
+
+<!-- Próximos eventos -->
+@if (Data?.UpcomingEvents?.Count > 0)
+{
+    <h5 class="fw-bold mb-3">Próximos Eventos</h5>
+    <div class="row g-3 mb-5">
+        @foreach (var ev in Data.UpcomingEvents)
+        {
+            <div class="col-12 col-md-6">
+                <a href="/events/@ev.Id" class="text-decoration-none">
+                    <div class="card-event">
+                        <div class="event-date-badge">
+                            <span class="event-date-month">@ev.MonthLabel</span>
+                            <span class="event-date-day">@ev.DayLabel</span>
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="fw-bold small text-dark text-truncate">@ev.Title</div>
+                            <div class="fw-semibold" style="font-size:.7rem;color:var(--uerre-purple);">@ev.GroupName</div>
+                            @if (ev.Location is not null)
+                            {
+                                <div class="text-muted" style="font-size:.7rem;">> @ev.Location</div>
+                            }
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}
+
+<!-- Notificaciones + solicitudes de grupo (shared) -->
+<NotificationsPanel Notifications="Notifications" UnreadCount="UnreadCount"
+                    MarkingAll="MarkingAll" OnMarkAllRead="OnMarkAllRead" OnMarkRead="OnMarkRead" />
+
+@if (Requests?.Count > 0)
+{
+    <h5 class="fw-bold mb-3 mt-5">Mis Solicitudes de Grupo</h5>
+    <div class="d-flex flex-column gap-2">
+        @foreach (var req in Requests)
+        {
+            <div class="card-uerre p-3 d-flex align-items-start gap-3">
+                <div class="flex-grow-1 min-w-0">
+                    <div class="fw-bold small text-dark">@req.ProposedGroupName</div>
+                    @if (req.DecisionNotes is not null)
+                    {
+                        <div class="text-muted fst-italic" style="font-size:.7rem;">@req.DecisionNotes</div>
+                    }
+                </div>
+                <span class="badge rounded-pill flex-shrink-0 @req.StatusCss">@req.StatusLabel</span>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public DashboardStudentModel? Data { get; set; }
+    [Parameter] public List<NotificationModel> Notifications { get; set; } = [];
+    [Parameter] public List<GroupRegistrationRequestModel> Requests { get; set; } = [];
+    [Parameter] public int UnreadCount { get; set; }
+    [Parameter] public bool MarkingAll { get; set; }
+    [Parameter] public EventCallback OnMarkAllRead { get; set; }
+    [Parameter] public EventCallback<Guid> OnMarkRead { get; set; }
+}

@@ -1,0 +1,63 @@
+@* Shared notifications panel used in all dashboard views *@
+
+<div class="mb-5">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="fw-bold mb-0">
+            Notificaciones
+            @if (UnreadCount > 0)
+            {
+                <span class="badge rounded-pill ms-2 text-white" style="background:var(--uerre-purple);font-size:.7rem;">@UnreadCount</span>
+            }
+        </h5>
+        @if (UnreadCount > 0)
+        {
+            <button class="btn btn-sm btn-link text-decoration-none p-0"
+                    style="color:var(--uerre-purple);"
+                    @onclick="() => OnMarkAllRead.InvokeAsync()" disabled="@MarkingAll">
+                Marcar todo como leído
+            </button>
+        }
+    </div>
+
+    @if (Notifications.Count == 0)
+    {
+        <div class="text-center py-4 border rounded-3 bg-white text-muted small"
+             style="border-color:var(--uerre-border)!important;">
+            No tienes notificaciones.
+        </div>
+    }
+        else
+    {
+        <div class="d-flex flex-column gap-2">
+            @foreach (var n in Notifications)
+            {
+                <div class="card-uerre p-3 d-flex align-items-start gap-3 @(!n.Read ? "border-start border-4" : "")"
+                     style="@(!n.Read ? "border-left-color:var(--uerre-purple)!important;" : "")">
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="fw-semibold small @(n.Read ? "text-muted" : "text-dark")">@n.Title</div>
+                        @if (n.Body is not null)
+                        {
+                            <div class="text-muted text-truncate" style="font-size:.75rem;">@n.Body</div>
+                        }
+                    </div>
+                    @if (!n.Read)
+                    {
+                        <button class="btn btn-sm btn-link text-decoration-none text-muted p-0 flex-shrink-0"
+                                style="font-size:.7rem;"
+                                @onclick="() => OnMarkRead.InvokeAsync(n.Id)">
+                            Leída
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public List<NotificationModel> Notifications { get; set; } = [];
+    [Parameter] public int  UnreadCount { get; set; }
+    [Parameter] public bool MarkingAll  { get; set; }
+    [Parameter] public EventCallback       OnMarkAllRead { get; set; }
+    [Parameter] public EventCallback<Guid> OnMarkRead    { get; set; }
+}

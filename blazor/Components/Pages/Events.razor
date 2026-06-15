@@ -1,0 +1,112 @@
+@page "/events"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject EventApiService EventService
+@attribute [Authorize]
+
+<PageTitle>Eventos — Student Groups Hub</PageTitle>
+
+<div class="page-header">
+    <div class="container-uerre">
+        <h1 class="text-white fw-bold mb-1" style="font-size:clamp(1.5rem,4vw,2.25rem);">Próximos Eventos</h1>
+        <p class="mb-4" style="color:rgba(255,255,255,.7);">Hackathons, conciertos, talleres y más en U-ERRE.</p>
+        <div class="search-input-wrapper" style="max-width:440px;">
+            <span class="search-icon">&#128270;</span>
+            <input type="search" class="form-control rounded-pill py-2"
+                   style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;padding-left:2.5rem !important;"
+                   placeholder="Buscar eventos..."
+                   value="@_search" @oninput="OnSearch" />
+        </div>
+    </div>
+</div>
+
+<section class="py-4 py-md-5" style="background:var(--uerre-surface);">
+    <div class="container-uerre">
+        @if (_loading)
+        {
+            <div class="row g-4">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <div class="col-12 col-md-6">
+                        <div class="card-uerre no-hover p-4 d-flex gap-3">
+                            <div class="skeleton flex-shrink-0" style="width:60px;height:60px;border-radius:12px;"></div>
+                            <div class="flex-grow-1">
+                                <div class="skeleton mb-2" style="height:14px;width:65%;"></div>
+                                <div class="skeleton mb-3" style="height:11px;width:40%;"></div>
+                                <div class="d-flex gap-3">
+                                    <div class="skeleton" style="height:11px;width:25%;"></div>
+                                    <div class="skeleton" style="height:11px;width:30%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else if (_events.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-icon" style="font-size:2rem;color:var(--uerre-muted);">&#9632;</div>
+                <h5 class="fw-bold mb-1">No hay eventos próximos</h5>
+                <p class="text-muted small">
+                    @(_search.Length > 0 ? "No se encontraron eventos con ese nombre." : "Los grupos aún no han publicado eventos.")
+                </p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var evt in _events)
+                {
+                    <div class="col-12 col-md-6">
+                        <a href="/events/@evt.Id" class="text-decoration-none">
+                            <div class="card-event">
+                                <div class="event-date-badge">
+                                    <span class="event-date-month">@evt.MonthLabel</span>
+                                    <span class="event-date-day">@evt.DayLabel</span>
+                                </div>
+                                <div class="flex-grow-1 min-w-0">
+                                    <h6 class="fw-bold mb-1 text-dark line-clamp-1">@evt.Title</h6>
+                                    <p class="fw-600 mb-2 text-purple" style="font-size:.78rem;">@evt.GroupName</p>
+                                    <div class="d-flex flex-wrap gap-3 text-muted-sm">
+                                        <span>&#8987; @evt.StartLocal</span>
+                                        @if (evt.Location is not null) { <span>> @evt.Location</span> }
+                                        @if (evt.SpotsLeft.HasValue) { <span>&#9651; @evt.SpotsLeft lugares</span> }
+                                    </div>
+                                </div>
+                                @if (evt.IsCanceled)
+                                {
+                                    <span class="badge badge-inactive flex-shrink-0 align-self-center">Cancelado</span>
+                                }
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private List<EventModel> _events = [];
+    private bool _loading = true;
+    private string _search = "";
+    private CancellationTokenSource? _debounce;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true; StateHasChanged();
+        try { _events = await EventService.GetUpcomingAsync(_search.Length > 0 ? _search : null); }
+        catch { _events = []; }
+        finally { _loading = false; }
+    }
+
+    private async Task OnSearch(ChangeEventArgs e)
+    {
+        _search = e.Value?.ToString() ?? "";
+        _debounce?.Cancel(); _debounce = new CancellationTokenSource();
+        try { await Task.Delay(350, _debounce.Token); await LoadAsync(); }
+        catch (TaskCanceledException) { }
+    }
+}
