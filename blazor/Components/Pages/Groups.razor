@@ -1,43 +1,44 @@
 @page "/groups"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
-@attribute [Authorize]
 @inject GroupApiService GroupService
+@inject AuthenticationStateProvider AuthState
 
 <PageTitle>Grupos Estudiantiles — Grupos Estudiantiles Hub</PageTitle>
 
-<div class="page-header">
-    <div class="container-uerre">
-        <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
-            <div>
-                <h1 class="text-white fw-bold mb-1" style="font-size:clamp(1.5rem,4vw,2.25rem);">
-                    Grupos Estudiantiles
-                </h1>
-                <p class="mb-0" style="color:rgba(255,255,255,.7);font-size:.9375rem;">
-                    @(_total > 0 ? $"{_total} grupo{(_total != 1 ? "s" : "")} activo{(_total != 1 ? "s" : "")} en U-ERRE"
-                                 : "Explora los grupos de la Universidad Regiomontana")
-                </p>
+<AuthorizeView Context="authState">
+    <Authorized>
+        <div class="page-header">
+            <div class="container-uerre">
+                <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
+                    <div>
+                        <h1 class="text-white fw-bold mb-1" style="font-size:clamp(1.5rem,4vw,2.25rem);">
+                            Grupos Estudiantiles
+                        </h1>
+                        <p class="mb-0" style="color:rgba(255,255,255,.7);font-size:.9375rem;">
+                            @(_total > 0 ? $"{_total} grupo{(_total != 1 ? "s" : "")} activo{(_total != 1 ? "s" : "")} en U-ERRE"
+                                         : "Explora los grupos de la Universidad Regiomontana")
+                        </p>
+                    </div>
+                    <a href="/groups/register"
+                       class="btn btn-light fw-semibold rounded-pill px-4 flex-shrink-0"
+                       style="color:var(--uerre-purple);font-family:'Montserrat',sans-serif;font-size:.875rem;">
+                        + Crear grupo
+                    </a>
+                </div>
+
+                <div class="mt-4 search-input-wrapper" style="max-width:440px;">
+                    <span class="search-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15M3.5 10a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0m15.584 5.17 3.123 3.123a.75.75 0 0 1-1.06 1.06l-3.123-3.122a8 8 0 0 0 1.06-1.061"/></svg></span>
+                    <input type="search" class="form-control rounded-pill py-2"
+                           style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);
+                                  color:#fff;padding-left:2.5rem !important;"
+                           placeholder="Buscar grupos..."
+                           value="@_search" @oninput="OnSearchChanged" />
+                </div>
             </div>
-            <a href="/groups/register"
-               class="btn btn-light fw-semibold rounded-pill px-4 flex-shrink-0"
-               style="color:var(--uerre-purple);font-family:'Montserrat',sans-serif;font-size:.875rem;">
-                + Crear grupo
-            </a>
         </div>
 
-        <!-- Search -->
-        <div class="mt-4 search-input-wrapper" style="max-width:440px;">
-            <span class="search-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15M3.5 10a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0m15.584 5.17 3.123 3.123a.75.75 0 0 1-1.06 1.06l-3.123-3.122a8 8 0 0 0 1.06-1.061"/></svg></span>
-            <input type="search" class="form-control rounded-pill py-2"
-                   style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);
-                          color:#fff;padding-left:2.5rem !important;"
-                   placeholder="Buscar grupos..."
-                   value="@_search" @oninput="OnSearchChanged" />
-        </div>
-    </div>
-</div>
-
-<section class="py-4 py-md-5" style="background:var(--uerre-surface);">
-    <div class="container-uerre">
+        <section class="py-4 py-md-5" style="background:var(--uerre-surface);">
+            <div class="container-uerre">
 
         <!-- Category chips -->
         @if (_categories.Count > 0)
@@ -155,8 +156,51 @@
                 }
             </div>
         }
-    </div>
-</section>
+            </div>
+        </section>
+    </Authorized>
+    <NotAuthorized>
+        <section class="hero-gradient text-white position-relative overflow-hidden"
+                 style="padding-top:5rem;padding-bottom:6rem;">
+            <div class="hero-blob-1"></div>
+            <div class="hero-blob-2"></div>
+            <div class="container-uerre position-relative" style="z-index:1;">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-8 text-center">
+                        <div class="animate-fade-up mb-4">
+                            <span class="rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2"
+                                  style="border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);
+                                         backdrop-filter:blur(8px);font-size:.7rem;font-weight:600;
+                                         letter-spacing:.08em;text-transform:uppercase;">
+                                Acceso restringido para estudiantes U-ERRE
+                            </span>
+                        </div>
+                        <h1 class="animate-fade-up delay-1 fw-bold text-white lh-1 mb-3"
+                            style="font-family:'Montserrat',sans-serif;font-size:clamp(2.25rem,5vw,3.75rem);letter-spacing:-.02em;">
+                            Explora y crea grupos<br /><span style="color:#fbbf24;">iniciando sesión.</span>
+                        </h1>
+                        <p class="animate-fade-up delay-2 mb-4 lh-lg mx-auto"
+                           style="color:rgba(255,255,255,.75);max-width:520px;font-size:1.0625rem;">
+                            Esta sección está disponible únicamente para estudiantes de <span style="white-space:nowrap;">U-ERRE</span> con cuenta institucional.
+                        </p>
+                        <div class="animate-fade-up delay-3 d-flex justify-content-center gap-3 flex-wrap">
+                            <a href="MicrosoftIdentity/Account/SignIn"
+                               class="btn btn-light btn-lg px-5 fw-bold"
+                               style="color:#5b21b6;border-radius:12px;font-family:'Montserrat',sans-serif;font-size:.9375rem;">
+                                Iniciar Sesión →
+                            </a>
+                            <a href="/"
+                               class="btn btn-lg px-4 fw-semibold"
+                               style="border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;border-radius:12px;backdrop-filter:blur(8px);font-size:.875rem;">
+                                Volver al inicio
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private List<GroupModel> _groups = [];
@@ -180,6 +224,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthState.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated != true)
+        {
+            _loading = false;
+            return;
+        }
         _categories = await GroupService.GetCategoriesAsync();
         await LoadGroupsAsync();
     }
