@@ -10,6 +10,12 @@ public class MembershipService(IDbContextFactory<AppDbContext> dbFactory)
     public async Task<Membership?> JoinAsync(Guid userId, Guid groupId)
     {
         using var db = dbFactory.CreateDbContext();
+
+        // Verify the group exists and is active
+        var group = await db.Groups.FindAsync(groupId);
+        if (group is null || group.Status != "active")
+            throw new InvalidOperationException("El grupo no existe o no está activo.");
+
         var existing = await db.Memberships
             .FirstOrDefaultAsync(m => m.UserId == userId && m.GroupId == groupId);
 
@@ -35,6 +41,13 @@ public class MembershipService(IDbContextFactory<AppDbContext> dbFactory)
         db.Memberships.Add(membership);
         await db.SaveChangesAsync();
         return membership;
+    }
+
+    public async Task<Membership?> GetByUserAndGroupAsync(Guid userId, Guid groupId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        return await db.Memberships
+            .FirstOrDefaultAsync(m => m.UserId == userId && m.GroupId == groupId);
     }
 
     public async Task<List<Membership>> GetAcceptedAsync(Guid groupId)
@@ -101,6 +114,6 @@ public class MembershipService(IDbContextFactory<AppDbContext> dbFactory)
     }
 
     public static MembershipResponse ToResponse(Membership m) => new(
-        m.Id, m.UserId, m.User?.Email ?? "", m.User?.DisplayName,
+        m.Id, m.UserId, m.GroupId, m.User?.Email ?? "", m.User?.DisplayName,
         m.User?.AvatarUrl, m.Status, m.RequestedAt, m.RespondedAt);
 }

@@ -1,0 +1,144 @@
+@page "/mis-grupos"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject MisGruposApiService MisGruposService
+@attribute [Authorize]
+
+<PageTitle>Mis Grupos — Grupos Estudiantiles Hub</PageTitle>
+
+<div class="page-header">
+    <div class="container-uerre">
+        <h1 class="text-white fw-bold mb-1" style="font-size:clamp(1.5rem,4vw,2.25rem);">
+            Mis Grupos
+        </h1>
+        <p class="mb-0" style="color:rgba(255,255,255,.7);">
+            Grupos en los que participas o lideras.
+        </p>
+    </div>
+</div>
+
+<section class="py-4 py-md-5" style="background:var(--uerre-surface);">
+    <div class="container-uerre">
+
+        @if (_loading)
+        {
+            <div class="d-flex justify-content-center py-5">
+                <div class="spinner-uerre"></div>
+            </div>
+        }
+        else if (_data is null)
+        {
+            <div class="alert alert-danger rounded-3">No se pudieron cargar tus grupos.</div>
+        }
+        else if (_data.MemberGroups.Count == 0 && _data.LeaderGroups.Count == 0)
+        {
+            <div class="empty-state py-5">
+                <div class="empty-icon mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg></div>
+                <h5 class="fw-bold mb-2">Aún no perteneces a ningún grupo</h5>
+                <p class="text-muted small mb-4">Explora los grupos disponibles y solicita unirte.</p>
+                <a href="/groups" class="btn btn-uerre-primary px-4">Explorar Grupos</a>
+            </div>
+        }
+        else
+        {
+            <!-- Leader groups -->
+            @if (_data.LeaderGroups.Count > 0)
+            {
+                <h5 class="fw-bold mb-3">
+                    <span class="d-inline-flex align-items-center gap-1 me-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10.788 3.102c.495-1.003 1.926-1.003 2.421 0l2.358 4.778 5.273.766c1.107.161 1.549 1.522.748 2.303l-3.816 3.72.901 5.25c.19 1.104-.968 1.945-1.959 1.424L12 18.878l-4.716 2.47c-.99.52-2.148-.32-1.96-1.424l.901-5.25-3.815-3.72c-.801-.78-.359-2.142.748-2.303l5.273-.766z"/></svg></span>Grupos que lidero
+                    <span class="badge rounded-pill ms-1 text-white"
+                          style="background:var(--uerre-purple);font-size:.7rem;">
+                        @_data.LeaderGroups.Count
+                    </span>
+                </h5>
+                <div class="row g-3 mb-5">
+                    @foreach (var g in _data.LeaderGroups)
+                    {
+                        <div class="col-12 col-sm-6 col-lg-4">
+                            @GroupCard(g, isLeader: true)
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Member groups -->
+            @if (_data.MemberGroups.Count > 0)
+            {
+                <h5 class="fw-bold mb-3">
+                    <span class="d-inline-flex align-items-center gap-1 me-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg></span>Grupos en los que soy miembro
+                    <span class="badge rounded-pill ms-1 text-white"
+                          style="background:var(--uerre-purple);font-size:.7rem;">
+                        @_data.MemberGroups.Count
+                    </span>
+                </h5>
+                <div class="row g-3">
+                    @foreach (var g in _data.MemberGroups)
+                    {
+                        <div class="col-12 col-sm-6 col-lg-4">
+                            @GroupCard(g, isLeader: false)
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+</section>
+
+@* ── Card render fragment ── *@
+@code {
+    RenderFragment GroupCard(GroupModel g, bool isLeader) =>
+        @<a href="/groups/@g.Slug" class="text-decoration-none d-block h-100">
+            <div class="card-uerre p-3 d-flex align-items-center gap-3 h-100">
+                <!-- Logo -->
+                @if (!string.IsNullOrEmpty(g.LogoUrl))
+                {
+                    <img src="@g.LogoUrl" alt="@g.Name"
+                         class="rounded-3 flex-shrink-0"
+                         style="width:52px;height:52px;object-fit:cover;" />
+                }
+                else
+                {
+                    <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                         style="width:52px;height:52px;background:var(--uerre-purple);font-size:1.25rem;font-family:'Montserrat',sans-serif;">
+                        @g.Name.Substring(0, 1)
+                    </div>
+                }
+
+                <div class="min-w-0 flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                        <span class="fw-bold small text-dark line-clamp-1">@g.Name</span>
+                        @if (isLeader)
+                        {
+                            <span class="rounded-pill px-2"
+                                  style="font-size:.65rem;font-weight:600;background:var(--uerre-tag-bg);color:var(--uerre-purple);">
+                                Líder
+                            </span>
+                        }
+                    </div>
+                    @if (g.Category is not null)
+                    {
+                        <span class="tag-uerre me-1">@g.Category</span>
+                    }
+                                    <div class="text-muted mt-1 d-inline-flex align-items-center gap-1" style="font-size:.72rem;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg>
+                                        @g.MemberCount @(g.MemberCount == 1 ? "miembro" : "miembros")
+                                    </div>
+                </div>
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                     fill="var(--uerre-muted)" viewBox="0 0 16 16" class="flex-shrink-0">
+                    <path fill-rule="evenodd"
+                          d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                </svg>
+            </div>
+        </a>;
+
+    private MyGroupsModel? _data;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try   { _data = await MisGruposService.GetMyGroupsAsync(); }
+        catch { _data = null; }
+        finally { _loading = false; }
+    }
+}

@@ -142,6 +142,45 @@ public class GroupService(IDbContextFactory<AppDbContext> dbFactory)
             .Select(r => r.UserId).ToListAsync();
     }
 
+    /// <summary>Groups where the user has an accepted membership.</summary>
+    public async Task<List<Group>> GetJoinedGroupsAsync(Guid userId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        return await db.Memberships
+            .Where(m => m.UserId == userId && m.Status == "accepted")
+            .Include(m => m.Group)
+            .Select(m => m.Group!)
+            .Where(g => g.Status == "active")
+            .OrderBy(g => g.Name)
+            .ToListAsync();
+    }
+
+    /// <summary>Groups where the user has a leader role assignment.</summary>
+    public async Task<List<Group>> GetLedGroupsAsync(Guid userId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        return await db.RoleAssignments
+            .Where(r => r.UserId == userId && r.PermissionRole == "leader")
+            .Include(r => r.Group)
+            .Select(r => r.Group!)
+            .Where(g => g.Status == "active")
+            .OrderBy(g => g.Name)
+            .ToListAsync();
+    }
+
+    /// <summary>Returns accepted group IDs for a user (for calendar filtering).</summary>
+    public async Task<List<Guid>> GetJoinedGroupIdsAsync(Guid userId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        var memberIds = await db.Memberships
+            .Where(m => m.UserId == userId && m.Status == "accepted")
+            .Select(m => m.GroupId).ToListAsync();
+        var leaderIds = await db.RoleAssignments
+            .Where(r => r.UserId == userId && r.PermissionRole == "leader")
+            .Select(r => r.GroupId).ToListAsync();
+        return memberIds.Union(leaderIds).Distinct().ToList();
+    }
+
     private async Task<string> GenerateUniqueSlugAsync(string name, Guid? excludeId = null)
     {
         using var db = dbFactory.CreateDbContext();

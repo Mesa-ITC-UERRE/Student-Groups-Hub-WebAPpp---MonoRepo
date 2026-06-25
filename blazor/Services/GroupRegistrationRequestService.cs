@@ -5,11 +5,12 @@ using StudentGroupsHub.Models;
 
 namespace StudentGroupsHub.Services;
 
-public class GroupRegistrationRequestService(IDbContextFactory<AppDbContext> dbFactory, GroupService groupService)
+public class GroupRegistrationRequestService(IDbContextFactory<AppDbContext> dbFactory)
 {
     public async Task<GroupRegistrationRequest> CreateAsync(
         Guid requestedByUserId, string proposedGroupName,
-        string? proposedDescription, string contactEmail)
+        string? proposedDescription, string contactEmail,
+        string? proposedCategory = null)
     {
         using var db = dbFactory.CreateDbContext();
         var req = new GroupRegistrationRequest
@@ -19,6 +20,7 @@ public class GroupRegistrationRequestService(IDbContextFactory<AppDbContext> dbF
             ProposedGroupName = proposedGroupName,
             ProposedDescription = proposedDescription,
             ContactEmail = contactEmail,
+            ProposedCategory = proposedCategory,
             Status = "pending",
             CreatedAt = DateTime.UtcNow,
         };
@@ -55,8 +57,15 @@ public class GroupRegistrationRequestService(IDbContextFactory<AppDbContext> dbF
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
+    /// <summary>
+    /// Approves a group registration request atomically:
+    /// creates the group, assigns the leader role, inserts an accepted membership
+    /// for the creator, and optionally promotes them to group_leader — all in one
+    /// transaction using a single DbContext.
+    /// </summary>
     public async Task<GroupRegistrationRequest?> ApproveAsync(
-        Guid requestId, Guid reviewedByUserId, string? decisionNotes)
+        Guid requestId, Guid reviewedByUserId, string? decisionNotes,
+        string? finalCategory = null)
     {
         using var db = dbFactory.CreateDbContext();
         var req = await db.GroupRegistrationRequests
@@ -65,14 +74,25 @@ public class GroupRegistrationRequestService(IDbContextFactory<AppDbContext> dbF
 
         if (req is null || req.Status != "pending") return null;
 
-        // Create the group
-        var group = await groupService.CreateAsync(
-            req.ProposedGroupName,
-            req.ProposedDescription,
-            null, // category assigned later by leader
-            req.ContactEmail,
-            req.RequestedByUserId
-        );
+        // Generate slug within the same context (no separate factory call)
+        var slug = await GenerateUniqueSlugAsync(db, req.ProposedGroupName);
+        var effectiveCategory = finalCategory ?? req.ProposedCategory;
+
+        // Create the group — inline for full atomicity
+        var group = new Group
+        {
+            Id = Guid.NewGuid(),
+            Slug = slug,
+            Name = req.ProposedGroupName,
+            Description = req.ProposedDescription,
+            Category = effectiveCategory,
+            ContactEmail = req.ContactEmail,
+            Status = "active",
+            CreatedByUserId = req.RequestedByUserId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+        db.Groups.Add(group);
 
         // Assign the requester as leader
         db.RoleAssignments.Add(new RoleAssignment
@@ -83,6 +103,17 @@ public class GroupRegistrationRequestService(IDbContextFactory<AppDbContext> dbF
             PermissionRole = "leader",
             DisplayRole = "Líder",
             CreatedAt = DateTime.UtcNow,
+        });
+
+        // Add creator as accepted member (fixes member-count = 0 bug)
+        db.Memberships.Add(new Membership
+        {
+            Id = Guid.NewGuid(),
+            UserId = req.RequestedByUserId,
+            GroupId = group.Id,
+            Status = "accepted",
+            RequestedAt = DateTime.UtcNow,
+            RespondedAt = DateTime.UtcNow,
         });
 
         // Promote user to group_leader role if they are still a student
@@ -129,9 +160,24 @@ public class GroupRegistrationRequestService(IDbContextFactory<AppDbContext> dbF
         r.ProposedGroupName,
         r.ProposedDescription,
         r.ContactEmail,
+        r.ProposedCategory,
         r.Status,
         r.DecisionNotes,
         r.CreatedAt,
         r.ReviewedAt
     );
+
+    private static async Task<string> GenerateUniqueSlugAsync(AppDbContext db, string name, Guid? excludeId = null)
+    {
+        var base_ = name.ToLowerInvariant()
+            .Replace(" ", "-").Replace("á", "a").Replace("é", "e")
+            .Replace("í", "i").Replace("ó", "o").Replace("ú", "u")
+            .Replace("ñ", "n").Replace("ü", "u");
+        base_ = System.Text.RegularExpressions.Regex.Replace(base_, @"[^a-z0-9\-]", "");
+        base_ = System.Text.RegularExpressions.Regex.Replace(base_, @"-{2,}", "-").Trim('-');
+        var slug = base_; var counter = 1;
+        while (await db.Groups.AnyAsync(g => g.Slug == slug && g.Id != (excludeId ?? Guid.Empty)))
+            slug = $"{base_}-{counter++}";
+        return slug;
+    }
 }

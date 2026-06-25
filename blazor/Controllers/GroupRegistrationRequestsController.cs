@@ -25,7 +25,8 @@ public class GroupRegistrationRequestsController(
             user.Id,
             request.ProposedGroupName,
             request.ProposedDescription,
-            request.ContactEmail);
+            request.ContactEmail,
+            request.ProposedCategory);
 
         return CreatedAtAction(nameof(GetById), new { id = req.Id },
             GroupRegistrationRequestService.ToResponse(req));
@@ -81,7 +82,7 @@ public class GroupRegistrationRequestsController(
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null || user.Role != "admin") return Forbid();
 
-        var req = await requestService.ApproveAsync(id, user.Id, body?.DecisionNotes);
+        var req = await requestService.ApproveAsync(id, user.Id, body?.DecisionNotes, body?.FinalCategory);
         if (req is null) return NotFound(new { status = 404, message = "Solicitud no encontrada o ya procesada." });
 
         return Ok(GroupRegistrationRequestService.ToResponse(req));

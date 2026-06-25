@@ -12,7 +12,7 @@
 else if (_terms.Count == 0 && !_showAddTerm)
 {
     <div class="empty-state">
-        <div class="empty-icon" style="font-size:2rem;color:var(--uerre-muted);">&#9632;</div>
+        <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg></div>
         <h5 class="fw-bold mb-1">Sin administraciones registradas</h5>
         <p class="text-muted small mb-3">
             Las administraciones permiten llevar un historial de quiénes han formado parte del grupo.
@@ -97,7 +97,7 @@ else
                         <div>
                             <h5 class="fw-bold mb-1">@term.Label</h5>
                             <div class="d-flex align-items-center gap-2 flex-wrap">
-                                <span class="small text-muted">&#128198; @term.DateRange</span>
+                                <span class="small text-muted d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg> @term.DateRange</span>
                                 <span class="rounded-pill px-2 py-1 small fw-600"
                                       style="font-size:.7rem;@term.StatusCss">
                                     @term.StatusLabel
@@ -171,6 +171,10 @@ else
                                             type="button" @onclick="CancelAddMember">&times;</button>
                                 </div>
                             </div>
+                            @if (_memberError is not null)
+                            {
+                                <div class="alert alert-danger alert-sm py-1 px-2 mt-2 small mb-0">@_memberError</div>
+                            }
                         </div>
                     }
 
@@ -182,7 +186,16 @@ else
                             {
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                                     <div class="term-member-card">
-                                        <div class="term-member-avatar">@m.Initial</div>
+                                        @if (!string.IsNullOrEmpty(m.AvatarUrl))
+                                        {
+                                            <img src="@m.AvatarUrl" alt=""
+                                                 class="term-member-avatar rounded-circle"
+                                                 style="object-fit:cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="term-member-avatar">@m.Initial</div>
+                                        }
                                         <div class="min-w-0">
                                             <div class="fw-600 small text-dark line-clamp-1">@m.DisplayName</div>
                                             <div class="term-member-role">@m.RoleLabel</div>
@@ -233,6 +246,7 @@ else
     private string _newMemberName  = "";
     private string _newMemberRole  = "";
     private int    _newMemberOrder = 0;
+    private string? _memberError;
 
     private bool _saving;
 
@@ -280,14 +294,18 @@ else
         _addMemberTermId = termId;
         _newMemberName   = "";
         _newMemberRole   = "";
+        _memberError     = null;
         _newMemberOrder  = (_terms.FirstOrDefault(t => t.Id == termId)?.Members.Count ?? 0) + 1;
     }
 
     private async Task SaveMember(Guid termId)
     {
         if (string.IsNullOrWhiteSpace(_newMemberName) || string.IsNullOrWhiteSpace(_newMemberRole))
+        {
+            _memberError = "El nombre y el cargo son requeridos.";
             return;
-        _saving = true;
+        }
+        _saving = true; _memberError = null;
         try
         {
             await TermService.AddMemberAsync(
@@ -296,10 +314,11 @@ else
             CancelAddMember();
             await LoadAsync();
         }
+        catch (Exception ex) { _memberError = ex.Message; }
         finally { _saving = false; }
     }
 
-    private void CancelAddMember() => _addMemberTermId = null;
+    private void CancelAddMember() { _addMemberTermId = null; _memberError = null; }
 
     private async Task RemoveMember(Guid memberId)
     {

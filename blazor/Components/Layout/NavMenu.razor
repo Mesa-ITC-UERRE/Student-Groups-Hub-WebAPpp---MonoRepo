@@ -1,14 +1,16 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+@implements IDisposable
 @inject NavigationManager Navigation
 @inject NotificationApiService NotificationService
 @inject UserApiService UserApiSvc
+@inject UserStateService UserState
 
 <nav class="navbar navbar-expand-md navbar-uerre sticky-top">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/">
             <div class="navbar-logo-box">U</div>
             <div>
-                <div class="navbar-brand-name">Student Groups</div>
+                <div class="navbar-brand-name">Grupos Estudiantiles</div>
                 <div class="navbar-brand-sub">U-ERRE</div>
             </div>
         </a>
@@ -22,28 +24,33 @@
         <div class="collapse navbar-collapse" id="navbarMain">
             <ul class="navbar-nav me-auto mb-2 mb-md-0">
                 <li class="nav-item">
-                    <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">Inicio</NavLink>
+                    <NavLink class="nav-link nav-accent-slate" href="/" Match="NavLinkMatch.All">Inicio</NavLink>
                 </li>
                 <AuthorizeView>
                     <Authorized>
                         <li class="nav-item">
-                            <NavLink class="nav-link" href="/groups">Grupos</NavLink>
+                            <NavLink class="nav-link nav-accent-blue" href="/groups">Grupos</NavLink>
                         </li>
                         <li class="nav-item">
-                            <NavLink class="nav-link" href="/events">Eventos</NavLink>
+                            <NavLink class="nav-link nav-accent-violet" href="/mis-grupos">Mis Grupos</NavLink>
                         </li>
                         <li class="nav-item">
-                            <NavLink class="nav-link" href="/timeline">Historial</NavLink>
+                            <NavLink class="nav-link nav-accent-amber" href="/events">Eventos</NavLink>
                         </li>
                         <li class="nav-item">
-                            <NavLink class="nav-link" href="/feur">FEUR</NavLink>
+                            <NavLink class="nav-link nav-accent-teal" href="/calendario">Calendario</NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link nav-accent-rose" href="/timeline">Linea del Tiempo</NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link nav-accent-emerald" href="/feur">FEUR</NavLink>
                         </li>
                         @if (_isAdmin)
                         {
                             <li class="nav-item">
-                                <NavLink class="nav-link fw-semibold"
-                                         href="/admin"
-                                         style="color:var(--uerre-purple);">
+                                <NavLink class="nav-link nav-accent-orange fw-semibold"
+                                         href="/admin">
                                     Admin
                                 </NavLink>
                             </li>
@@ -57,7 +64,7 @@
                     <Authorized>
                         <!-- Notification bell -->
                         <div class="position-relative">
-                            <a href="/dashboard" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center navbar-user-btn"
+                            <a href="/perfil" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center navbar-user-btn"
                                style="width:36px;height:36px;" title="Notificaciones">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
                                     <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
@@ -76,15 +83,24 @@
                         <div class="dropdown">
                             <button class="btn btn-sm d-flex align-items-center gap-2 navbar-user-btn dropdown-toggle"
                                     type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <div class="navbar-avatar">
-                                    @(context.User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
-                                </div>
+                                @if (_avatarUrl is not null)
+                                {
+                                    <img src="@_avatarUrl" alt="avatar"
+                                         class="rounded-circle navbar-avatar"
+                                         style="width:32px;height:32px;object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <div class="navbar-avatar">
+                                        @(context.User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
+                                    </div>
+                                }
                                 <span class="d-none d-md-inline small fw-semibold text-truncate" style="max-width:120px;">
                                     @context.User.Identity?.Name
                                 </span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                <li><a class="dropdown-item" href="/dashboard">Mi Panel</a></li>
+                                <li><a class="dropdown-item" href="/perfil">Mi Panel</a></li>
                                 <li><hr class="dropdown-divider" /></li>
                                 <li>
                                     <a class="dropdown-item text-danger"
@@ -109,13 +125,16 @@
 @code {
     private int _unreadCount;
     private bool _isAdmin;
+    private string? _avatarUrl;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var user = await UserApiSvc.GetMeAsync();
-            _isAdmin = user?.IsAdmin == true;
+            var user   = await UserApiSvc.GetMeAsync();
+            _isAdmin   = user?.IsAdmin == true;
+            _avatarUrl = user?.AvatarUrl;
+            UserState.SetAvatar(_avatarUrl);
         }
         catch { _isAdmin = false; }
 
@@ -125,5 +144,15 @@
             _unreadCount = notifs.Count(n => !n.Read);
         }
         catch { _unreadCount = 0; }
+
+        UserState.OnChange += OnUserStateChanged;
     }
+
+    private void OnUserStateChanged()
+    {
+        _avatarUrl = UserState.AvatarUrl;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => UserState.OnChange -= OnUserStateChanged;
 }

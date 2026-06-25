@@ -24,7 +24,7 @@
 
         <div class="d-flex flex-wrap gap-3 mb-4">
             <div class="search-input-wrapper" style="flex:1;min-width:220px;max-width:360px;">
-                <span class="search-icon">&#128270;</span>
+                <span class="search-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15M3.5 10a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0m15.584 5.17 3.123 3.123a.75.75 0 0 1-1.06 1.06l-3.123-3.122a8 8 0 0 0 1.06-1.061"/></svg></span>
                 <input type="search" class="form-control rounded-3"
                        placeholder="Buscar por email o nombre..."
                        value="@_search" @oninput="OnSearch" />
@@ -62,8 +62,25 @@
                         {
                             <tr>
                                 <td class="py-3 px-4 align-middle">
-                                    <div class="fw-semibold small text-dark">@user.DisplayLabel</div>
-                                    <div class="text-muted" style="font-size:.7rem;">@user.Email</div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if (!string.IsNullOrEmpty(user.AvatarUrl))
+                                        {
+                                            <img src="@user.AvatarUrl" alt=""
+                                                 class="rounded-circle flex-shrink-0"
+                                                 style="width:32px;height:32px;object-fit:cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                                 style="width:32px;height:32px;background:linear-gradient(135deg,var(--uerre-purple),var(--uerre-purple-vivid));font-size:.7rem;">
+                                                @user.Initial
+                                            </div>
+                                        }
+                                        <div>
+                                            <div class="fw-semibold small text-dark">@user.DisplayLabel</div>
+                                            <div class="text-muted" style="font-size:.7rem;">@user.Email</div>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="py-3 px-4 align-middle">
                                     <span class="rounded-pill px-2 py-1 small fw-600"
@@ -232,104 +249,3 @@
         _              => "background:#f3f4f6;color:#6b7280;"
     };
 }
-
-<section class="py-5" style="background:var(--uerre-surface);">
-    <div class="container" style="max-width:1200px;">
-
-        <div class="d-flex flex-wrap gap-3 mb-4">
-            <input type="search" class="form-control rounded-3" style="max-width:280px;"
-                   placeholder="Buscar por email o nombre..."
-                   value="@_search" @oninput="OnSearch" />
-            <select class="form-select rounded-3" style="max-width:160px;" @onchange="OnRoleFilter">
-                <option value="">Todos los roles</option>
-                <option value="student">Estudiante</option>
-                <option value="group_leader">Líder</option>
-                <option value="admin">Admin</option>
-            </select>
-        </div>
-
-        @if (_loading)
-        {
-            <div class="d-flex justify-content-center py-5"><div class="spinner-uerre"></div></div>
-        }
-        else if (_users.Count == 0)
-        {
-            <p class="text-center text-muted py-4">No se encontraron usuarios.</p>
-        }
-        else
-        {
-            <div class="card-uerre overflow-hidden">
-                <table class="table table-hover mb-0">
-                    <thead style="background:var(--uerre-surface);">
-                        <tr>
-                            <th class="py-3 px-4 small fw-bold text-muted border-0">Usuario</th>
-                            <th class="py-3 px-4 small fw-bold text-muted border-0">Rol</th>
-                            <th class="py-3 px-4 small fw-bold text-muted border-0">Estado</th>
-                            <th class="py-3 px-4 small fw-bold text-muted border-0 text-end">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var user in _users)
-                        {
-                            <tr>
-                                <td class="py-3 px-4 align-middle">
-                                    <div class="fw-semibold small text-dark">@user.DisplayLabel</div>
-                                    <div class="text-muted" style="font-size:.7rem;">@user.Email</div>
-                                </td>
-                                <td class="py-3 px-4 align-middle">
-                                    <span class="tag-uerre">@user.Role</span>
-                                </td>
-                                <td class="py-3 px-4 align-middle">
-                                    <span class="badge rounded-pill @(user.Status == "active" ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger")">
-                                        @user.Status
-                                    </span>
-                                </td>
-                                <td class="py-3 px-4 align-middle text-end">
-                                    <div class="d-flex justify-content-end gap-2">
-                                        @if (user.Role != "group_leader")
-                                        {
-                                            <button class="btn btn-xs btn-uerre-outline"
-                                                    @onclick="() => PromoteToLeader(user.Id)">
-                                                → Líder
-                                            </button>
-                                        }
-                                        @if (user.Status == "active")
-                                        {
-                                            <button class="btn btn-xs btn-outline-danger rounded-2"
-                                                    @onclick="() => Deactivate(user.Id)">
-                                                Desactivar
-                                            </button>
-                                        }
-        else
-                                        {
-                                            <button class="btn btn-xs btn-outline-success rounded-2"
-                                                    @onclick="() => Activate(user.Id)">
-                                                Activar
-                                            </button>
-                                        }
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            @if (_totalPages > 1)
-            {
-                <div class="d-flex justify-content-center gap-2 mt-4">
-                    @for (int p = 1; p <= _totalPages; p++)
-                    {
-                        var pageNum = p;
-                        <button class="btn btn-sm @(_page == pageNum ? "btn-uerre-primary" : "btn-uerre-outline") rounded-2"
-                                @onclick="() => GoToPage(pageNum)">
-                            @pageNum
-                        </button>
-                    }
-                </div>
-            }
-        }
-    </div>
-</section>
-

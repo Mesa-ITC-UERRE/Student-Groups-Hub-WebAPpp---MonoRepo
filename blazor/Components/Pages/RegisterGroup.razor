@@ -1,10 +1,11 @@
 @page "/groups/register"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject GroupRegistrationApiService RegistrationService
+@inject GroupApiService GroupService
 @inject NavigationManager Nav
 @attribute [Authorize]
 
-<PageTitle>Solicitar Grupo — Student Groups Hub</PageTitle>
+<PageTitle>Solicitar Grupo — Grupos Estudiantiles Hub</PageTitle>
 
 <section class="hero-gradient py-4 text-white">
     <div class="container max-w-xl">
@@ -26,13 +27,13 @@
                 @if (_success)
                 {
                     <div class="card-uerre p-5 text-center">
-                        <div class="mb-3 text-success" style="font-size:2.5rem;line-height:1;">&#10003;</div>
+                        <div class="mb-3 text-success"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17m4.03 5.97-5.28 5.29-2.28-2.28a.75.75 0 1 0-1.06 1.06l2.81 2.81a.75.75 0 0 0 1.06 0l5.81-5.82a.75.75 0 0 0-1.06-1.06"/></svg></div>
                         <h4 class="fw-bold mb-2">¡Solicitud enviada!</h4>
                         <p class="text-muted mb-4">
                             Tu solicitud ha sido recibida. Te notificaremos cuando sea revisada.
                         </p>
                         <div class="d-flex justify-content-center gap-3">
-                            <a href="/dashboard" class="btn btn-uerre-outline">Ver mis solicitudes</a>
+                            <a href="/perfil" class="btn btn-uerre-outline">Ver mis solicitudes</a>
                             <a href="/groups" class="btn btn-uerre-primary">Explorar grupos</a>
                         </div>
                     </div>
@@ -79,6 +80,29 @@
                                 <div class="form-text">Te contactaremos a este correo con el resultado.</div>
                             </div>
 
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Categoría sugerida</label>
+                                <select class="form-select rounded-3" @bind="_selectedCategory">
+                                    <option value="">— Sin preferencia —</option>
+                                    @foreach (var cat in _categories)
+                                    {
+                                        <option value="@cat">@cat</option>
+                                    }
+                                    <option value="__nueva__">Otra (nueva)…</option>
+                                </select>
+                                @if (_selectedCategory == "__nueva__")
+                                {
+                                    <input type="text"
+                                           class="form-control rounded-3 mt-2"
+                                           placeholder="Escribe el nombre de la nueva categoría"
+                                           @bind="_customCategory"
+                                           maxlength="100" />
+                                }
+                                <div class="form-text">
+                                    Opcional — el admin puede asignar la categoría definitiva al aprobar.
+                                </div>
+                            </div>
+
                             <div class="d-flex justify-content-end gap-3 pt-2">
                                 <a href="/groups" class="btn btn-uerre-outline">Cancelar</a>
                                 <button type="submit" class="btn btn-uerre-primary px-4" disabled="@_submitting">
@@ -107,6 +131,15 @@
     private bool _success;
     private string? _error;
 
+    private List<string> _categories = [];
+    private string _selectedCategory = "";
+    private string _customCategory = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _categories = await GroupService.GetCategoriesAsync();
+    }
+
     private async Task HandleSubmit()
     {
         _submitting = true;
@@ -114,10 +147,15 @@
 
         try
         {
+            string? proposedCategory = _selectedCategory == "__nueva__"
+                ? (string.IsNullOrWhiteSpace(_customCategory) ? null : _customCategory.Trim())
+                : (string.IsNullOrWhiteSpace(_selectedCategory) ? null : _selectedCategory);
+
             var request = new CreateGroupRegistrationRequest(
                 _form.ProposedGroupName.Trim(),
                 string.IsNullOrWhiteSpace(_form.ProposedDescription) ? null : _form.ProposedDescription.Trim(),
-                _form.ContactEmail.Trim());
+                _form.ContactEmail.Trim(),
+                proposedCategory);
 
             var result = await RegistrationService.CreateAsync(request);
             if (result is not null)

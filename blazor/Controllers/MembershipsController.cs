@@ -36,7 +36,9 @@ public class MembershipsController(
                 $"/leader/groups/{groupId}/members",
                 user.Id, "membership");
 
-        return CreatedAtAction(nameof(Join), MembershipService.ToResponse(membership!));
+        return CreatedAtAction(nameof(GetMembers),
+            new { groupId = membership!.GroupId },
+            MembershipService.ToResponse(membership!));
     }
 
     // GET /api/groups/{groupId}/members
@@ -46,6 +48,19 @@ public class MembershipsController(
     {
         var members = await membershipService.GetAcceptedAsync(groupId);
         return Ok(members.Select(MembershipService.ToResponse));
+    }
+
+    // GET /api/groups/{groupId}/memberships/me
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMyMembership(Guid groupId)
+    {
+        var oid  = User.GetEntraOid();
+        var user = await userService.GetByEntraOidAsync(oid);
+        if (user is null) return Unauthorized();
+
+        var m = await membershipService.GetByUserAndGroupAsync(user.Id, groupId);
+        if (m is null) return NotFound();
+        return Ok(MembershipService.ToResponse(m));
     }
 
     // GET /api/groups/{groupId}/memberships/pending

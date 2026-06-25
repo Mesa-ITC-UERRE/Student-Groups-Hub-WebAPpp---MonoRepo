@@ -19,7 +19,7 @@ else if (_status == "pending")
 }
         else
 {
-    <button class="btn btn-uerre-primary px-4" @onclick="HandleJoin" disabled="@_loading">
+    <button class="btn btn-uerre-primary px-4 @ButtonClass" @onclick="HandleJoin" disabled="@_loading">
         @if (_loading)
         {
             <span class="spinner-border spinner-border-sm me-2"></span>
@@ -41,6 +41,7 @@ else if (_status == "pending")
     [Parameter, EditorRequired] public Guid GroupId { get; set; }
     [Parameter] public string? InitialStatus { get; set; }
     [Parameter] public EventCallback<string> OnJoined { get; set; }
+    [Parameter] public string? ButtonClass { get; set; }
 
     private string? _status;
     private bool _loading;
