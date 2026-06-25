@@ -1,8 +1,11 @@
 @page "/events/{Id:guid}"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject EventApiService EventService
-@inject AuthenticationStateProvider AuthState
+@inject EventPostApiService EventPostService
+@inject CurrentUserService CurrentUser
 @attribute [Authorize]
+@using Microsoft.AspNetCore.Components.Forms
+@using System.IO
 
 <PageTitle>@(_event?.Title ?? "Evento") — Student Groups Hub</PageTitle>
 
@@ -37,9 +40,9 @@ else
                     </div>
                     <p class="fw-semibold mb-2" style="color:rgba(255,255,255,.7);font-size:.875rem;">@_event.GroupName</p>
                     <div class="d-flex flex-wrap gap-4 mb-3" style="color:rgba(255,255,255,.7);font-size:.875rem;">
-                        <span>&#8987; @_event.StartLocal</span>
-                        @if (_event.Location is not null) { <span>> @_event.Location</span> }
-                        @if (_event.SpotsLeft.HasValue) { <span>&#9651; @_event.SpotsLeft lugares disponibles</span> }
+                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2m0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17M12 7a.75.75 0 0 1 .75.75v4.69l2.28 2.28a.75.75 0 1 1-1.06 1.06l-2.5-2.5a.75.75 0 0 1-.22-.53V7.75A.75.75 0 0 1 12 7"/></svg> @_event.StartLocal</span>
+                        @if (_event.Location is not null) { <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7.5 7.5 0 0 1 7.5 7.5c0 3.5-2.404 7.268-7.066 11.35a.75.75 0 0 1-.968 0C6.904 16.768 4.5 13 4.5 9.5A7.5 7.5 0 0 1 12 2m0 1.5a6 6 0 0 0-6 6c0 2.885 2.066 6.276 6 10.066 3.934-3.79 6-7.181 6-10.066a6 6 0 0 0-6-6m0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 1.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/></svg> @_event.Location</span> }
+                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg> @_event.AttendanceSummary</span>
                     </div>
                     @if (_event.Description is not null)
                     {
@@ -52,18 +55,323 @@ else
             </div>
         </div>
     </section>
+
+    <section class="py-4 py-md-5" style="background:var(--uerre-surface);">
+        <div class="container-uerre">
+            <div class="d-flex align-items-center justify-content-between gap-3 mb-4 flex-wrap">
+                <div>
+                    <h5 class="fw-bold mb-1">Evidencia del evento</h5>
+                    <p class="text-muted small mb-0">Comparte fotos y resultados de cómo salió el evento.</p>
+                </div>
+            </div>
+
+            @if (!_evidenceUnlocked)
+            {
+                <div class="alert rounded-3 border-0 mb-4" style="background:#ede9fe;color:#5b21b6;">
+                    La evidencia del evento se habilita cuando el evento termina o si fue cancelado.
+                </div>
+            }
+
+            @if (_canPostEvidence)
+            {
+                <div class="card-uerre p-4 mb-4">
+                    <h6 class="fw-bold mb-3 small">Nueva actualización</h6>
+
+                    @if (_postError is not null)
+                    {
+                        <div class="alert alert-danger rounded-3 small py-2 mb-3">@_postError</div>
+                    }
+
+                    <textarea class="form-control rounded-3 mb-3"
+                              rows="3"
+                              placeholder="Comparte cómo resultó el evento, aprendizajes o agradecimientos..."
+                              @bind="_newPostBody"
+                              maxlength="2000"></textarea>
+
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <label for="eventEvidenceImageInput"
+                               class="btn btn-uerre-outline btn-sm d-inline-flex align-items-center gap-1"
+                               style="cursor:pointer;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zM9.5 7a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5m0 1.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                            Adjuntar foto
+                        </label>
+                        <InputFile id="eventEvidenceImageInput"
+                                   OnChange="OnPostImageSelected"
+                                   accept="image/jpeg,image/png,image/webp,image/gif"
+                                   style="display:none;" />
+
+                        @if (_postImagePreview is not null)
+                        {
+                            <span class="small text-success d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17m4.03 5.97-5.28 5.29-2.28-2.28a.75.75 0 1 0-1.06 1.06l2.81 2.81a.75.75 0 0 0 1.06 0l5.81-5.82a.75.75 0 0 0-1.06-1.06"/></svg> Imagen lista</span>
+                            <button class="btn btn-sm btn-link text-danger p-0" @onclick="RemovePostImage">Quitar</button>
+                        }
+
+                        <button class="btn btn-uerre-primary btn-sm ms-auto px-4"
+                                @onclick="SubmitPost"
+                                disabled="@_submittingPost">
+                            @if (_submittingPost)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                            }
+                            Publicar evidencia
+                        </button>
+                    </div>
+
+                    @if (_postImagePreview is not null)
+                    {
+                        <img src="@_postImagePreview" alt="Preview"
+                             class="mt-3 rounded-3"
+                             style="max-height:220px;max-width:100%;object-fit:contain;" />
+                    }
+                </div>
+            }
+
+            @if (_galleryImages.Count > 0)
+            {
+                <div class="card-uerre p-4 mb-4">
+                    <div class="d-flex align-items-center justify-content-between gap-3 mb-3 flex-wrap">
+                        <div>
+                            <h6 class="fw-bold mb-1">Galería</h6>
+                            <p class="text-muted small mb-0">@_galleryImages.Count foto@(_galleryImages.Count == 1 ? "" : "s") del evento.</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        @foreach (var imageUrl in _galleryImages)
+                        {
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <button class="border-0 bg-transparent p-0 w-100"
+                                        type="button"
+                                        @onclick="() => OpenGalleryImage(imageUrl)">
+                                    <img src="@imageUrl" alt="Galería del evento"
+                                         class="rounded-3 w-100"
+                                         style="aspect-ratio:1/1;object-fit:cover;box-shadow:0 6px 18px rgba(15,23,42,.08);" />
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (_posts.Count == 0)
+            {
+                <div class="empty-state">
+                    <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.527 3.66 1.443 5.168L2.22 20.22a.75.75 0 0 0 .976.976l3.051-1.222A9.96 9.96 0 0 0 12 21c5.523 0 10-4.477 10-10S17.523 2 12 2m0 1.5a8.5 8.5 0 0 1 4.94 15.501l-.183.11-2.74 1.096.001-.003-2.034-.002A8.5 8.5 0 0 1 12 3.5"/></svg></div>
+                    <h5 class="fw-bold mb-1">Sin evidencia todavía</h5>
+                    <p class="text-muted small mb-0">Las fotos y actualizaciones del resultado del evento aparecerán aquí.</p>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var post in _posts)
+                    {
+                        <div class="card-uerre no-hover p-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                @if (!string.IsNullOrEmpty(post.AuthorAvatarUrl))
+                                {
+                                    <img src="@post.AuthorAvatarUrl" alt="" class="rounded-circle flex-shrink-0" style="width:38px;height:38px;object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                         style="width:38px;height:38px;background:var(--uerre-purple);font-size:.8rem;">
+                                        @post.AuthorInitial
+                                    </div>
+                                }
+                                <div class="flex-grow-1 min-w-0">
+                                    <div class="fw-semibold small text-dark">@post.AuthorDisplayName</div>
+                                    <div class="text-muted" style="font-size:.7rem;">@post.TimeAgo</div>
+                                </div>
+                                @if (_isAdmin || post.AuthorUserId == _currentUserId)
+                                {
+                                    <button class="btn btn-sm btn-link text-danger p-0 flex-shrink-0"
+                                            style="font-size:.7rem;"
+                                            @onclick="() => DeletePost(post.Id)">
+                                        Eliminar
+                                    </button>
+                                }
+                            </div>
+
+                            <p class="mb-0" style="white-space:pre-wrap;font-size:.9rem;">@post.Body</p>
+
+                            @if (post.ImageUrl is not null)
+                            {
+                                <img src="@post.ImageUrl" alt="" class="mt-3 rounded-3 w-100" style="max-height:420px;object-fit:cover;" />
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    @if (_selectedGalleryImage is not null)
+    {
+        <div class="modal-backdrop fade show" style="z-index:1040;" @onclick="CloseGalleryImage"></div>
+        <div class="modal fade show d-block" tabindex="-1" style="z-index:1050;" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content border-0 bg-transparent shadow-none">
+                    <div class="d-flex justify-content-end mb-2">
+                        <button type="button" class="btn btn-light rounded-circle" style="width:40px;height:40px;" @onclick="CloseGalleryImage">×</button>
+                    </div>
+                    <img src="@_selectedGalleryImage" alt="Vista ampliada"
+                         class="rounded-4 w-100"
+                         style="max-height:80vh;object-fit:contain;background:#0f172a;" />
+                </div>
+            </div>
+        </div>
+    }
 }
 
 @code {
     [Parameter] public Guid Id { get; set; }
+
     private EventModel? _event;
+    private List<EventPostModel> _posts = [];
     private bool _loading = true;
+    private bool _canPostEvidence;
+    private bool _evidenceUnlocked;
+    private bool _isAdmin;
+    private Guid _currentUserId;
+    private List<string> _galleryImages = [];
+    private string? _selectedGalleryImage;
+
+    private string _newPostBody = "";
+    private byte[]? _postImageBytes;
+    private string? _postImageContentType;
+    private string? _postImageExt;
+    private string? _postImagePreview;
+    private bool _submittingPost;
+    private string? _postError;
 
     protected override async Task OnParametersSetAsync()
     {
         _loading = true;
-        try { _event = await EventService.GetByIdAsync(Id); }
-        catch { _event = null; }
-        finally { _loading = false; }
+        try
+        {
+            _event = await EventService.GetByIdAsync(Id);
+            if (_event is not null)
+            {
+                var postsTask = EventPostService.GetPostsAsync(Id);
+                var canPostTask = EventPostService.CanPostAsync(Id);
+                await Task.WhenAll(postsTask, canPostTask);
+                _posts = postsTask.Result;
+                _galleryImages = _posts.Where(p => !string.IsNullOrEmpty(p.ImageUrl)).Select(p => p.ImageUrl!).ToList();
+                _canPostEvidence = canPostTask.Result;
+                var currentUser = await CurrentUser.GetUserAsync();
+                _currentUserId = currentUser?.Id ?? Guid.Empty;
+                _isAdmin = currentUser?.Role == "admin";
+                _evidenceUnlocked = _event.EndAt < DateTime.UtcNow || _event.IsCanceled;
+            }
+        }
+        catch
+        {
+            _event = null;
+            _posts = [];
+            _galleryImages = [];
+            _canPostEvidence = false;
+            _evidenceUnlocked = false;
+            _isAdmin = false;
+            _currentUserId = Guid.Empty;
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
+
+    private async Task OnPostImageSelected(InputFileChangeEventArgs e)
+    {
+        _postError = null;
+        _postImagePreview = null;
+        _postImageBytes = null;
+
+        var file = e.File;
+        if (!StorageService.AllowedMimeTypes.Contains(file.ContentType))
+        {
+            _postError = "Formato no permitido.";
+            return;
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 5L * 1024 * 1024);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            _postImageBytes = ms.ToArray();
+        }
+        catch (IOException)
+        {
+            _postError = "La imagen supera 5 MB.";
+            return;
+        }
+
+        var rawExt = Path.GetExtension(file.Name).TrimStart('.').ToLowerInvariant();
+        _postImageExt = string.IsNullOrEmpty(rawExt) ? "jpg" : rawExt;
+        _postImageContentType = file.ContentType;
+        _postImagePreview = $"data:{file.ContentType};base64,{Convert.ToBase64String(_postImageBytes)}";
+    }
+
+    private void RemovePostImage()
+    {
+        _postImageBytes = null;
+        _postImageContentType = null;
+        _postImageExt = null;
+        _postImagePreview = null;
+    }
+
+    private async Task SubmitPost()
+    {
+        if (_event is null) return;
+
+        _submittingPost = true;
+        _postError = null;
+        try
+        {
+            var created = await EventPostService.CreatePostAsync(
+                _event.Id,
+                _newPostBody,
+                _postImageBytes,
+                _postImageContentType,
+                _postImageExt);
+
+            if (created is not null)
+            {
+                _posts.Insert(0, created);
+                if (!string.IsNullOrEmpty(created.ImageUrl))
+                    _galleryImages.Insert(0, created.ImageUrl);
+                _newPostBody = "";
+                RemovePostImage();
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            _postError = ex.Message;
+        }
+        catch
+        {
+            _postError = "Error inesperado al publicar evidencia del evento.";
+        }
+        finally
+        {
+            _submittingPost = false;
+        }
+    }
+
+    private async Task DeletePost(Guid postId)
+    {
+        if (_event is null) return;
+        var ok = await EventPostService.DeletePostAsync(_event.Id, postId);
+        if (ok)
+        {
+            var removed = _posts.FirstOrDefault(p => p.Id == postId);
+            _posts.RemoveAll(p => p.Id == postId);
+            if (!string.IsNullOrEmpty(removed?.ImageUrl))
+                _galleryImages.Remove(removed.ImageUrl);
+        }
+    }
+
+    private void OpenGalleryImage(string imageUrl) => _selectedGalleryImage = imageUrl;
+
+    private void CloseGalleryImage() => _selectedGalleryImage = null;
 }

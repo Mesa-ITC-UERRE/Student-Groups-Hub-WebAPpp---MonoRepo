@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
@@ -73,6 +74,16 @@ builder.Services.AddAuthorization(options =>
               .AddRequirements(new AdminRoleRequirement()));
 });
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    // Azure Container Apps forwards these headers from the ingress proxy.
+    // Clear the trust lists so the proxy headers are honored in container hosting.
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 // Register the custom admin role authorization handler
 builder.Services.AddSingleton<IAuthorizationHandler, AdminRoleHandler>();
 
@@ -117,14 +128,25 @@ builder.Services.AddHealthChecks()
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GroupService>();
 builder.Services.AddScoped<GroupRegistrationRequestService>();
+builder.Services.AddScoped<LeadershipRequestService>();
 builder.Services.AddScoped<MembershipService>();
 builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<GroupTermService>();
+builder.Services.AddScoped<GroupPostService>();
+builder.Services.AddScoped<EventPostService>();
+builder.Services.AddScoped<GroupSeasonService>();
 
 // Current user context (reads ClaimsPrincipal, upserts user on first call)
 builder.Services.AddScoped<CurrentUserService>();
+
+// ─── Supabase Storage (server-side uploads via REST API) ─────────────────────
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<StorageService>();
+
+// ─── Cross-component user state (avatar broadcast within a circuit) ───────────
+builder.Services.AddScoped<UserStateService>();
 
 // ─── Blazor API wrapper services (inject domain services, no HttpClient) ──────
 builder.Services.AddScoped<GroupApiService>();
@@ -132,9 +154,14 @@ builder.Services.AddScoped<EventApiService>();
 builder.Services.AddScoped<UserApiService>();
 builder.Services.AddScoped<NotificationApiService>();
 builder.Services.AddScoped<GroupRegistrationApiService>();
+builder.Services.AddScoped<LeadershipRequestApiService>();
 builder.Services.AddScoped<DashboardApiService>();
 builder.Services.AddScoped<AdminApiService>();
 builder.Services.AddScoped<GroupTermApiService>();
+builder.Services.AddScoped<GroupPostApiService>();
+builder.Services.AddScoped<EventPostApiService>();
+builder.Services.AddScoped<MisGruposApiService>();
+builder.Services.AddScoped<CalendarApiService>();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -142,6 +169,7 @@ var app = builder.Build();
 
 // ─── Middleware pipeline ──────────────────────────────────────────────────────
 app.UseGlobalExceptionHandler();
+app.UseForwardedHeaders();
 
 if (!app.Environment.IsDevelopment())
 {

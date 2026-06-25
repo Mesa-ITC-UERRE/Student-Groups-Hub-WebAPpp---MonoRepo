@@ -1,9 +1,11 @@
 @page "/admin/requests"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject GroupRegistrationApiService RegistrationService
+@inject LeadershipRequestApiService LeadershipService
+@inject GroupApiService GroupService
 @attribute [Authorize(Policy = "AdminOnly")]
 
-<PageTitle>Solicitudes de Grupos — Admin</PageTitle>
+<PageTitle>Solicitudes — Admin</PageTitle>
 
 <section class="hero-gradient py-4 text-white">
     <div class="container" style="max-width:1200px;">
@@ -19,79 +21,388 @@
         {
             <div class="d-flex justify-content-center py-5"><div class="spinner-uerre"></div></div>
         }
-        else if (_requests.Count == 0)
+        else if (_requests.Count == 0 && _leadershipRequests.Count == 0)
         {
             <div class="text-center py-5">
-                <div class="mb-3 text-success" style="font-size:2.5rem;line-height:1;">&#10003;</div>
+                <div class="mb-3 text-success"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17m4.03 5.97-5.28 5.29-2.28-2.28a.75.75 0 1 0-1.06 1.06l2.81 2.81a.75.75 0 0 0 1.06 0l5.81-5.82a.75.75 0 0 0-1.06-1.06"/></svg></div>
                 <p class="mt-2 text-muted">No hay solicitudes pendientes.</p>
             </div>
         }
         else
         {
-            <div class="d-flex flex-column gap-3">
-                @foreach (var req in _requests)
-                {
-                    <div class="card-uerre p-4">
-                        <div class="d-flex flex-column flex-md-row align-items-md-start gap-3">
-                            <div class="flex-grow-1">
-                                <h6 class="fw-bold text-dark mb-1">@req.ProposedGroupName</h6>
-                                @if (req.ProposedDescription is not null)
-                                {
-                                    <p class="text-muted small mb-2">@req.ProposedDescription</p>
-                                }
-                                <div class="d-flex flex-wrap gap-3" style="font-size:.75rem;color:var(--uerre-muted);">
-                                    <span>@req.ContactEmail</span>
-                                    @if (req.RequestedByDisplayName is not null)
+            @if (_requests.Count > 0)
+            {
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-3">Solicitudes de grupos</h5>
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var req in _requests)
+                        {
+                            <div class="card-uerre p-4">
+                                <!-- Request header -->
+                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-3">
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold text-dark mb-1">@req.ProposedGroupName</h6>
+                                        @if (req.ProposedDescription is not null)
+                                        {
+                                            <p class="text-muted small mb-2">@req.ProposedDescription</p>
+                                        }
+                                        <div class="d-flex flex-wrap gap-3" style="font-size:.75rem;color:var(--uerre-muted);">
+                                            <span>@req.ContactEmail</span>
+                                            @if (req.RequestedByDisplayName is not null)
+                                            {
+                                                <span>@req.RequestedByDisplayName</span>
+                                            }
+                                            @if (req.ProposedCategory is not null)
+                                            {
+                                                <span class="tag-uerre">@req.ProposedCategory</span>
+                                            }
+                                            <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg> @req.CreatedAt.ToString("dd MMM yyyy")</span>
+                                        </div>
+                                    </div>
+                                    @if (_expandedApproveId != req.Id && _expandedRejectId != req.Id)
                                     {
-                                        <span>@req.RequestedByDisplayName</span>
+                                        <div class="d-flex gap-2 flex-shrink-0">
+                                            <button class="btn btn-success rounded-3 px-4"
+                                                    @onclick="() => ExpandApprove(req.Id)" disabled="@_acting">
+                                                Aprobar
+                                            </button>
+                                            <button class="btn btn-outline-danger rounded-3 px-4"
+                                                    @onclick="() => ExpandReject(req.Id)" disabled="@_acting">
+                                                Rechazar
+                                            </button>
+                                        </div>
                                     }
-                                    <span>&#128198; @req.CreatedAt.ToString("dd MMM yyyy")</span>
                                 </div>
+
+                                @if (_expandedApproveId == req.Id)
+                                {
+                                    <div class="mt-3 pt-3" style="border-top:1px solid var(--uerre-border);">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold small">Categoría del grupo</label>
+                                            <select class="form-select form-select-sm rounded-3"
+                                                    @onchange="OnApproveCategoryChange">
+                                                <option value="">— Sin categoría —</option>
+                                                @foreach (var cat in _categories)
+                                                {
+                                                    <option value="@cat" selected="@(_approveCategory == cat)">@cat</option>
+                                                }
+                                                <option value="__new__">Nueva categoría…</option>
+                                            </select>
+                                            @if (_approveCategory == "__new__")
+                                            {
+                                                <input type="text" class="form-control form-control-sm rounded-3 mt-2"
+                                                       placeholder="Nombre de la nueva categoría"
+                                                       @bind="_approveCategoryNew" />
+                                            }
+                                            @if (req.ProposedCategory is not null)
+                                            {
+                                                <div class="form-text">Categoría propuesta: <strong>@req.ProposedCategory</strong></div>
+                                            }
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold small">Notas de decisión (opcional)</label>
+                                            <textarea class="form-control form-control-sm rounded-3" rows="2"
+                                                      @bind="_approveNotes" placeholder="Mensaje al solicitante…"></textarea>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-success rounded-3 px-4"
+                                                    @onclick="() => ConfirmApprove(req.Id)" disabled="@_acting">
+                                                @if (_acting) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                                                Confirmar aprobación
+                                            </button>
+                                            <button class="btn btn-outline-secondary rounded-3"
+                                                    @onclick="CancelExpand" disabled="@_acting">
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (_expandedRejectId == req.Id)
+                                {
+                                    <div class="mt-3 pt-3" style="border-top:1px solid var(--uerre-border);">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold small">Motivo del rechazo (opcional)</label>
+                                            <textarea class="form-control form-control-sm rounded-3" rows="2"
+                                                      @bind="_rejectNotes" placeholder="Explica brevemente el motivo…"></textarea>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-danger rounded-3 px-4"
+                                                    @onclick="() => ConfirmReject(req.Id)" disabled="@_acting">
+                                                @if (_acting) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                                                Confirmar rechazo
+                                            </button>
+                                            <button class="btn btn-outline-secondary rounded-3"
+                                                    @onclick="CancelExpand" disabled="@_acting">
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
                             </div>
-                            <div class="d-flex gap-2 flex-shrink-0">
-                                <button class="btn btn-success rounded-3 px-4"
-                                        @onclick="() => Approve(req.Id)" disabled="@_acting">
-                                    Aprobar
-                                </button>
-                                <button class="btn btn-outline-danger rounded-3 px-4"
-                                        @onclick="() => Reject(req.Id)" disabled="@_acting">
-                                    Rechazar
-                                </button>
-                            </div>
-                        </div>
+                        }
                     </div>
-                }
-            </div>
+                </div>
+            }
+
+            @if (_leadershipRequests.Count > 0)
+            {
+                <div>
+                    <h5 class="fw-bold mb-3">Solicitudes de liderazgo</h5>
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var req in _leadershipRequests)
+                        {
+                            <div class="card-uerre p-4">
+                                <div class="d-flex flex-column flex-md-row align-items-md-start gap-3">
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold text-dark mb-1">@req.GroupName</h6>
+                                        <div class="text-muted small mb-2">Solicitante: @(req.RequestedByDisplayName ?? req.ContactEmail)</div>
+                                        @if (!string.IsNullOrWhiteSpace(req.Reason))
+                                        {
+                                            <p class="text-muted small mb-2">@req.Reason</p>
+                                        }
+                                        <div class="d-flex flex-wrap gap-3" style="font-size:.75rem;color:var(--uerre-muted);">
+                                            <span>@req.ContactEmail</span>
+                                            <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg> @req.CreatedAt.ToString("dd MMM yyyy")</span>
+                                        </div>
+                                    </div>
+                                    @if (_expandedLeadershipApproveId != req.Id && _expandedLeadershipRejectId != req.Id)
+                                    {
+                                        <div class="d-flex gap-2 flex-shrink-0">
+                                            <button class="btn btn-success rounded-3 px-4"
+                                                    @onclick="() => ExpandLeadershipApprove(req.Id)" disabled="@_actingLeadership">
+                                                Aprobar
+                                            </button>
+                                            <button class="btn btn-outline-danger rounded-3 px-4"
+                                                    @onclick="() => ExpandLeadershipReject(req.Id)" disabled="@_actingLeadership">
+                                                Rechazar
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+
+                                @if (_expandedLeadershipApproveId == req.Id)
+                                {
+                                    <div class="mt-3 pt-3" style="border-top:1px solid var(--uerre-border);">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold small">Notas de decisión (opcional)</label>
+                                            <textarea class="form-control form-control-sm rounded-3" rows="2"
+                                                      @bind="_leadershipApproveNotes" placeholder="Mensaje a la persona solicitante…"></textarea>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-success rounded-3 px-4"
+                                                    @onclick="() => ConfirmLeadershipApprove(req.Id)" disabled="@_actingLeadership">
+                                                @if (_actingLeadership) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                                                Confirmar aprobación
+                                            </button>
+                                            <button class="btn btn-outline-secondary rounded-3"
+                                                    @onclick="CancelLeadershipExpand" disabled="@_actingLeadership">
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (_expandedLeadershipRejectId == req.Id)
+                                {
+                                    <div class="mt-3 pt-3" style="border-top:1px solid var(--uerre-border);">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold small">Motivo del rechazo (opcional)</label>
+                                            <textarea class="form-control form-control-sm rounded-3" rows="2"
+                                                      @bind="_leadershipRejectNotes" placeholder="Explica brevemente el motivo…"></textarea>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-danger rounded-3 px-4"
+                                                    @onclick="() => ConfirmLeadershipReject(req.Id)" disabled="@_actingLeadership">
+                                                @if (_actingLeadership) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                                                Confirmar rechazo
+                                            </button>
+                                            <button class="btn btn-outline-secondary rounded-3"
+                                                    @onclick="CancelLeadershipExpand" disabled="@_actingLeadership">
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
         }
     </div>
 </section>
 
 @code {
     private List<GroupRegistrationRequestModel> _requests = [];
+    private List<LeadershipRequestModel> _leadershipRequests = [];
+    private List<string> _categories = [];
     private bool _loading = true, _acting;
+    private bool _actingLeadership;
+
+    private Guid? _expandedApproveId;
+    private Guid? _expandedRejectId;
+    private Guid? _expandedLeadershipApproveId;
+    private Guid? _expandedLeadershipRejectId;
+    private string _approveNotes = "";
+    private string _approveCategory = "";
+    private string _approveCategoryNew = "";
+    private string _rejectNotes = "";
+    private string _leadershipApproveNotes = "";
+    private string _leadershipRejectNotes = "";
 
     protected override async Task OnInitializedAsync()
     {
-        try { _requests = await RegistrationService.GetAllPendingAsync(); }
-        catch { _requests = []; }
+        try
+        {
+            var reqTask = RegistrationService.GetAllPendingAsync();
+            var leadershipTask = LeadershipService.GetAllPendingAsync();
+            var catTask = GroupService.GetCategoriesAsync();
+            await Task.WhenAll(reqTask, leadershipTask, catTask);
+            _requests   = reqTask.Result;
+            _leadershipRequests = leadershipTask.Result;
+            _categories = catTask.Result;
+        }
+        catch { _requests = []; _leadershipRequests = []; }
         finally { _loading = false; }
     }
 
-    private async Task Approve(Guid id)
+    private void ExpandApprove(Guid id)
     {
-        _acting = true;
-        await RegistrationService.ApproveAsync(id);
-        _requests.RemoveAll(r => r.Id == id);
-        _acting = false;
-        StateHasChanged();
+        _expandedApproveId = id;
+        _expandedRejectId  = null;
+        _approveNotes      = "";
+        _approveCategory   = "";
+        _approveCategoryNew = "";
     }
 
-    private async Task Reject(Guid id)
+    private void ExpandReject(Guid id)
+    {
+        _expandedRejectId  = id;
+        _expandedApproveId = null;
+        _rejectNotes       = "";
+    }
+
+    private void CancelExpand()
+    {
+        _expandedApproveId = null;
+        _expandedRejectId  = null;
+    }
+
+    private void ExpandLeadershipApprove(Guid id)
+    {
+        _expandedLeadershipApproveId = id;
+        _expandedLeadershipRejectId = null;
+        _leadershipApproveNotes = "";
+    }
+
+    private void ExpandLeadershipReject(Guid id)
+    {
+        _expandedLeadershipRejectId = id;
+        _expandedLeadershipApproveId = null;
+        _leadershipRejectNotes = "";
+    }
+
+    private void CancelLeadershipExpand()
+    {
+        _expandedLeadershipApproveId = null;
+        _expandedLeadershipRejectId = null;
+    }
+
+    private void OnApproveCategoryChange(ChangeEventArgs e)
+    {
+        _approveCategory    = e.Value?.ToString() ?? "";
+        _approveCategoryNew = "";
+    }
+
+    private async Task ConfirmApprove(Guid id)
     {
         _acting = true;
-        await RegistrationService.RejectAsync(id);
-        _requests.RemoveAll(r => r.Id == id);
-        _acting = false;
-        StateHasChanged();
+        try
+        {
+            var finalCategory = _approveCategory == "__new__"
+                ? (_approveCategoryNew.Trim().Length > 0 ? _approveCategoryNew.Trim() : null)
+                : (_approveCategory.Length > 0 ? _approveCategory : null);
+
+            var result = await RegistrationService.ApproveAsync(
+                id,
+                string.IsNullOrWhiteSpace(_approveNotes) ? null : _approveNotes.Trim(),
+                finalCategory);
+
+            if (result is not null)
+            {
+                _requests.RemoveAll(r => r.Id == id);
+                _expandedApproveId = null;
+            }
+        }
+        finally
+        {
+            _acting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ConfirmReject(Guid id)
+    {
+        _acting = true;
+        try
+        {
+            var result = await RegistrationService.RejectAsync(
+                id,
+                string.IsNullOrWhiteSpace(_rejectNotes) ? null : _rejectNotes.Trim());
+
+            if (result is not null)
+            {
+                _requests.RemoveAll(r => r.Id == id);
+                _expandedRejectId = null;
+            }
+        }
+        finally
+        {
+            _acting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ConfirmLeadershipApprove(Guid id)
+    {
+        _actingLeadership = true;
+        try
+        {
+            var result = await LeadershipService.ApproveAsync(
+                id,
+                string.IsNullOrWhiteSpace(_leadershipApproveNotes) ? null : _leadershipApproveNotes.Trim());
+            if (result is not null)
+            {
+                _leadershipRequests.RemoveAll(r => r.Id == id);
+                _expandedLeadershipApproveId = null;
+            }
+        }
+        finally
+        {
+            _actingLeadership = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ConfirmLeadershipReject(Guid id)
+    {
+        _actingLeadership = true;
+        try
+        {
+            var result = await LeadershipService.RejectAsync(
+                id,
+                string.IsNullOrWhiteSpace(_leadershipRejectNotes) ? null : _leadershipRejectNotes.Trim());
+            if (result is not null)
+            {
+                _leadershipRequests.RemoveAll(r => r.Id == id);
+                _expandedLeadershipRejectId = null;
+            }
+        }
+        finally
+        {
+            _actingLeadership = false;
+            StateHasChanged();
+        }
     }
 }

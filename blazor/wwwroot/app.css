@@ -98,16 +98,78 @@ a:hover { color: var(--uerre-purple-dark); }
     color: var(--uerre-muted); line-height: 1;
 }
 
+/* ─── Navbar base ─────────────────────────────────────────────── */
 .navbar-uerre .nav-link {
     font-size: .875rem; font-weight: 500;
-    color: #4b5563; border-radius: 7px;
+    border-radius: 7px;
     padding: .4rem .875rem;
-    transition: all .15s ease;
+    transition: background .15s ease, color .15s ease;
     position: relative;
 }
 
-.navbar-uerre .nav-link:hover { background: var(--uerre-tag-bg); color: var(--uerre-purple); }
+/* Default — keep generic hover/active for links that have no accent class */
+.navbar-uerre .nav-link:hover  { background: var(--uerre-tag-bg); color: var(--uerre-purple); }
 .navbar-uerre .nav-link.active { color: var(--uerre-purple); font-weight: 600; }
+
+/* ── Per-link colour accents ─────────────────────────────────── */
+/* Bottom underline that slides in when active */
+.navbar-uerre .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%; right: 50%;
+    height: 2.5px; border-radius: 2px;
+    transition: left .18s ease, right .18s ease;
+    background: transparent;
+}
+.navbar-uerre .nav-link.active::after { left: .875rem; right: .875rem; }
+
+/* ── Inicio — slate ── */
+.navbar-uerre .nav-link.nav-accent-slate        { color: #475569; }
+.navbar-uerre .nav-link.nav-accent-slate:hover  { background: #f1f5f9; color: #334155; }
+.navbar-uerre .nav-link.nav-accent-slate.active { color: #334155; font-weight: 600; }
+.navbar-uerre .nav-link.nav-accent-slate::after  { background: #64748b; }
+
+/* ── Grupos — blue ── */
+.navbar-uerre .nav-link.nav-accent-blue        { color: #2563eb; }
+.navbar-uerre .nav-link.nav-accent-blue:hover  { background: #eff6ff; color: #1d4ed8; }
+.navbar-uerre .nav-link.nav-accent-blue.active { color: #1d4ed8; font-weight: 600; }
+.navbar-uerre .nav-link.nav-accent-blue::after  { background: #3b82f6; }
+
+/* ── Mis Grupos — violet ── */
+.navbar-uerre .nav-link.nav-accent-violet        { color: #7c3aed; }
+.navbar-uerre .nav-link.nav-accent-violet:hover  { background: #f5f3ff; color: #6d28d9; }
+.navbar-uerre .nav-link.nav-accent-violet.active { color: #6d28d9; font-weight: 600; }
+.navbar-uerre .nav-link.nav-accent-violet::after  { background: #8b5cf6; }
+
+/* ── Eventos — amber ── */
+.navbar-uerre .nav-link.nav-accent-amber        { color: #b45309; }
+.navbar-uerre .nav-link.nav-accent-amber:hover  { background: #fffbeb; color: #92400e; }
+.navbar-uerre .nav-link.nav-accent-amber.active { color: #92400e; font-weight: 600; }
+.navbar-uerre .nav-link.nav-accent-amber::after  { background: #f59e0b; }
+
+/* ── Calendario — teal ── */
+.navbar-uerre .nav-link.nav-accent-teal        { color: #0f766e; }
+.navbar-uerre .nav-link.nav-accent-teal:hover  { background: #f0fdfa; color: #0d6b63; }
+.navbar-uerre .nav-link.nav-accent-teal.active { color: #0d6b63; font-weight: 600; }
+.navbar-uerre .nav-link.nav-accent-teal::after  { background: #14b8a6; }
+
+/* ── Historial — rose ── */
+.navbar-uerre .nav-link.nav-accent-rose        { color: #be123c; }
+.navbar-uerre .nav-link.nav-accent-rose:hover  { background: #fff1f2; color: #9f1239; }
+.navbar-uerre .nav-link.nav-accent-rose.active { color: #9f1239; font-weight: 600; }
+.navbar-uerre .nav-link.nav-accent-rose::after  { background: #f43f5e; }
+
+/* ── FEUR — purple ── */
+.navbar-uerre .nav-link.nav-accent-emerald        { color: #7c3aed; }
+.navbar-uerre .nav-link.nav-accent-emerald:hover  { background: #f5f3ff; color: #6d28d9; }
+.navbar-uerre .nav-link.nav-accent-emerald.active { color: #6d28d9; font-weight: 600; }
+.navbar-uerre .nav-link.nav-accent-emerald::after  { background: #8b5cf6; }
+
+/* ── Admin — orange ── */
+.navbar-uerre .nav-link.nav-accent-orange        { color: #c2410c; }
+.navbar-uerre .nav-link.nav-accent-orange:hover  { background: #fff7ed; color: #9a3412; }
+.navbar-uerre .nav-link.nav-accent-orange.active { color: #9a3412; font-weight: 600; }
+.navbar-uerre .nav-link.nav-accent-orange::after  { background: #f97316; }
 
 .navbar-avatar {
     width: 34px; height: 34px;
@@ -168,6 +230,35 @@ a:hover { color: var(--uerre-purple-dark); }
 }
 
 .btn-xs { padding: .2rem .6rem; font-size: .7rem; border-radius: 6px; }
+
+/* ─── Hero ghost button (white text on gradient backgrounds) ─── */
+.btn-hero {
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, .12) !important;
+    border: 1.5px solid rgba(255, 255, 255, .55) !important;
+    backdrop-filter: blur(4px);
+    border-radius: 9px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: .8125rem;
+    box-shadow: none !important;
+    transition: background-color .18s ease, border-color .18s ease, transform .15s ease;
+}
+.btn-hero:hover,
+.btn-hero:focus,
+.btn-hero:focus-visible {
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, .25) !important;
+    border-color: rgba(255, 255, 255, .85) !important;
+    transform: translateY(-2px);
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15) !important;
+}
+.btn-hero:active {
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, .18) !important;
+    transform: translateY(0);
+}
 
 /* ─── Hero Sections ──────────────────────────────────────────── */
 .hero-gradient {
@@ -351,6 +442,13 @@ a:hover { color: var(--uerre-purple-dark); }
     -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 16px 40px rgba(0,0,0,.2);
     padding: 1.125rem;
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+a:hover .hero-float-card {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 22px 48px rgba(0,0,0,.3);
+    background: rgba(255,255,255,.18);
+    border-color: rgba(255,255,255,.28);
 }
 
 /* ─── Social Proof Avatars ───────────────────────────────────── */
@@ -414,6 +512,14 @@ a:hover { color: var(--uerre-purple-dark); }
 }
 .search-input-wrapper input { padding-left: 2.5rem !important; }
 
+/* White placeholder + icon for search boxes on dark/gradient backgrounds */
+.page-header .search-input-wrapper .search-icon { color: rgba(255,255,255,.6); }
+.page-header .search-input-wrapper input::placeholder { color: rgba(255,255,255,.55); opacity: 1; }
+.page-header .search-input-wrapper input::-webkit-input-placeholder { color: rgba(255,255,255,.55); }
+.page-header .search-input-wrapper input::-moz-placeholder { color: rgba(255,255,255,.55); opacity: 1; }
+.hero-gradient .search-input-wrapper .search-icon { color: rgba(255,255,255,.6); }
+.hero-gradient .search-input-wrapper input::placeholder { color: rgba(255,255,255,.55); opacity: 1; }
+
 /* ─── Filter Chips ───────────────────────────────────────────── */
 .filter-chip {
     display: inline-flex; align-items: center;
@@ -443,8 +549,10 @@ a:hover { color: var(--uerre-purple-dark); }
     width: 72px; height: 72px; border-radius: 20px;
     background: var(--uerre-tag-bg);
     display: flex; align-items: center; justify-content: center;
-    font-size: 2rem; margin: 0 auto 1.25rem;
+    margin: 0 auto 1.25rem;
+    color: var(--uerre-purple);
 }
+.empty-icon svg { display: block; }
 
 /* ─── Notification Badge ─────────────────────────────────────── */
 .notif-badge {
@@ -546,7 +654,7 @@ a:hover { color: var(--uerre-purple-dark); }
 .footer-links { margin: 0; list-style: none; padding: 0; }
 .footer-links li + li { margin-top: .5rem; }
 .footer-links a {
-    font-size: .825rem; color: rgba(255,255,255,.4);
+    font-size: .825rem; color: rgba(255,255,255,.9);
     text-decoration: none; transition: color .15s;
 }
 .footer-links a:hover { color: rgba(255,255,255,.9); }
@@ -692,4 +800,147 @@ a:hover { color: var(--uerre-purple-dark); }
     text-transform: uppercase;
     letter-spacing: .04em;
     line-height: 1.2;
+}
+
+/* ─── Calendar ───────────────────────────────────────────────── */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+
+.calendar-legend-card {
+    padding: .7rem .95rem;
+    background: rgba(255,255,255,.96);
+    border: 1px solid rgba(255,255,255,.55);
+    border-radius: 16px;
+    box-shadow: 0 14px 32px rgba(49, 16, 105, .18);
+    color: var(--uerre-text);
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.calendar-legend-item {
+    white-space: nowrap;
+}
+
+.calendar-legend-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 999px;
+    display: inline-block;
+    box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+}
+
+.calendar-legend-dot--mine {
+    background: var(--uerre-purple);
+}
+
+.calendar-legend-dot--other {
+    background: var(--uerre-gold);
+    box-shadow: 0 0 0 3px rgba(245,158,11,.14);
+}
+
+.calendar-day-header {
+    text-align: center;
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--uerre-muted);
+    padding: .35rem 0;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.calendar-cell {
+    min-height: 82px;
+    background: #fff;
+    border: 1.5px solid var(--uerre-border);
+    border-radius: 12px;
+    padding: .45rem .55rem;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.calendar-cell:hover {
+    border-color: var(--uerre-purple);
+    box-shadow: 0 0 0 2px rgba(124,58,237,.08);
+}
+
+.calendar-cell--empty {
+    background: transparent;
+    border-color: transparent;
+    cursor: default;
+    pointer-events: none;
+}
+
+.calendar-cell--today {
+    border-color: var(--uerre-purple);
+    background: var(--uerre-tag-bg);
+}
+
+.calendar-cell--selected {
+    border-color: var(--uerre-purple) !important;
+    box-shadow: 0 0 0 3px rgba(124,58,237,.18) !important;
+}
+
+.calendar-cell--has-events .calendar-day-number {
+    font-weight: 700;
+    color: var(--uerre-purple-dark);
+}
+
+.calendar-day-number {
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--uerre-text);
+    display: block;
+    margin-bottom: .2rem;
+}
+
+.calendar-indicators {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+}
+
+.calendar-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 22px;
+    padding: 0 .45rem;
+    border-radius: 999px;
+    font-size: .68rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: .02em;
+}
+
+.calendar-indicator-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.calendar-indicator--mine {
+    background: rgba(124,58,237,.12);
+    color: var(--uerre-purple-dark);
+}
+
+.calendar-indicator--mine .calendar-indicator-dot {
+    background: var(--uerre-purple);
+}
+
+.calendar-indicator--other {
+    background: rgba(245,158,11,.16);
+    color: #9a6700;
+}
+
+.calendar-indicator--other .calendar-indicator-dot {
+    background: var(--uerre-gold);
 }

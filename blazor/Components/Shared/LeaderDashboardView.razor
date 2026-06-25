@@ -14,10 +14,19 @@
         @foreach (var req in Data.PendingMembershipRequests)
         {
             <div class="card-uerre p-3 d-flex align-items-center gap-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
-                     style="width:36px;height:36px;background:var(--uerre-purple);font-size:.75rem;">
-                    @req.Initial
-                </div>
+                @if (!string.IsNullOrEmpty(req.AvatarUrl))
+                {
+                    <img src="@req.AvatarUrl" alt=""
+                         class="rounded-circle flex-shrink-0"
+                         style="width:36px;height:36px;object-fit:cover;" />
+                }
+                else
+                {
+                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                         style="width:36px;height:36px;background:var(--uerre-purple);font-size:.75rem;">
+                        @req.Initial
+                    </div>
+                }
                 <div class="flex-grow-1 min-w-0">
                     <div class="fw-bold small text-dark text-truncate">@req.DisplayLabel</div>
                     <div class="text-muted" style="font-size:.7rem;">@req.Email</div>
@@ -62,6 +71,59 @@
             </div>
         }
     </div>
+
+    <h5 class="fw-bold mb-3">Miembros Activos</h5>
+    <div class="d-flex flex-column gap-3 mb-5">
+        @foreach (var g in Data.ManagedGroups)
+        {
+            var isLoading = _loadingGroups.Contains(g.Id);
+            var members = _groupMembers.GetValueOrDefault(g.Id, []);
+            <div class="card-uerre p-3">
+                <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+                    <div>
+                        <div class="fw-bold small text-dark">@g.Name</div>
+                        <div class="text-muted" style="font-size:.72rem;">@members.Count miembros cargados</div>
+                    </div>
+                    <button class="btn btn-sm btn-uerre-outline rounded-pill px-3"
+                            @onclick="() => ToggleMembers(g.Id)"
+                            disabled="@_acting">
+                        @(_expandedGroupId == g.Id ? "Ocultar" : "Ver miembros")
+                    </button>
+                </div>
+
+                @if (_expandedGroupId == g.Id)
+                {
+                    if (isLoading)
+                    {
+                        <div class="d-flex justify-content-center py-3"><div class="spinner-border spinner-border-sm text-secondary"></div></div>
+                    }
+                    else if (members.Count == 0)
+                    {
+                        <p class="text-muted small mb-0">Sin miembros activos.</p>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-column gap-2 mt-2">
+                            @foreach (var member in members)
+                            {
+                                <div class="d-flex align-items-center gap-3 border rounded-3 px-3 py-2 bg-white">
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="fw-semibold small text-dark text-truncate">@member.DisplayLabel</div>
+                                        <div class="text-muted" style="font-size:.7rem;">@member.Email</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                            @onclick="() => RemoveMember(g.Id, member.UserId)"
+                                            disabled="@_acting">
+                                        Eliminar
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
 }
 
 <!-- Upcoming Events -->
@@ -101,25 +163,76 @@
     [Parameter] public EventCallback<Guid> OnMarkRead { get; set; }
 
     private bool _acting;
+    private Guid? _expandedGroupId;
+    private readonly Dictionary<Guid, List<GroupMemberModel>> _groupMembers = [];
+    private readonly HashSet<Guid> _loadingGroups = [];
 
     private async Task Approve(MembershipModel req)
     {
         _acting = true;
-        // Find the group this membership belongs to
-        var groupId = Data?.ManagedGroups?.FirstOrDefault()?.Id ?? Guid.Empty;
-        await GroupService.ApproveMembershipAsync(groupId, req.MembershipId);
-        Data?.PendingMembershipRequests?.Remove(req);
-        _acting = false;
-        StateHasChanged();
+        try
+        {
+            await GroupService.ApproveMembershipAsync(req.GroupId, req.MembershipId);
+            Data?.PendingMembershipRequests?.Remove(req);
+        }
+        finally
+        {
+            _acting = false;
+            StateHasChanged();
+        }
     }
 
     private async Task Reject(MembershipModel req)
     {
         _acting = true;
-        var groupId = Data?.ManagedGroups?.FirstOrDefault()?.Id ?? Guid.Empty;
-        await GroupService.RejectMembershipAsync(groupId, req.MembershipId);
-        Data?.PendingMembershipRequests?.Remove(req);
-        _acting = false;
-        StateHasChanged();
+        try
+        {
+            await GroupService.RejectMembershipAsync(req.GroupId, req.MembershipId);
+            Data?.PendingMembershipRequests?.Remove(req);
+        }
+        finally
+        {
+            _acting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleMembers(Guid groupId)
+    {
+        if (_expandedGroupId == groupId)
+        {
+            _expandedGroupId = null;
+            return;
+        }
+
+        _expandedGroupId = groupId;
+        if (_groupMembers.ContainsKey(groupId)) return;
+
+        _loadingGroups.Add(groupId);
+        try
+        {
+            _groupMembers[groupId] = await GroupService.GetMembersAsync(groupId);
+        }
+        finally
+        {
+            _loadingGroups.Remove(groupId);
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveMember(Guid groupId, Guid userId)
+    {
+        _acting = true;
+        try
+        {
+            await GroupService.RemoveMemberAsync(groupId, userId);
+            if (_groupMembers.TryGetValue(groupId, out var members))
+                _groupMembers[groupId] = members.Where(m => m.UserId != userId).ToList();
+        }
+        finally
+        {
+            _acting = false;
+            StateHasChanged();
+        }
     }
 }

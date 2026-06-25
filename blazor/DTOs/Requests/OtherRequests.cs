@@ -19,6 +19,7 @@ public record UpdateEventRequest(
     [MaxLength(200)] string? Title,
     string? Description,
     [MaxLength(300)] string? Location,
+    string? BannerUrl,
     DateTime? StartAt,
     DateTime? EndAt,
     int? Capacity,

@@ -8,12 +8,18 @@ namespace StudentGroupsHub.Services;
 
 public class EventService(IDbContextFactory<AppDbContext> dbFactory)
 {
-    public async Task<List<Event>> GetUpcomingAsync(string? search = null, Guid? groupId = null)
+    public async Task<List<Event>> GetUpcomingAsync(
+        string? search = null,
+        Guid? groupId = null,
+        DateTime? fromUtc = null,
+        DateTime? toUtc = null)
     {
         using var db = dbFactory.CreateDbContext();
+        var from = fromUtc ?? DateTime.UtcNow;
         var q = db.Events.Include(e => e.Group)
-            .Where(e => e.Status == "published" && e.StartAt >= DateTime.UtcNow)
+            .Where(e => e.Status == "published" && e.StartAt >= from)
             .AsQueryable();
+        if (toUtc.HasValue) q = q.Where(e => e.StartAt <= toUtc.Value);
         if (groupId.HasValue) q = q.Where(e => e.GroupId == groupId.Value);
         if (!string.IsNullOrWhiteSpace(search))
             q = q.Where(e => EF.Functions.ILike(e.Title, $"%{search}%"));
@@ -33,6 +39,16 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
     {
         using var db = dbFactory.CreateDbContext();
         return await db.Events.Include(e => e.Group).FirstOrDefaultAsync(e => e.Id == id);
+    }
+
+    public async Task<List<Event>> GetAllPublishedAsync()
+    {
+        using var db = dbFactory.CreateDbContext();
+        return await db.Events
+            .Include(e => e.Group)
+            .Where(e => e.Status == "published")
+            .OrderByDescending(e => e.StartAt)
+            .ToListAsync();
     }
 
     public async Task<Event> CreateAsync(Guid groupId, Guid createdByUserId, CreateEventRequest req)
@@ -61,6 +77,7 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         if (req.Title      is not null) ev.Title      = req.Title;
         if (req.Description is not null) ev.Description = req.Description;
         if (req.Location   is not null) ev.Location   = req.Location;
+        if (req.BannerUrl  is not null) ev.BannerUrl  = req.BannerUrl;
         if (req.StartAt    is not null) ev.StartAt    = req.StartAt.Value.ToUniversalTime();
         if (req.EndAt      is not null) ev.EndAt      = req.EndAt.Value.ToUniversalTime();
         if (req.Capacity   is not null) ev.Capacity   = req.Capacity;
@@ -136,6 +153,34 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         using var db = dbFactory.CreateDbContext();
         return await db.EventParticipations
             .CountAsync(p => p.EventId == eventId && p.Status == "going");
+    }
+
+    /// <summary>
+    /// Returns all published events whose StartAt falls within the given calendar month.
+    /// Optionally filtered to specific group IDs.
+    /// </summary>
+    public async Task<List<Event>> GetForMonthAsync(
+        int year, int month, IEnumerable<Guid>? groupIds = null)
+    {
+        using var db = dbFactory.CreateDbContext();
+        var from = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var to   = from.AddMonths(1);
+
+        var q = db.Events
+            .Include(e => e.Group)
+            .Where(e => e.Status == "published"
+                     && e.StartAt >= from
+                     && e.StartAt < to)
+            .AsQueryable();
+
+        if (groupIds is not null)
+        {
+            var ids = groupIds.ToList();
+            if (ids.Count > 0)
+                q = q.Where(e => ids.Contains(e.GroupId));
+        }
+
+        return await q.OrderBy(e => e.StartAt).ToListAsync();
     }
 
     public async Task<EventResponse> ToResponseAsync(Event e)

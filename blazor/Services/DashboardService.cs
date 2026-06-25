@@ -32,6 +32,13 @@ public class DashboardService(IDbContextFactory<AppDbContext> dbFactory, GroupSe
             .Take(5)
             .ToListAsync();
 
+        var leadershipRequests = await db.LeadershipRequests
+            .Include(r => r.Group)
+            .Include(r => r.RequestedBy)
+            .Where(r => r.RequestedByUserId == userId)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+
         // Sequential — EF Core does not support concurrent queries on same context
         var groupResponses = new List<GroupResponse>();
         foreach (var g in joinedGroups)
@@ -43,7 +50,8 @@ public class DashboardService(IDbContextFactory<AppDbContext> dbFactory, GroupSe
         return new DashboardStudentResponse(
             groupResponses,
             pendingRequests.Select(MembershipService.ToResponse).ToList(),
-            upcomingEvents.Select(e => EventService.ToResponse(e)).ToList()
+            upcomingEvents.Select(e => EventService.ToResponse(e)).ToList(),
+            leadershipRequests.Select(LeadershipRequestService.ToResponse).ToList()
         );
     }
 
@@ -96,12 +104,13 @@ public class DashboardService(IDbContextFactory<AppDbContext> dbFactory, GroupSe
         var totalGroups         = await db.Groups.CountAsync();
         var activeGroups        = await db.Groups.CountAsync(g => g.Status == "active");
         var pendingRequests     = await db.GroupRegistrationRequests.CountAsync(r => r.Status == "pending");
+        var pendingLeadershipRequests = await db.LeadershipRequests.CountAsync(r => r.Status == "pending");
         var totalEvents         = await db.Events.CountAsync();
         var totalMemberships    = await db.Memberships.CountAsync();
         var totalParticipations = await db.EventParticipations.CountAsync();
 
         return new DashboardAdminResponse(
-            totalUsers, totalGroups, activeGroups, pendingRequests,
+            totalUsers, totalGroups, activeGroups, pendingRequests, pendingLeadershipRequests,
             totalEvents, totalMemberships, totalParticipations);
     }
 }

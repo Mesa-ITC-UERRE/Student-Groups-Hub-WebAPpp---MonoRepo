@@ -5,7 +5,7 @@
         <a href="/groups" class="text-decoration-none">
             <div class="card-uerre p-4 d-flex align-items-center gap-3">
                 <div class="rounded-3 d-flex align-items-center justify-content-center"
-                 style="width:44px;height:44px;background:var(--uerre-tag-bg);font-size:1.25rem;font-weight:700;color:var(--uerre-purple);">&#9651;</div>
+                 style="width:44px;height:44px;background:var(--uerre-tag-bg);color:var(--uerre-purple);"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg></div>
                 <div>
                     <div class="fw-bold small text-dark">Explorar Grupos</div>
                     <div class="text-muted" style="font-size:.75rem;">Descubre y únete a grupos</div>
@@ -94,6 +94,27 @@
             <div class="card-uerre p-3 d-flex align-items-start gap-3">
                 <div class="flex-grow-1 min-w-0">
                     <div class="fw-bold small text-dark">@req.ProposedGroupName</div>
+                    @if (req.DecisionNotes is not null)
+                    {
+                        <div class="text-muted fst-italic" style="font-size:.7rem;">@req.DecisionNotes</div>
+                    }
+                </div>
+                <span class="badge rounded-pill flex-shrink-0 @req.StatusCss">@req.StatusLabel</span>
+            </div>
+        }
+    </div>
+}
+
+@if (Data?.LeadershipRequests?.Count > 0)
+{
+    <h5 class="fw-bold mb-3 mt-5">Mis Solicitudes de Liderazgo</h5>
+    <div class="d-flex flex-column gap-2">
+        @foreach (var req in Data.LeadershipRequests)
+        {
+            <div class="card-uerre p-3 d-flex align-items-start gap-3">
+                <div class="flex-grow-1 min-w-0">
+                    <div class="fw-bold small text-dark">@req.GroupName</div>
+                    <div class="text-muted" style="font-size:.72rem;">Solicitar liderazgo</div>
                     @if (req.DecisionNotes is not null)
                     {
                         <div class="text-muted fst-italic" style="font-size:.7rem;">@req.DecisionNotes</div>

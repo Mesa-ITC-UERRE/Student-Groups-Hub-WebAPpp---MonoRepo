@@ -1,0 +1,178 @@
+@page "/groups/{Slug}/apply-leadership"
+@using System.ComponentModel.DataAnnotations
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject GroupApiService GroupService
+@inject LeadershipRequestApiService LeadershipService
+@inject CurrentUserService CurrentUser
+@attribute [Authorize]
+
+<PageTitle>Solicitar Liderazgo — Student Groups Hub</PageTitle>
+
+<section class="hero-gradient py-4 text-white">
+    <div class="container max-w-xl">
+        <a href="/groups/@Slug" class="text-white-50 text-decoration-none small mb-3 d-inline-flex align-items-center gap-1">
+            ← Regresar al grupo
+        </a>
+        <h1 class="fw-bold mb-1" style="font-family:'Montserrat',sans-serif;">Solicitar liderazgo</h1>
+        <p style="color:rgba(255,255,255,.7);" class="mb-0">
+            Envía tu solicitud para liderar el grupo en el nuevo ciclo.
+        </p>
+    </div>
+</section>
+
+<section class="py-5" style="background:var(--uerre-surface);">
+    <div class="container max-w-xl">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                @if (_loading)
+                {
+                    <div class="d-flex justify-content-center py-5"><div class="spinner-uerre"></div></div>
+                }
+                else if (_group is null)
+                {
+                    <div class="alert alert-danger rounded-3">No se encontró el grupo solicitado.</div>
+                }
+                else if (_success)
+                {
+                    <div class="card-uerre p-5 text-center">
+                        <div class="mb-3 text-success"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17m4.03 5.97-5.28 5.29-2.28-2.28a.75.75 0 1 0-1.06 1.06l2.81 2.81a.75.75 0 0 0 1.06 0l5.81-5.82a.75.75 0 0 0-1.06-1.06"/></svg></div>
+                        <h4 class="fw-bold mb-2">¡Solicitud enviada!</h4>
+                        <p class="text-muted mb-4">
+                            Tu solicitud para liderar <strong>@_group.Name</strong> fue enviada correctamente.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="/perfil" class="btn btn-uerre-outline">Ver mis solicitudes</a>
+                            <a href="/groups/@Slug" class="btn btn-uerre-primary">Volver al grupo</a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-uerre p-4 p-md-5">
+                        <div class="mb-4">
+                            <h5 class="fw-bold text-dark mb-1">@_group.Name</h5>
+                            <p class="text-muted small mb-0">El equipo administrador revisará la solicitud antes de asignar el liderazgo.</p>
+                        </div>
+
+                        @if (_error is not null)
+                        {
+                            <div class="alert alert-danger rounded-3 small">@_error</div>
+                        }
+
+                        <EditForm Model="_form" OnValidSubmit="HandleSubmit" FormName="apply-leadership">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">
+                                    Correo de contacto <span class="text-danger">*</span>
+                                </label>
+                                <InputText @bind-Value="_form.ContactEmail"
+                                           type="email"
+                                           class="form-control rounded-3"
+                                           placeholder="tu.nombre@uerre.mx" />
+                                <ValidationMessage For="() => _form.ContactEmail" class="small text-danger" />
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">¿Por qué quieres liderar este grupo?</label>
+                                <InputTextArea @bind-Value="_form.Reason"
+                                               class="form-control rounded-3"
+                                               rows="4"
+                                               placeholder="Describe tus motivos, ideas para el nuevo ciclo o experiencia previa." />
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-3 pt-2">
+                                <a href="/groups/@Slug" class="btn btn-uerre-outline">Cancelar</a>
+                                <button type="submit" class="btn btn-uerre-primary px-4" disabled="@_submitting">
+                                    @if (_submitting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2"></span>
+                                        <span>Enviando...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Enviar solicitud</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    private GroupModel? _group;
+    private readonly LeadershipForm _form = new();
+    private bool _loading = true;
+    private bool _submitting;
+    private bool _success;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _group = await GroupService.GetBySlugAsync(Slug);
+            var user = await CurrentUser.GetUserAsync();
+            if (user is not null)
+                _form.ContactEmail = user.Email;
+
+            if (_group is not null)
+            {
+                var canRequest = await LeadershipService.CanRequestAsync(_group.Id);
+                if (!canRequest)
+                    _error = "No cumples los requisitos para solicitar el liderazgo de este grupo.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (_group is null) return;
+
+        _submitting = true;
+        _error = null;
+        try
+        {
+            var result = await LeadershipService.CreateAsync(new StudentGroupsHub.DTOs.Requests.CreateLeadershipRequest(
+                _group.Id,
+                string.IsNullOrWhiteSpace(_form.Reason) ? null : _form.Reason.Trim(),
+                _form.ContactEmail.Trim()));
+
+            if (result is not null)
+                _success = true;
+            else
+                _error = "No se pudo enviar la solicitud. Inténtalo nuevamente.";
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private class LeadershipForm
+    {
+        [Required(ErrorMessage = "El correo de contacto es requerido.")]
+        [EmailAddress(ErrorMessage = "Ingresa un correo válido.")]
+        public string ContactEmail { get; set; } = "";
+
+        public string? Reason { get; set; }
+    }
+}

@@ -14,7 +14,9 @@ namespace StudentGroupsHub.Controllers;
 public class AdminController(
     IDbContextFactory<AppDbContext> dbFactory,
     UserService userService,
-    DashboardService dashboardService) : ControllerBase
+    DashboardService dashboardService,
+    GroupSeasonService groupSeasonService,
+    NotificationService notificationService) : ControllerBase
 {
     private async Task<bool> IsAdminAsync()
     {
@@ -80,7 +82,102 @@ public class AdminController(
         var data = await dashboardService.GetAdminDashboardAsync();
         return Ok(data);
     }
+
+    // POST /api/admin/groups/reset-season
+    [HttpPost("groups/reset-season")]
+    public async Task<IActionResult> ResetSeason([FromBody] ResetSeasonRequest? request)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        using var db = dbFactory.CreateDbContext();
+        var skipIds = (request?.SkipGroupIds ?? []).Distinct().ToHashSet();
+        var targetIds = await db.Groups
+            .Where(g => g.Status == "active" && !skipIds.Contains(g.Id))
+            .Select(g => g.Id)
+            .ToListAsync();
+
+        var affectedLeaders = await db.RoleAssignments
+            .Include(r => r.Group)
+            .Where(r => targetIds.Contains(r.GroupId) && r.PermissionRole == "leader")
+            .ToListAsync();
+
+        var affectedMemberships = await db.Memberships
+            .Include(m => m.Group)
+            .Where(m => targetIds.Contains(m.GroupId) && (m.Status == "accepted" || m.Status == "pending"))
+            .ToListAsync();
+
+        await groupSeasonService.ResetSeasonAsync(targetIds);
+
+        foreach (var leader in affectedLeaders)
+        {
+            await notificationService.CreateAsync(leader.UserId,
+                "group_season_reset",
+                $"Tu periodo como líder de {leader.Group?.Name} ha concluido.",
+                "El grupo fue reiniciado para el nuevo ciclo y requerirá nuevas solicitudes de liderazgo.",
+                $"/groups/{leader.Group?.Slug}",
+                leader.GroupId, "group");
+        }
+
+        foreach (var membership in affectedMemberships)
+        {
+            await notificationService.CreateAsync(membership.UserId,
+                "group_membership_reset",
+                $"{membership.Group?.Name} reinició su ciclo.",
+                membership.Status == "accepted"
+                    ? "Tu membresía fue cerrada y debes volver a unirte en el nuevo ciclo."
+                    : "Tu solicitud fue cerrada por el reinicio anual del grupo.",
+                $"/groups/{membership.Group?.Slug}",
+                membership.GroupId, "group");
+        }
+
+        return NoContent();
+    }
+
+    // POST /api/admin/groups/{id}/reset-season
+    [HttpPost("groups/{id:guid}/reset-season")]
+    public async Task<IActionResult> ResetGroupSeason(Guid id)
+    {
+        if (!await IsAdminAsync()) return Forbid();
+
+        using var db = dbFactory.CreateDbContext();
+        var affectedLeaders = await db.RoleAssignments
+            .Include(r => r.Group)
+            .Where(r => r.GroupId == id && r.PermissionRole == "leader")
+            .ToListAsync();
+
+        var affectedMemberships = await db.Memberships
+            .Include(m => m.Group)
+            .Where(m => m.GroupId == id && (m.Status == "accepted" || m.Status == "pending"))
+            .ToListAsync();
+
+        await groupSeasonService.ResetGroupAsync(id);
+
+        foreach (var leader in affectedLeaders)
+        {
+            await notificationService.CreateAsync(leader.UserId,
+                "group_season_reset",
+                $"Tu periodo como líder de {leader.Group?.Name} ha concluido.",
+                "El grupo fue reiniciado para el nuevo ciclo y requerirá nuevas solicitudes de liderazgo.",
+                $"/groups/{leader.Group?.Slug}",
+                leader.GroupId, "group");
+        }
+
+        foreach (var membership in affectedMemberships)
+        {
+            await notificationService.CreateAsync(membership.UserId,
+                "group_membership_reset",
+                $"{membership.Group?.Name} reinició su ciclo.",
+                membership.Status == "accepted"
+                    ? "Tu membresía fue cerrada y debes volver a unirte en el nuevo ciclo."
+                    : "Tu solicitud fue cerrada por el reinicio anual del grupo.",
+                $"/groups/{membership.Group?.Slug}",
+                membership.GroupId, "group");
+        }
+
+        return NoContent();
+    }
 }
 
 public record SetRoleRequest(string Role);
 public record SetUserStatusRequest(string Status);
+public record ResetSeasonRequest(List<Guid> SkipGroupIds);

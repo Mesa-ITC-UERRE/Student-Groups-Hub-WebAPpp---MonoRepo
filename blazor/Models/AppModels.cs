@@ -70,6 +70,7 @@ public record JoinGroupResponse(Guid MembershipId, Guid GroupId, Guid UserId, st
 public record MembershipModel(
     Guid MembershipId,
     Guid UserId,
+    Guid GroupId,
     string Email,
     string? DisplayName,
     string? AvatarUrl,
@@ -106,6 +107,36 @@ public record GroupRegistrationRequestModel(
     string ProposedGroupName,
     string? ProposedDescription,
     string ContactEmail,
+    string? ProposedCategory,
+    string Status,
+    string? DecisionNotes,
+    DateTime CreatedAt,
+    DateTime? ReviewedAt
+)
+{
+    public string StatusLabel => Status switch
+    {
+        "approved" => "Aprobada",
+        "rejected" => "Rechazada",
+        _          => "Pendiente"
+    };
+    public string StatusCss => Status switch
+    {
+        "approved" => "bg-success-subtle text-success",
+        "rejected" => "bg-danger-subtle text-danger",
+        _          => "bg-warning-subtle text-warning"
+    };
+}
+
+public record LeadershipRequestModel(
+    Guid Id,
+    Guid GroupId,
+    string GroupName,
+    string GroupSlug,
+    Guid RequestedByUserId,
+    string? RequestedByDisplayName,
+    string ContactEmail,
+    string? Reason,
     string Status,
     string? DecisionNotes,
     DateTime CreatedAt,
@@ -129,7 +160,8 @@ public record GroupRegistrationRequestModel(
 public record CreateGroupRegistrationRequest(
     string ProposedGroupName,
     string? ProposedDescription,
-    string ContactEmail
+    string ContactEmail,
+    string? ProposedCategory = null
 );
 
 // ─── Events ───────────────────────────────────────────────────────────────────
@@ -154,11 +186,17 @@ public record EventModel(
 {
     public bool IsCanceled  => Status == "canceled";
     public bool IsPublished => Status == "published";
+    public bool IsPast      => EndAt < DateTime.UtcNow;
     public bool HasCapacity => !Capacity.HasValue || RsvpCount < Capacity.Value;
     public int? SpotsLeft   => Capacity.HasValue ? Capacity.Value - RsvpCount : null;
+    public int OccupiedSpots => RsvpCount;
     public string StartLocal => StartAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm");
+    public string EventDateLocal => StartAt.ToLocalTime().ToString("dd MMM yyyy");
     public string MonthLabel => StartAt.ToString("MMM").ToUpper();
     public string DayLabel   => StartAt.Day.ToString();
+    public string AttendanceSummary => Capacity.HasValue
+        ? $"{OccupiedSpots} ocupados · {SpotsLeft ?? 0} disponibles"
+        : $"{OccupiedSpots} registrados";
 }
 
 public record BlazorCreateEventRequest(
@@ -177,7 +215,8 @@ public record BlazorCreateEventRequest(
 public record DashboardStudentModel(
     List<GroupModel> JoinedGroups,
     List<MembershipModel> PendingRequests,
-    List<EventModel> UpcomingEvents
+    List<EventModel> UpcomingEvents,
+    List<LeadershipRequestModel> LeadershipRequests
 );
 
 public record DashboardLeaderModel(
@@ -191,6 +230,7 @@ public record DashboardAdminModel(
     int TotalGroups,
     int ActiveGroups,
     int PendingGroupRequests,
+    int PendingLeadershipRequests,
     int TotalEvents,
     int TotalMemberships,
     int TotalParticipations
@@ -236,7 +276,10 @@ public record GroupTermModel(
     string Status,
     string? Notes,
     DateTime CreatedAt,
-    List<TermMemberModel> Members
+    List<TermMemberModel> Members,
+    string? GroupName = null,
+    string? GroupSlug = null,
+    string? GroupCategory = null
 )
 {
     public bool IsCurrent => Status == "active" && EndDate is null;
@@ -252,3 +295,86 @@ public record GroupTermModel(
 // ─── API Errors ───────────────────────────────────────────────────────────────
 
 public record ApiError(int Status, string Message, DateTime Timestamp);
+
+// ─── Group Posts ──────────────────────────────────────────────────────────────
+
+public record GroupPostModel(
+    Guid Id,
+    Guid GroupId,
+    Guid AuthorUserId,
+    string AuthorDisplayName,
+    string? AuthorAvatarUrl,
+    string Body,
+    string? ImageUrl,
+    DateTime CreatedAt
+)
+{
+    public string AuthorInitial => AuthorDisplayName.Substring(0, 1).ToUpper();
+    public string TimeAgo
+    {
+        get
+        {
+            var diff = DateTime.UtcNow - CreatedAt;
+            if (diff.TotalMinutes < 1)  return "ahora";
+            if (diff.TotalHours   < 1)  return $"hace {(int)diff.TotalMinutes} min";
+            if (diff.TotalDays    < 1)  return $"hace {(int)diff.TotalHours} h";
+            if (diff.TotalDays    < 7)  return $"hace {(int)diff.TotalDays} d";
+            return CreatedAt.ToLocalTime().ToString("dd MMM yyyy");
+        }
+    }
+}
+
+public record EventPostModel(
+    Guid Id,
+    Guid EventId,
+    Guid AuthorUserId,
+    string AuthorDisplayName,
+    string? AuthorAvatarUrl,
+    string Body,
+    string? ImageUrl,
+    DateTime CreatedAt
+)
+{
+    public string AuthorInitial => AuthorDisplayName.Substring(0, 1).ToUpper();
+    public string TimeAgo
+    {
+        get
+        {
+            var diff = DateTime.UtcNow - CreatedAt;
+            if (diff.TotalMinutes < 1) return "ahora";
+            if (diff.TotalHours < 1) return $"hace {(int)diff.TotalMinutes} min";
+            if (diff.TotalDays < 1) return $"hace {(int)diff.TotalHours} h";
+            if (diff.TotalDays < 7) return $"hace {(int)diff.TotalDays} d";
+            return CreatedAt.ToLocalTime().ToString("dd MMM yyyy");
+        }
+    }
+}
+
+public record GroupPostAuthorModel(Guid UserId, string DisplayName, string? AvatarUrl)
+{
+    public string Initial => DisplayName.Substring(0, 1).ToUpper();
+}
+
+// ─── Mis Grupos ───────────────────────────────────────────────────────────────
+
+public record MyGroupsModel(
+    List<GroupModel> MemberGroups,
+    List<GroupModel> LeaderGroups
+);
+
+// ─── Calendar ─────────────────────────────────────────────────────────────────
+
+public record CalendarDayModel(
+    DateOnly Date,
+    List<EventModel> MyGroupEvents,    // events from groups I belong to
+    List<EventModel> AllEvents         // all platform events that are NOT in MyGroupEvents
+);
+
+public record CalendarMonthModel(
+    int Year,
+    int Month,
+    List<CalendarDayModel> Days        // only days that have at least one event
+)
+{
+    public string MonthLabel => new DateTime(Year, Month, 1).ToString("MMMM yyyy");
+}

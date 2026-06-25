@@ -8,6 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users => Set<User>();
     public DbSet<Group> Groups => Set<Group>();
     public DbSet<GroupRegistrationRequest> GroupRegistrationRequests => Set<GroupRegistrationRequest>();
+    public DbSet<LeadershipRequest> LeadershipRequests => Set<LeadershipRequest>();
     public DbSet<Membership> Memberships => Set<Membership>();
     public DbSet<RoleAssignment> RoleAssignments => Set<RoleAssignment>();
     public DbSet<Event> Events => Set<Event>();
@@ -16,6 +17,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<GroupTerm> GroupTerms => Set<GroupTerm>();
     public DbSet<TermMember> TermMembers => Set<TermMember>();
+    public DbSet<GroupPost> GroupPosts => Set<GroupPost>();
+    public DbSet<GroupPostAuthor> GroupPostAuthors => Set<GroupPostAuthor>();
+    public DbSet<EventPost> EventPosts => Set<EventPost>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -46,6 +50,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.ToTable("group_registration_requests");
             e.HasKey(r => r.Id);
+            e.Property(r => r.Status).HasDefaultValue("pending");
+            e.Property(r => r.ProposedCategory).HasMaxLength(100);
+        });
+
+        // ── LeadershipRequests ──────────────────────────────────────────────
+        modelBuilder.Entity<LeadershipRequest>(e =>
+        {
+            e.ToTable("leadership_requests");
+            e.HasKey(r => r.Id);
+            e.HasIndex(r => new { r.GroupId, r.RequestedByUserId, r.Status });
             e.Property(r => r.Status).HasDefaultValue("pending");
         });
 
@@ -117,6 +131,31 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(m => m.TermId);
             e.HasIndex(m => m.UserId);
             e.Property(m => m.SortOrder).HasDefaultValue(0);
+        });
+
+        // ── GroupPosts ─────────────────────────────────────────────────────
+        modelBuilder.Entity<GroupPost>(e =>
+        {
+            e.ToTable("group_posts");
+            e.HasKey(p => p.Id);
+            e.HasIndex(p => p.GroupId);
+            e.HasIndex(p => p.AuthorUserId);
+        });
+
+        // ── GroupPostAuthors ───────────────────────────────────────────────
+        modelBuilder.Entity<GroupPostAuthor>(e =>
+        {
+            e.ToTable("group_post_authors");
+            e.HasKey(a => new { a.GroupId, a.UserId });
+        });
+
+        // ── EventPosts ─────────────────────────────────────────────────────
+        modelBuilder.Entity<EventPost>(e =>
+        {
+            e.ToTable("event_posts");
+            e.HasKey(p => p.Id);
+            e.HasIndex(p => p.EventId);
+            e.HasIndex(p => p.AuthorUserId);
         });
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StudentGroupsHub.Data;
@@ -11,9 +12,11 @@ using StudentGroupsHub.Data;
 namespace StudentGroupsHub.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260622213133_AddLeadershipRequestsAndSeasonReset")]
+    partial class AddLeadershipRequestsAndSeasonReset
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -127,41 +130,6 @@ namespace StudentGroupsHub.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("event_participations", (string)null);
-                });
-
-            modelBuilder.Entity("StudentGroupsHub.Models.EventPost", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AuthorUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Body")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuthorUserId");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("event_posts", (string)null);
                 });
 
             modelBuilder.Entity("StudentGroupsHub.Models.Group", b =>
@@ -731,25 +699,6 @@ namespace StudentGroupsHub.Data.Migrations
                     b.Navigation("Event");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("StudentGroupsHub.Models.EventPost", b =>
-                {
-                    b.HasOne("StudentGroupsHub.Models.User", "Author")
-                        .WithMany()
-                        .HasForeignKey("AuthorUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("StudentGroupsHub.Models.Event", "Event")
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Author");
-
-                    b.Navigation("Event");
                 });
 
             modelBuilder.Entity("StudentGroupsHub.Models.Group", b =>

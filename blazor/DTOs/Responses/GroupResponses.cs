@@ -23,6 +23,22 @@ public record GroupRegistrationRequestResponse(
     string ProposedGroupName,
     string? ProposedDescription,
     string ContactEmail,
+    string? ProposedCategory,
+    string Status,
+    string? DecisionNotes,
+    DateTime CreatedAt,
+    DateTime? ReviewedAt
+);
+
+public record LeadershipRequestResponse(
+    Guid Id,
+    Guid GroupId,
+    string GroupName,
+    string GroupSlug,
+    Guid RequestedByUserId,
+    string? RequestedByDisplayName,
+    string ContactEmail,
+    string? Reason,
     string Status,
     string? DecisionNotes,
     DateTime CreatedAt,

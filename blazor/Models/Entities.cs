@@ -43,6 +43,7 @@ public class GroupRegistrationRequest
     [Required, MaxLength(200)] public string ProposedGroupName { get; set; } = string.Empty;
     public string? ProposedDescription { get; set; }
     [Required, MaxLength(255)] public string ContactEmail { get; set; } = string.Empty;
+    [MaxLength(100)] public string? ProposedCategory { get; set; }
     [Required, MaxLength(32)] public string Status { get; set; } = "pending";
     public string? DecisionNotes { get; set; }
     public Guid? ReviewedByUserId { get; set; }
@@ -50,6 +51,23 @@ public class GroupRegistrationRequest
     public DateTime? ReviewedAt { get; set; }
     public Guid? CreatedGroupId { get; set; }
     [ForeignKey(nameof(CreatedGroupId))] public Group? CreatedGroup { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+public class LeadershipRequest
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid GroupId { get; set; }
+    [ForeignKey(nameof(GroupId))] public Group? Group { get; set; }
+    public Guid RequestedByUserId { get; set; }
+    [ForeignKey(nameof(RequestedByUserId))] public User? RequestedBy { get; set; }
+    public string? Reason { get; set; }
+    [Required, MaxLength(255)] public string ContactEmail { get; set; } = string.Empty;
+    [Required, MaxLength(32)] public string Status { get; set; } = "pending";
+    public string? DecisionNotes { get; set; }
+    public Guid? ReviewedByUserId { get; set; }
+    [ForeignKey(nameof(ReviewedByUserId))] public User? ReviewedBy { get; set; }
+    public DateTime? ReviewedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
@@ -174,4 +192,44 @@ public class TermMember
     public int SortOrder { get; set; } = 0;
     public string? AvatarUrl { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+// ─── Group Posts ──────────────────────────────────────────────────────────────
+
+public class GroupPost
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid GroupId { get; set; }
+    [ForeignKey(nameof(GroupId))] public Group? Group { get; set; }
+    public Guid AuthorUserId { get; set; }
+    [ForeignKey(nameof(AuthorUserId))] public User? Author { get; set; }
+    [Required] public string Body { get; set; } = string.Empty;
+    [MaxLength(500)] public string? ImageUrl { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// Members explicitly granted posting rights by the group leader.
+/// Leaders and admins can always post regardless of this table.
+/// </summary>
+public class GroupPostAuthor
+{
+    public Guid GroupId { get; set; }
+    [ForeignKey(nameof(GroupId))] public Group? Group { get; set; }
+    public Guid UserId { get; set; }
+    [ForeignKey(nameof(UserId))] public User? User { get; set; }
+}
+
+public class EventPost
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid EventId { get; set; }
+    [ForeignKey(nameof(EventId))] public Event? Event { get; set; }
+    public Guid AuthorUserId { get; set; }
+    [ForeignKey(nameof(AuthorUserId))] public User? Author { get; set; }
+    [Required] public string Body { get; set; } = string.Empty;
+    [MaxLength(500)] public string? ImageUrl { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

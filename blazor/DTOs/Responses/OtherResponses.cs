@@ -3,6 +3,7 @@ namespace StudentGroupsHub.DTOs.Responses;
 public record MembershipResponse(
     Guid MembershipId,
     Guid UserId,
+    Guid GroupId,
     string Email,
     string? DisplayName,
     string? AvatarUrl,
@@ -41,7 +42,8 @@ public record EventRsvpResponse(
 public record DashboardStudentResponse(
     List<GroupResponse> JoinedGroups,
     List<MembershipResponse> PendingRequests,
-    List<EventResponse> UpcomingEvents
+    List<EventResponse> UpcomingEvents,
+    List<LeadershipRequestResponse>? LeadershipRequests = null
 );
 
 public record DashboardLeaderResponse(
@@ -55,6 +57,7 @@ public record DashboardAdminResponse(
     int TotalGroups,
     int ActiveGroups,
     int PendingGroupRequests,
+    int PendingLeadershipRequests,
     int TotalEvents,
     int TotalMemberships,
     int TotalParticipations

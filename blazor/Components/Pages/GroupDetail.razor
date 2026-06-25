@@ -1,7 +1,17 @@
 @page "/groups/{Slug}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Security.Claims
+@using System.IO
+
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject GroupApiService GroupService
 @inject EventApiService EventService
+@inject EventPostApiService EventPostService
+@inject GroupPostApiService PostService
+@inject LeadershipRequestApiService LeadershipService
+@inject CurrentUserService CurrentUser
 @inject AuthenticationStateProvider AuthState
 @attribute [Authorize]
 
@@ -9,7 +19,9 @@
 
 @if (_loading)
 {
-    <div class="spinner-center"><div class="spinner-uerre"></div></div>
+    <div class="spinner-center">
+        <div class="spinner-uerre"></div>
+    </div>
 }
 else if (_group is null)
 {
@@ -21,11 +33,13 @@ else if (_group is null)
 }
 else
 {
+    var activeBannerUrl = _bannerPreviewUrl ?? _group.BannerUrl;
+    var heroStyle = activeBannerUrl is not null
+        ? $"background:linear-gradient(rgba(76,29,149,.88),rgba(124,58,237,.88)),url({activeBannerUrl});background-size:cover;background-position:center;"
+        : "";
+
     <!-- Hero banner -->
-    <section class="page-header"
-             style="@(_group.BannerUrl is not null
-                ? $"background:linear-gradient(rgba(76,29,149,.88),rgba(124,58,237,.88)),url({_group.BannerUrl});background-size:cover;background-position:center;"
-                : "")">
+    <section class="page-header position-relative" style="@heroStyle">
         <div class="container-uerre">
             <a href="/groups" class="d-inline-flex align-items-center gap-1 mb-3 text-decoration-none"
                style="color:rgba(255,255,255,.6);font-size:.8125rem;transition:color .15s;"
@@ -36,10 +50,16 @@ else
 
             <div class="d-flex flex-column flex-md-row align-items-start gap-4">
                 <!-- Logo -->
-                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                <div class="position-relative rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
                      style="width:68px;height:68px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);
-                            border:1px solid rgba(255,255,255,.2);">
-                    @if (_group.LogoUrl is not null)
+                    border:1px solid rgba(255,255,255,.2);">
+                    @if (_logoPreviewUrl is not null)
+                    {
+                        <img src="@_logoPreviewUrl" alt="Vista previa"
+                             class="rounded-3"
+                             style="width:60px;height:60px;object-fit:cover;border:2px solid rgba(255,255,255,.7);" />
+                    }
+                    else if (_group.LogoUrl is not null)
                     {
                         <img src="@_group.LogoUrl" alt="@_group.Name"
                              class="rounded-3" style="width:60px;height:60px;object-fit:cover;" />
@@ -47,17 +67,37 @@ else
                     else
                     {
                         <span class="fw-800 fs-3 text-white" style="font-family:'Montserrat',sans-serif;">
-                            @_group.Name.Substring(0,1)
+                            @_group.Name.Substring(0, 1)
                         </span>
+                    }
+
+                    @if (_canManage)
+                    {
+                        <label for="logoInput"
+                               class="position-absolute bottom-0 end-0 d-flex align-items-center justify-content-center rounded-circle"
+                               style="width:22px;height:22px;background:rgba(255,255,255,.9);cursor:pointer;border:1px solid rgba(0,0,0,.1);"
+                               title="Cambiar logo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="#333" viewBox="0 0 16 16">
+                                <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z" />
+                                <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0" />
+                            </svg>
+                        </label>
+
+                        <InputFile id="logoInput"
+                                   OnChange="OnLogoSelected"
+                                   accept="image/jpeg,image/png,image/webp,image/gif"
+                                   style="display:none;" />
                     }
                 </div>
 
                 <!-- Info -->
                 <div class="flex-grow-1">
                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                        <h1 class="fw-bold text-white mb-0" style="font-family:'Montserrat',sans-serif;font-size:clamp(1.375rem,4vw,1.875rem);">
+                        <h1 class="fw-bold text-white mb-0"
+                            style="font-family:'Montserrat',sans-serif;font-size:clamp(1.375rem,4vw,1.875rem);">
                             @_group.Name
                         </h1>
+
                         @if (_group.Category is not null)
                         {
                             <span class="rounded-pill px-3 py-1"
@@ -75,14 +115,17 @@ else
                     }
 
                     <div class="d-flex flex-wrap gap-4" style="font-size:.8125rem;color:rgba(255,255,255,.65);">
-                        <span>
-                            &#9651; <strong class="text-white">@_members.Count</strong>
+                        <span class="d-inline-flex align-items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg>
+                            <strong class="text-white">@_members.Count</strong>
                             @(_members.Count == 1 ? "miembro" : "miembros")
                         </span>
+
                         @if (_events.Count > 0)
                         {
-                            <span>&#128198; <strong class="text-white">@_events.Count</strong> eventos</span>
+                            <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg> <strong class="text-white">@_events.Count</strong> eventos</span>
                         }
+
                         @if (_group.ContactEmail is not null)
                         {
                             <a href="mailto:@_group.ContactEmail"
@@ -93,11 +136,105 @@ else
                     </div>
                 </div>
 
-                <!-- Join button -->
-                <div class="flex-shrink-0 mt-1">
-                    <JoinButton GroupId="@_group.Id" InitialStatus="@_membershipStatus" OnJoined="OnJoined" />
+                <!-- Join button + banner button -->
+                <div class="flex-shrink-0 mt-1 d-flex flex-column align-items-end gap-2 group-hero-actions">
+                    <JoinButton GroupId="@_group.Id"
+                                InitialStatus="@_membershipStatus"
+                                ButtonClass="group-hero-action-btn"
+                                OnJoined="OnJoined" />
+
+                    @if (_canRequestLeadership)
+                    {
+                        <a href="/groups/@_group.Slug/apply-leadership"
+                           class="btn fw-bold group-hero-action-btn group-leadership-btn d-flex align-items-center justify-content-center text-center">
+                            Solicitar liderazgo
+                        </a>
+                    }
+
+                    @if (_canManage)
+                    {
+                        <label for="bannerInput"
+                               class="btn btn-sm d-flex align-items-center gap-1"
+                               style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);cursor:pointer;font-size:.75rem;"
+                               title="Cambiar imagen de fondo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z" />
+                                <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0" />
+                            </svg>
+                            Cambiar banner
+                        </label>
+
+                        <InputFile id="bannerInput"
+                                   OnChange="OnBannerSelected"
+                                   accept="image/jpeg,image/png,image/webp,image/gif"
+                                   style="display:none;" />
+                    }
                 </div>
             </div>
+
+            <!-- Logo preview save/cancel bar -->
+            @if (_logoPreviewUrl is not null)
+            {
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    @if (_logoError is not null)
+                    {
+                        <span class="small" style="color:#fca5a5;">@_logoError</span>
+                    }
+                    else
+                    {
+                        <span class="small" style="color:rgba(255,255,255,.75);">Vista previa del logo</span>
+                    }
+
+                    <button class="btn btn-sm btn-light px-3"
+                            @onclick="SaveLogo"
+                            disabled="@_savingLogo">
+                        @if (_savingLogo)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Guardar
+                    </button>
+
+                    <button class="btn btn-sm"
+                            style="color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.3);"
+                            @onclick="CancelLogoPreview"
+                            disabled="@_savingLogo">
+                        Cancelar
+                    </button>
+                </div>
+            }
+
+            <!-- Banner preview save/cancel bar -->
+            @if (_bannerPreviewUrl is not null)
+            {
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    @if (_bannerError is not null)
+                    {
+                        <span class="small" style="color:#fca5a5;">@_bannerError</span>
+                    }
+                    else
+                    {
+                        <span class="small" style="color:rgba(255,255,255,.75);">Vista previa del banner</span>
+                    }
+
+                    <button class="btn btn-sm btn-light px-3"
+                            @onclick="SaveBanner"
+                            disabled="@_savingBanner">
+                        @if (_savingBanner)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Guardar banner
+                    </button>
+
+                    <button class="btn btn-sm"
+                            style="color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.3);"
+                            @onclick="CancelBannerPreview"
+                            disabled="@_savingBanner">
+                        Cancelar
+                    </button>
+                </div>
+            }
         </div>
     </section>
 
@@ -107,35 +244,64 @@ else
             <ul class="nav" style="gap:.25rem;">
                 <li class="nav-item">
                     <button class="nav-link @(_activeTab == "members" ? "active fw-600 text-purple" : "text-muted")"
-                            type="button" @onclick='() => _activeTab = "members"'
+                            type="button"
+                            @onclick="ShowMembersTab"
                             style="border:none;background:none;padding:.875rem 1rem;font-size:.875rem;
-                                   border-bottom:@(_activeTab == "members" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
+                        border-bottom:@(_activeTab == "members" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
                         Miembros
                         <span class="badge rounded-pill ms-1 text-white"
-                              style="background:var(--uerre-purple);font-size:.65rem;">@_members.Count</span>
+                              style="background:var(--uerre-purple);font-size:.65rem;">
+                            @_members.Count
+                        </span>
                     </button>
                 </li>
+
                 <li class="nav-item">
                     <button class="nav-link @(_activeTab == "terms" ? "active fw-600 text-purple" : "text-muted")"
-                            type="button" @onclick='() => _activeTab = "terms"'
+                            type="button"
+                            @onclick="ShowTermsTab"
                             style="border:none;background:none;padding:.875rem 1rem;font-size:.875rem;
-                                   border-bottom:@(_activeTab == "terms" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
+                        border-bottom:@(_activeTab == "terms" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
                         Administraciones
                     </button>
                 </li>
-                @if (_events.Count > 0)
+
+                @if (_events.Count > 0 || _canManage)
                 {
                     <li class="nav-item">
                         <button class="nav-link @(_activeTab == "events" ? "active fw-600 text-purple" : "text-muted")"
-                                type="button" @onclick='() => _activeTab = "events"'
+                                type="button"
+                                @onclick="ShowEventsTab"
                                 style="border:none;background:none;padding:.875rem 1rem;font-size:.875rem;
-                                       border-bottom:@(_activeTab == "events" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
+                            border-bottom:@(_activeTab == "events" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
                             Eventos
-                            <span class="badge rounded-pill ms-1 text-white"
-                                  style="background:var(--uerre-gold);font-size:.65rem;">@_events.Count</span>
+                            @if (_events.Count > 0)
+                            {
+                                <span class="badge rounded-pill ms-1 text-white"
+                                      style="background:var(--uerre-gold);font-size:.65rem;">
+                                    @_events.Count
+                                </span>
+                            }
                         </button>
                     </li>
                 }
+
+                <li class="nav-item">
+                    <button class="nav-link @(_activeTab == "posts" ? "active fw-600 text-purple" : "text-muted")"
+                            type="button"
+                            @onclick="ShowPostsTab"
+                            style="border:none;background:none;padding:.875rem 1rem;font-size:.875rem;
+                        border-bottom:@(_activeTab == "posts" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
+                        Publicaciones
+                        @if (_posts.Count > 0)
+                        {
+                            <span class="badge rounded-pill ms-1 text-white"
+                                  style="background:var(--uerre-purple);font-size:.65rem;">
+                                @_posts.Count
+                            </span>
+                        }
+                    </button>
+                </li>
             </ul>
         </div>
     </div>
@@ -143,13 +309,19 @@ else
     <!-- Tab content -->
     <section class="py-4 py-md-5" style="background:var(--uerre-surface);">
         <div class="container-uerre">
+            @if (_loadError is not null)
+            {
+                <div class="alert alert-warning rounded-3 mb-4">
+                    @_loadError
+                </div>
+            }
 
             @if (_activeTab == "members")
             {
                 @if (_members.Count == 0)
                 {
                     <div class="empty-state">
-                        <div class="empty-icon" style="font-size:2rem;color:var(--uerre-muted);">&#9632;</div>
+                        <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg></div>
                         <h5 class="fw-bold mb-1">Sin miembros aún</h5>
                         <p class="text-muted small">Este grupo aún no tiene miembros aprobados.</p>
                     </div>
@@ -161,13 +333,27 @@ else
                         {
                             <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                                 <div class="card-uerre no-hover p-3 d-flex align-items-center gap-3">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
-                                         style="width:42px;height:42px;background:linear-gradient(135deg,var(--uerre-purple),var(--uerre-purple-vivid));font-size:.875rem;">
-                                        @member.Initial
-                                    </div>
+                                    @if (!string.IsNullOrEmpty(member.AvatarUrl))
+                                    {
+                                        <img src="@member.AvatarUrl" alt=""
+                                             class="rounded-circle flex-shrink-0"
+                                             style="width:42px;height:42px;object-fit:cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                             style="width:42px;height:42px;background:linear-gradient(135deg,var(--uerre-purple),var(--uerre-purple-vivid));font-size:.875rem;">
+                                            @member.Initial
+                                        </div>
+                                    }
+
                                     <div class="min-w-0">
-                                        <div class="fw-600 text-dark line-clamp-1 small">@member.DisplayLabel</div>
-                                        <div class="text-muted line-clamp-1" style="font-size:.72rem;">@member.Email</div>
+                                        <div class="fw-600 text-dark line-clamp-1 small">
+                                            @member.DisplayLabel
+                                        </div>
+                                        <div class="text-muted line-clamp-1" style="font-size:.72rem;">
+                                            @member.Email
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -178,86 +364,926 @@ else
 
             @if (_activeTab == "events")
             {
-                <div class="row g-4">
-                    @foreach (var ev in _events)
+                <!-- Create Event button for leaders/admins -->
+                @if (_canManage)
+                {
+                    <div class="d-flex justify-content-end mb-4">
+                        <button class="btn btn-uerre-primary"
+                                @onclick="() => _showCreateEvent = true">
+                            + Nuevo Evento
+                        </button>
+                    </div>
+                }
+
+                @if (_events.Count == 0)
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg></div>
+                        <h5 class="fw-bold mb-1">Sin eventos aún</h5>
+                        <p class="text-muted small">
+                            @if (_canManage) { <span>Crea el primer evento con el botón de arriba.</span> }
+                            else { <span>Este grupo todavía no tiene eventos.</span> }
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    @if (_events.Any(e => !e.IsPast))
                     {
-                        <div class="col-12 col-md-6">
-                            <a href="/events/@ev.Id" class="text-decoration-none">
-                                <div class="card-event">
-                                    <div class="event-date-badge">
-                                        <span class="event-date-month">@ev.MonthLabel</span>
-                                        <span class="event-date-day">@ev.DayLabel</span>
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">Próximos eventos</h5>
+                            <div class="row g-4">
+                                @foreach (var ev in _events.Where(e => !e.IsPast).OrderBy(e => e.StartAt))
+                                {
+                                    <div class="col-12 col-md-6">
+                                        <a href="/events/@ev.Id" class="text-decoration-none">
+                                            <div class="card-event">
+                                                @if (!string.IsNullOrEmpty(ev.BannerUrl))
+                                                {
+                                                    <img src="@ev.BannerUrl" alt="" class="rounded-3 flex-shrink-0"
+                                                         style="width:96px;height:96px;object-fit:cover;" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="event-date-badge">
+                                                        <span class="event-date-month">@ev.MonthLabel</span>
+                                                        <span class="event-date-day">@ev.DayLabel</span>
+                                                    </div>
+                                                }
+                                                <div class="flex-grow-1 min-w-0">
+                                                    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                                        <h6 class="fw-bold mb-0 text-dark line-clamp-1">@ev.Title</h6>
+                                                        <span class="badge rounded-pill bg-success-subtle text-success">Próximo</span>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap gap-3 text-muted-sm mt-2">
+                                                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg> @ev.EventDateLocal</span>
+                                                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2m0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17M12 7a.75.75 0 0 1 .75.75v4.69l2.28 2.28a.75.75 0 1 1-1.06 1.06l-2.5-2.5a.75.75 0 0 1-.22-.53V7.75A.75.75 0 0 1 12 7"/></svg> @ev.StartLocal</span>
+                                                        @if (ev.Location is not null) { <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7.5 7.5 0 0 1 7.5 7.5c0 3.5-2.404 7.268-7.066 11.35a.75.75 0 0 1-.968 0C6.904 16.768 4.5 13 4.5 9.5A7.5 7.5 0 0 1 12 2m0 1.5a6 6 0 0 0-6 6c0 2.885 2.066 6.276 6 10.066 3.934-3.79 6-7.181 6-10.066a6 6 0 0 0-6-6m0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 1.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/></svg> @ev.Location</span> }
+                                                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg> @ev.AttendanceSummary</span>
+                                                    </div>
+                                                    @if (_eventEvidenceImages.TryGetValue(ev.Id, out var evidenceImages) && evidenceImages.Count > 0)
+                                                    {
+                                                        <div class="d-flex gap-2 mt-3 flex-wrap">
+                                                            @foreach (var imageUrl in evidenceImages)
+                                                            {
+                                                                <img src="@imageUrl" alt="Evidencia del evento"
+                                                                     class="rounded-3"
+                                                                     style="width:56px;height:56px;object-fit:cover;border:1px solid var(--uerre-border);" />
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </a>
                                     </div>
-                                    <div class="flex-grow-1 min-w-0">
-                                        <h6 class="fw-bold mb-1 text-dark line-clamp-1">@ev.Title</h6>
-                                        <div class="d-flex flex-wrap gap-3 text-muted-sm mt-2">
-                                            <span>&#8987; @ev.StartLocal</span>
-                                            @if (ev.Location is not null) { <span>> @ev.Location</span> }
-                                            @if (ev.SpotsLeft.HasValue) { <span>&#9651; @ev.SpotsLeft lugares</span> }
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
+                                }
+                            </div>
                         </div>
                     }
-                </div>
+
+                    @if (_events.Any(e => e.IsPast))
+                    {
+                        <div>
+                            <h5 class="fw-bold mb-3">Historial del grupo</h5>
+                            <div class="row g-4">
+                                @foreach (var ev in _events.Where(e => e.IsPast).OrderByDescending(e => e.StartAt))
+                                {
+                                    <div class="col-12 col-md-6">
+                                        <a href="/events/@ev.Id" class="text-decoration-none">
+                                            <div class="card-event">
+                                                @if (!string.IsNullOrEmpty(ev.BannerUrl))
+                                                {
+                                                    <img src="@ev.BannerUrl" alt="" class="rounded-3 flex-shrink-0"
+                                                         style="width:96px;height:96px;object-fit:cover;" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="event-date-badge">
+                                                        <span class="event-date-month">@ev.MonthLabel</span>
+                                                        <span class="event-date-day">@ev.DayLabel</span>
+                                                    </div>
+                                                }
+                                                <div class="flex-grow-1 min-w-0">
+                                                    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                                        <h6 class="fw-bold mb-0 text-dark line-clamp-1">@ev.Title</h6>
+                                                        <span class="badge rounded-pill bg-secondary-subtle text-secondary">Finalizado</span>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap gap-3 text-muted-sm mt-2">
+                                                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg> @ev.EventDateLocal</span>
+                                                        @if (ev.Location is not null) { <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7.5 7.5 0 0 1 7.5 7.5c0 3.5-2.404 7.268-7.066 11.35a.75.75 0 0 1-.968 0C6.904 16.768 4.5 13 4.5 9.5A7.5 7.5 0 0 1 12 2m0 1.5a6 6 0 0 0-6 6c0 2.885 2.066 6.276 6 10.066 3.934-3.79 6-7.181 6-10.066a6 6 0 0 0-6-6m0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 1.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/></svg> @ev.Location</span> }
+                                                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg> @ev.AttendanceSummary</span>
+                                                    </div>
+                                                    @if (_eventEvidenceImages.TryGetValue(ev.Id, out var evidenceImages) && evidenceImages.Count > 0)
+                                                    {
+                                                        <div class="d-flex gap-2 mt-3 flex-wrap">
+                                                            @foreach (var imageUrl in evidenceImages)
+                                                            {
+                                                                <img src="@imageUrl" alt="Evidencia del evento"
+                                                                     class="rounded-3"
+                                                                     style="width:56px;height:56px;object-fit:cover;border:1px solid var(--uerre-border);" />
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            }
+
+            @if (_activeTab == "posts")
+            {
+                <!-- Create post (leaders, admins, authorized members) -->
+                @if (_canPost)
+                {
+                    <div class="card-uerre p-4 mb-4">
+                        <h6 class="fw-bold mb-3 small">Nueva publicación</h6>
+
+                        @if (_postError is not null)
+                        {
+                            <div class="alert alert-danger rounded-3 small py-2 mb-3">@_postError</div>
+                        }
+
+                        <textarea class="form-control rounded-3 mb-3"
+                                  rows="3"
+                                  placeholder="¿Qué quieres compartir con el grupo?"
+                                  @bind="_newPostBody"
+                                  maxlength="2000"></textarea>
+
+                        <!-- Optional image pick -->
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <label for="postImageInput"
+                                       class="btn btn-uerre-outline btn-sm d-inline-flex align-items-center gap-1"
+                                       style="cursor:pointer;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zM9.5 7a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5m0 1.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                                    Adjuntar imagen
+                                </label>
+                            <InputFile id="postImageInput"
+                                       OnChange="OnPostImageSelected"
+                                       accept="image/jpeg,image/png,image/webp,image/gif"
+                                       style="display:none;" />
+
+                            @if (_postImagePreview is not null)
+                            {
+                                <span class="small text-success d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17m4.03 5.97-5.28 5.29-2.28-2.28a.75.75 0 1 0-1.06 1.06l2.81 2.81a.75.75 0 0 0 1.06 0l5.81-5.82a.75.75 0 0 0-1.06-1.06"/></svg> Imagen lista</span>
+                                <button class="btn btn-sm btn-link text-danger p-0"
+                                        @onclick="RemovePostImage">
+                                    Quitar
+                                </button>
+                            }
+
+                            <button class="btn btn-uerre-primary btn-sm ms-auto px-4"
+                                    @onclick="SubmitPost"
+                                    disabled="@_submittingPost">
+                                @if (_submittingPost)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                }
+                                Publicar
+                            </button>
+                        </div>
+
+                        @if (_postImagePreview is not null)
+                        {
+                            <img src="@_postImagePreview" alt="Preview"
+                                 class="mt-3 rounded-3"
+                                 style="max-height:200px;max-width:100%;object-fit:contain;" />
+                        }
+                    </div>
+                }
+
+                <!-- Leader: manage who can post -->
+                @if (_canManage && _postMembers.Count > 0)
+                {
+                    <details class="mb-4">
+                        <summary class="fw-semibold small text-muted" style="cursor:pointer;">
+                            Gestionar quién puede publicar
+                        </summary>
+                        <div class="card-uerre no-hover p-3 mt-2">
+                            <div class="d-flex flex-column gap-2">
+                                @foreach (var m in _postMembers)
+                                {
+                                    var uid = m.UserId;
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if (!string.IsNullOrEmpty(m.AvatarUrl))
+                                        {
+                                            <img src="@m.AvatarUrl" class="rounded-circle flex-shrink-0"
+                                                 style="width:28px;height:28px;object-fit:cover;" alt="" />
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                                 style="width:28px;height:28px;background:var(--uerre-purple);font-size:.65rem;">
+                                                @m.Initial
+                                            </div>
+                                        }
+                                        <span class="small flex-grow-1">@m.DisplayName</span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox"
+                                                   checked="@_postAuthorIds.Contains(uid)"
+                                                   @onchange="e => TogglePostAuthor(uid, (bool)(e.Value ?? false))" />
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </details>
+                }
+
+                <!-- Post feed -->
+                @if (_posts.Count == 0)
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.527 3.66 1.443 5.168L2.22 20.22a.75.75 0 0 0 .976.976l3.051-1.222A9.96 9.96 0 0 0 12 21c5.523 0 10-4.477 10-10S17.523 2 12 2m0 1.5a8.5 8.5 0 0 1 4.94 15.501l-.183.11-2.74 1.096.001-.003-2.034-.002A8.5 8.5 0 0 1 12 3.5"/></svg></div>
+                        <h5 class="fw-bold mb-1">Sin publicaciones aún</h5>
+                        <p class="text-muted small">Las publicaciones del grupo aparecerán aquí.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var post in _posts)
+                        {
+                            <div class="card-uerre no-hover p-4">
+                                <!-- Author row -->
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    @if (!string.IsNullOrEmpty(post.AuthorAvatarUrl))
+                                    {
+                                        <img src="@post.AuthorAvatarUrl" alt=""
+                                             class="rounded-circle flex-shrink-0"
+                                             style="width:38px;height:38px;object-fit:cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                             style="width:38px;height:38px;background:var(--uerre-purple);font-size:.8rem;">
+                                            @post.AuthorInitial
+                                        </div>
+                                    }
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="fw-semibold small text-dark">@post.AuthorDisplayName</div>
+                                        <div class="text-muted" style="font-size:.7rem;">@post.TimeAgo</div>
+                                    </div>
+                                    @if (_canManage || post.AuthorUserId == _currentUserId)
+                                    {
+                                        <button class="btn btn-sm btn-link text-danger p-0 flex-shrink-0"
+                                                style="font-size:.7rem;"
+                                                @onclick="() => DeletePost(post.Id)">
+                                            Eliminar
+                                        </button>
+                                    }
+                                </div>
+
+                                <!-- Body -->
+                                <p class="mb-0" style="white-space:pre-wrap;font-size:.9rem;">@post.Body</p>
+
+                                <!-- Optional image -->
+                                @if (post.ImageUrl is not null)
+                                {
+                                    <img src="@post.ImageUrl" alt=""
+                                         class="mt-3 rounded-3 w-100"
+                                         style="max-height:400px;object-fit:cover;" />
+                                }
+                            </div>
+                        }
+                    </div>
+                }
             }
 
             @if (_activeTab == "terms")
             {
-                <GroupTermsTab GroupId="@_group!.Id" CanManage="@_canManage" />
+                <GroupTermsTab GroupId="@_group.Id" CanManage="@_canManage" />
             }
-
         </div>
     </section>
+
+    <!-- ── Create Event modal ────────────────────────────────────────────────── -->
+    @if (_showCreateEvent)
+    {
+        <div class="modal-backdrop fade show" style="z-index:1040;"></div>
+        <div class="modal fade show d-block" tabindex="-1" style="z-index:1050;" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold" style="font-size:.95rem;">Nuevo Evento</h5>
+                        <button type="button" class="btn-close"
+                                @onclick="CloseCreateEvent"
+                                disabled="@_savingEvent"></button>
+                    </div>
+                    <div class="modal-body px-4 pb-2">
+                        @if (_eventError is not null)
+                        {
+                            <div class="alert alert-danger rounded-3 small py-2 mb-3">@_eventError</div>
+                        }
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Título *</label>
+                            <input class="form-control rounded-3" @bind="_evTitle" maxlength="200" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Descripción</label>
+                            <textarea class="form-control rounded-3" rows="2" @bind="_evDescription"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Lugar</label>
+                            <input class="form-control rounded-3" @bind="_evLocation" maxlength="300" />
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small">Inicio *</label>
+                                <input type="datetime-local" class="form-control rounded-3" @bind="_evStart" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small">Fin *</label>
+                                <input type="datetime-local" class="form-control rounded-3" @bind="_evEnd" />
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small">Capacidad</label>
+                                <input type="number" class="form-control rounded-3" min="1"
+                                       @bind="_evCapacity" placeholder="Sin límite" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold small">Visibilidad</label>
+                                <select class="form-select rounded-3" @bind="_evVisibility">
+                                    <option value="public">Público</option>
+                                    <option value="members">Solo miembros</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-4 pb-4 gap-2">
+                        <button class="btn btn-uerre-primary flex-grow-1"
+                                @onclick="SubmitCreateEvent"
+                                disabled="@_savingEvent">
+                            @if (_savingEvent)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                <span>Creando...</span>
+                            }
+                            else { <span>Crear Evento</span> }
+                        </button>
+                        <button class="btn btn-uerre-outline px-4"
+                                @onclick="CloseCreateEvent"
+                                disabled="@_savingEvent">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 }
 
+<style>
+    .group-hero-actions {
+        width: 191px;
+    }
+
+    .group-hero-action-btn {
+        width: 100%;
+        min-height: 38px;
+        padding: .375rem 1.5rem;
+        font-family: inherit;
+        font-size: 1rem;
+        line-height: 1.5;
+        border-radius: .75rem;
+    }
+
+    .group-leadership-btn {
+        background: #fff;
+        color: var(--uerre-purple);
+        border: 1px solid rgba(255,255,255,.75);
+        box-shadow: 0 10px 24px rgba(76, 29, 149, .16);
+        transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, color .18s ease;
+    }
+
+    .group-leadership-btn:hover,
+    .group-leadership-btn:focus-visible {
+        background: rgba(255,255,255,.92);
+        color: var(--uerre-purple-vivid);
+        box-shadow: 0 16px 30px rgba(76, 29, 149, .24);
+        transform: translateY(-2px);
+    }
+</style>
+
 @code {
-    [Parameter] public string Slug { get; set; } = "";
+    [Parameter]
+    public string Slug { get; set; } = "";
 
     private GroupModel? _group;
     private List<GroupMemberModel> _members = [];
     private List<EventModel> _events = [];
+    private List<GroupPostModel> _posts = [];
+
     private bool _loading = true;
+    private string? _loadError;
     private string? _membershipStatus;
     private string _activeTab = "members";
     private bool _canManage;
+    private bool _canPost;
+    private bool _canRequestLeadership;
+    private Guid _currentUserId;
+    private Dictionary<Guid, List<string>> _eventEvidenceImages = [];
+
+    // ── Logo upload state ──────────────────────────────────────────────────────
+    private string? _logoPreviewUrl;
+    private byte[]? _logoPendingBytes;
+    private string? _logoPendingContentType;
+    private string? _logoPendingExt;
+    private bool _savingLogo;
+    private string? _logoError;
+
+    // ── Banner upload state ────────────────────────────────────────────────────
+    private string? _bannerPreviewUrl;
+    private byte[]? _bannerPendingBytes;
+    private string? _bannerPendingContentType;
+    private string? _bannerPendingExt;
+    private bool _savingBanner;
+    private string? _bannerError;
 
     protected override async Task OnParametersSetAsync()
     {
-        _loading = true;
         try
         {
-            _group = await GroupService.GetBySlugAsync(Slug);
+            _loading = true;
+            _loadError = null;
+            _group = null;
+            _members = [];
+            _events = [];
+            _posts = [];
+            _membershipStatus = null;
+            _canManage = false;
+            _canPost = false;
+            _canRequestLeadership = false;
+            _currentUserId = Guid.Empty;
+            _postMembers = [];
+            _postAuthorIds = [];
+
+            try
+            {
+                _group = await GroupService.GetBySlugAsync(Slug);
+            }
+            catch
+            {
+                _group = null;
+            }
+
             if (_group is not null)
             {
+                try
+                {
                 var membersTask = GroupService.GetMembersAsync(_group.Id);
                 var eventsTask  = EventService.GetForGroupAsync(_group.Id);
-                await Task.WhenAll(membersTask, eventsTask);
+                var postsTask   = PostService.GetPostsAsync(_group.Id);
+
+                await Task.WhenAll(membersTask, eventsTask, postsTask);
+
                 _members = membersTask.Result;
                 _events  = eventsTask.Result;
+                _posts   = postsTask.Result;
+                _eventEvidenceImages = await EventPostService.GetImageUrlsForEventsAsync(_events.Select(e => e.Id));
 
-                // Determine if the current user can manage this group
-                var authState = await AuthState.GetAuthenticationStateAsync();
-                var user = authState.User;
-                if (user.Identity?.IsAuthenticated == true)
+                await LoadUserPermissionsAsync(_group.Id);
+                }
+                catch (Exception ex)
                 {
-                    var role = user.FindFirst("extension_Role")?.Value
-                            ?? user.FindFirst("roles")?.Value
-                            ?? "";
-                    _canManage = role == "admin"
-                        || _members.Any(m => m.UserId.ToString() == user.FindFirst("oid")?.Value
-                                          && m.Status == "accepted");
+                    _loadError = $"No se pudo cargar toda la información del grupo: {ex.Message}";
                 }
             }
         }
-        catch { _group = null; }
-        finally { _loading = false; }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadUserPermissionsAsync(Guid groupId)
+    {
+        var authState = await AuthState.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated != true)
+        {
+            _membershipStatus = null;
+            _canManage = false;
+            return;
+        }
+
+        var role = user.FindFirst("extension_Role")?.Value
+                ?? user.FindFirst("roles")?.Value
+                ?? "";
+
+        var statusTask = GroupService.GetMyMembershipStatusAsync(groupId);
+        var leaderTask = GroupService.IsLeaderAsync(groupId);
+        var canPostTask = PostService.CanPostAsync(groupId);
+
+        await Task.WhenAll(statusTask, leaderTask, canPostTask);
+
+        _membershipStatus = statusTask.Result;
+        _canManage = role.Equals("admin", StringComparison.OrdinalIgnoreCase) || leaderTask.Result;
+        _canPost   = _canManage || canPostTask.Result;
+        _canRequestLeadership = !_canManage && await LeadershipService.CanRequestAsync(groupId);
+
+        // Load current user ID for post delete permission
+        var me = await CurrentUser.GetUserAsync();
+        _currentUserId = me?.Id ?? Guid.Empty;
+
+        // Load post management data for leaders
+        if (_canManage)
+        {
+            _postMembers   = await PostService.GetMembersWithPostFlagAsync(groupId);
+            _postAuthorIds = await PostService.GetAuthorIdsAsync(groupId);
+        }
+    }
+
+    private void ShowMembersTab()
+    {
+        _activeTab = "members";
+    }
+
+    private void ShowTermsTab()
+    {
+        _activeTab = "terms";
+    }
+
+    private void ShowEventsTab()
+    {
+        _activeTab = "events";
+    }
+
+    private void ShowPostsTab()
+    {
+        _activeTab = "posts";
     }
 
     private void OnJoined(string status)
     {
         _membershipStatus = status;
         StateHasChanged();
+    }
+
+    // ── Logo upload methods ────────────────────────────────────────────────────
+
+    private async Task OnLogoSelected(InputFileChangeEventArgs e)
+    {
+        _logoError = null;
+        _logoPreviewUrl = null;
+        _logoPendingBytes = null;
+
+        var file = e.File;
+        const long maxBytes = 5L * 1024 * 1024;
+
+        if (!StorageService.AllowedMimeTypes.Contains(file.ContentType))
+        {
+            _logoError = "Formato no permitido. Usa JPEG, PNG, WebP o GIF.";
+            return;
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: maxBytes);
+            using var ms = new MemoryStream();
+
+            await stream.CopyToAsync(ms);
+
+            _logoPendingBytes = ms.ToArray();
+        }
+        catch (IOException)
+        {
+            _logoError = "El archivo supera el límite de 5 MB.";
+            return;
+        }
+
+        var rawExt = Path.GetExtension(file.Name).TrimStart('.').ToLowerInvariant();
+
+        _logoPendingExt = string.IsNullOrEmpty(rawExt)
+            ? file.ContentType.Split('/').Last().Replace("jpeg", "jpg")
+            : rawExt;
+
+        _logoPendingContentType = file.ContentType;
+
+        var base64 = Convert.ToBase64String(_logoPendingBytes);
+        _logoPreviewUrl = $"data:{file.ContentType};base64,{base64}";
+    }
+
+    private void CancelLogoPreview()
+    {
+        _logoPreviewUrl = null;
+        _logoPendingBytes = null;
+        _logoPendingContentType = null;
+        _logoPendingExt = null;
+        _logoError = null;
+    }
+
+    private async Task SaveLogo()
+    {
+        if (_group is null ||
+            _logoPendingBytes is null ||
+            _logoPendingContentType is null ||
+            _logoPendingExt is null)
+        {
+            return;
+        }
+
+        _savingLogo = true;
+        _logoError = null;
+
+        try
+        {
+            var updated = await GroupService.UploadLogoAsync(
+                _group.Id,
+                _logoPendingBytes,
+                _logoPendingContentType,
+                _logoPendingExt);
+
+            if (updated is not null)
+            {
+                _group = updated;
+                _logoPreviewUrl = null;
+                _logoPendingBytes = null;
+                _logoPendingContentType = null;
+                _logoPendingExt = null;
+            }
+            else
+            {
+                _logoError = "No se pudo guardar el logo.";
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logoError = ex.Message;
+        }
+        catch
+        {
+            _logoError = "Error inesperado al subir el logo.";
+        }
+        finally
+        {
+            _savingLogo = false;
+        }
+    }
+
+    // ── Banner upload methods ──────────────────────────────────────────────────
+
+    private async Task OnBannerSelected(InputFileChangeEventArgs e)
+    {
+        _bannerError = null;
+        _bannerPreviewUrl = null;
+        _bannerPendingBytes = null;
+
+        var file = e.File;
+        const long maxBytes = 5L * 1024 * 1024;
+
+        if (!StorageService.AllowedMimeTypes.Contains(file.ContentType))
+        {
+            _bannerError = "Formato no permitido. Usa JPEG, PNG, WebP o GIF.";
+            return;
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: maxBytes);
+            using var ms = new MemoryStream();
+
+            await stream.CopyToAsync(ms);
+
+            _bannerPendingBytes = ms.ToArray();
+        }
+        catch (IOException)
+        {
+            _bannerError = "El archivo supera el límite de 5 MB.";
+            return;
+        }
+
+        var rawExt = Path.GetExtension(file.Name).TrimStart('.').ToLowerInvariant();
+
+        _bannerPendingExt = string.IsNullOrEmpty(rawExt)
+            ? file.ContentType.Split('/').Last().Replace("jpeg", "jpg")
+            : rawExt;
+
+        _bannerPendingContentType = file.ContentType;
+
+        var base64 = Convert.ToBase64String(_bannerPendingBytes);
+        _bannerPreviewUrl = $"data:{file.ContentType};base64,{base64}";
+    }
+
+    private void CancelBannerPreview()
+    {
+        _bannerPreviewUrl = null;
+        _bannerPendingBytes = null;
+        _bannerPendingContentType = null;
+        _bannerPendingExt = null;
+        _bannerError = null;
+    }
+
+    private async Task SaveBanner()
+    {
+        if (_group is null ||
+            _bannerPendingBytes is null ||
+            _bannerPendingContentType is null ||
+            _bannerPendingExt is null)
+        {
+            return;
+        }
+
+        _savingBanner = true;
+        _bannerError = null;
+
+        try
+        {
+            var updated = await GroupService.UploadBannerAsync(
+                _group.Id,
+                _bannerPendingBytes,
+                _bannerPendingContentType,
+                _bannerPendingExt);
+
+            if (updated is not null)
+            {
+                _group = updated;
+                _bannerPreviewUrl = null;
+                _bannerPendingBytes = null;
+                _bannerPendingContentType = null;
+                _bannerPendingExt = null;
+            }
+            else
+            {
+                _bannerError = "No se pudo guardar el banner.";
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            _bannerError = ex.Message;
+        }
+        catch
+        {
+            _bannerError = "Error inesperado al subir el banner.";
+        }
+        finally
+        {
+            _savingBanner = false;
+        }
+    }
+
+    // ── Create Event state & methods ──────────────────────────────────────────
+
+    private bool    _showCreateEvent;
+    private string  _evTitle       = "";
+    private string? _evDescription;
+    private string? _evLocation;
+    private DateTime _evStart      = DateTime.Now.AddDays(1);
+    private DateTime _evEnd        = DateTime.Now.AddDays(1).AddHours(2);
+    private int?    _evCapacity;
+    private string  _evVisibility  = "public";
+    private bool    _savingEvent;
+    private string? _eventError;
+
+    private void CloseCreateEvent()
+    {
+        _showCreateEvent = false;
+        _evTitle         = "";
+        _evDescription   = null;
+        _evLocation      = null;
+        _evStart         = DateTime.Now.AddDays(1);
+        _evEnd           = DateTime.Now.AddDays(1).AddHours(2);
+        _evCapacity      = null;
+        _evVisibility    = "public";
+        _eventError      = null;
+    }
+
+    private async Task SubmitCreateEvent()
+    {
+        if (string.IsNullOrWhiteSpace(_evTitle))
+        {
+            _eventError = "El título es requerido.";
+            return;
+        }
+        if (_evEnd <= _evStart)
+        {
+            _eventError = "La fecha de fin debe ser posterior a la de inicio.";
+            return;
+        }
+        if (_group is null) return;
+
+        _savingEvent = true;
+        _eventError  = null;
+        try
+        {
+            var created = await EventService.CreateEventAsync(
+                _group.Id,
+                new BlazorCreateEventRequest(
+                    _evTitle.Trim(),
+                    string.IsNullOrWhiteSpace(_evDescription) ? null : _evDescription.Trim(),
+                    string.IsNullOrWhiteSpace(_evLocation)    ? null : _evLocation.Trim(),
+                    _evStart.ToUniversalTime(),
+                    _evEnd.ToUniversalTime(),
+                    _evCapacity,
+                    "published",
+                    _evVisibility));
+
+            if (created is not null)
+            {
+                _events = (await EventService.GetForGroupAsync(_group.Id));
+                CloseCreateEvent();
+            }
+            else
+            {
+                _eventError = "No se pudo crear el evento.";
+            }
+        }
+        catch (InvalidOperationException ex) { _eventError = ex.Message; }
+        catch { _eventError = "Error inesperado al crear el evento."; }
+        finally { _savingEvent = false; }
+    }
+
+    // ── Posts state & methods ─────────────────────────────────────────────────
+
+    private string  _newPostBody       = "";
+    private byte[]? _postImageBytes;
+    private string? _postImageContentType;
+    private string? _postImageExt;
+    private string? _postImagePreview;
+    private bool    _submittingPost;
+    private string? _postError;
+
+    // Post author management (leaders only)
+    private List<GroupPostAuthorModel> _postMembers   = [];
+    private HashSet<Guid>              _postAuthorIds = [];
+
+    private async Task OnPostImageSelected(InputFileChangeEventArgs e)
+    {
+        _postError        = null;
+        _postImagePreview = null;
+        _postImageBytes   = null;
+
+        var file = e.File;
+        if (!StorageService.AllowedMimeTypes.Contains(file.ContentType))
+        {
+            _postError = "Formato no permitido.";
+            return;
+        }
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 5L * 1024 * 1024);
+            using var ms     = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            _postImageBytes = ms.ToArray();
+        }
+        catch (IOException) { _postError = "La imagen supera 5 MB."; return; }
+
+        var rawExt = Path.GetExtension(file.Name).TrimStart('.').ToLowerInvariant();
+        _postImageExt         = string.IsNullOrEmpty(rawExt) ? "jpg" : rawExt;
+        _postImageContentType = file.ContentType;
+        _postImagePreview     = $"data:{file.ContentType};base64,{Convert.ToBase64String(_postImageBytes)}";
+    }
+
+    private void RemovePostImage()
+    {
+        _postImageBytes       = null;
+        _postImageContentType = null;
+        _postImageExt         = null;
+        _postImagePreview     = null;
+    }
+
+    private async Task SubmitPost()
+    {
+        if (_group is null || string.IsNullOrWhiteSpace(_newPostBody)) return;
+        _submittingPost = true;
+        _postError      = null;
+        try
+        {
+            var created = await PostService.CreatePostAsync(
+                _group.Id, _newPostBody,
+                _postImageBytes, _postImageContentType, _postImageExt);
+            if (created is not null)
+            {
+                _posts.Insert(0, created);
+                _newPostBody  = "";
+                RemovePostImage();
+            }
+            else { _postError = "No se pudo publicar."; }
+        }
+        catch (InvalidOperationException ex) { _postError = ex.Message; }
+        catch { _postError = "Error inesperado al publicar."; }
+        finally { _submittingPost = false; }
+    }
+
+    private async Task DeletePost(Guid postId)
+    {
+        if (_group is null) return;
+        var ok = await PostService.DeletePostAsync(_group.Id, postId);
+        if (ok) _posts.RemoveAll(p => p.Id == postId);
+    }
+
+    private async Task TogglePostAuthor(Guid userId, bool allowed)
+    {
+        if (_group is null) return;
+        await PostService.SetAuthorAsync(_group.Id, userId, allowed);
+        if (allowed) _postAuthorIds.Add(userId);
+        else         _postAuthorIds.Remove(userId);
     }
 }
