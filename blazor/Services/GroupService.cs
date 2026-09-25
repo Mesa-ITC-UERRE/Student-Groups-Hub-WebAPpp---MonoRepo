@@ -7,6 +7,9 @@ namespace StudentGroupsHub.Services;
 
 public class GroupService(IDbContextFactory<AppDbContext> dbFactory)
 {
+    private static readonly HashSet<string> AllowedStatuses =
+        ["pending", "active", "inactive", "rejected"];
+
     public async Task<(List<Group> Items, int Total)> GetAllActiveAsync(
         string? search, string? category, int page, int pageSize)
     {
@@ -119,6 +122,9 @@ public class GroupService(IDbContextFactory<AppDbContext> dbFactory)
 
     public async Task<bool> SetStatusAsync(Guid id, string status)
     {
+        if (!AllowedStatuses.Contains(status))
+            throw new InvalidOperationException("El estado del grupo no es válido.");
+
         using var db = dbFactory.CreateDbContext();
         var group = await db.Groups.FindAsync(id);
         if (group is null) return false;

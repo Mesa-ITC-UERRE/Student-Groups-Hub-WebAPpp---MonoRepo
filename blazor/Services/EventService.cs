@@ -10,6 +10,7 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
 {
     private static readonly HashSet<string> AllowedStatuses = ["draft", "published", "canceled"];
     private static readonly HashSet<string> AllowedVisibilities = ["public", "members"];
+    private static readonly HashSet<string> AllowedRsvpStatuses = ["going"];
 
     public async Task<List<Event>> GetUpcomingAsync(
         string? search = null,
@@ -160,6 +161,9 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
 
     public async Task<EventParticipation?> UpsertRsvpAsync(Guid eventId, Guid userId, string status)
     {
+        if (!AllowedRsvpStatuses.Contains(status))
+            throw new InvalidOperationException("El estado de asistencia no es válido.");
+
         using var db = dbFactory.CreateDbContext();
         var ev = await db.Events.FindAsync(eventId);
         if (ev is null) throw new KeyNotFoundException("Evento no encontrado.");
