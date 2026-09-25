@@ -23,6 +23,14 @@ Platform for managing student groups, events, members, and participation at **Un
 | [11-development-plan.md](./11-development-plan.md) | Phased development roadmap with per-phase task checklists |
 | [12-versioning.md](./12-versioning.md) | Commit conventions, Commitizen workflow, versioning rules |
 
+| [13-collaboration-skills.md](./13-collaboration-skills.md) | ARIA-style skill system, workflow, gates, evidence policy, and known process gaps |
+
+## Operational artifacts
+
+- [Plans](./plans/README.md) — issue-to-change plans and acceptance evidence.
+- [Graphify output](../graphify-out/GRAPH_REPORT.md) — generated architecture, dependency, and roadmap knowledge graph.
+- [Skills index](../.agents/skills/README.md) — project skills and execution order.
+
 ---
 
 ## Repository Structure

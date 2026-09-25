@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "graphify": {
+      "source": "graphify-labs/graphify",
+      "sourceType": "github",
+      "skillPath": "graphify/SKILL.md",
+      "computedHash": "f1ae974d21cb949c020a4a293f62482e0b3599f458de71958f242d08b0bb8a89"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",

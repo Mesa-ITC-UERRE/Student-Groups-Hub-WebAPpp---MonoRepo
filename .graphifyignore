@@ -1,0 +1,10 @@
+# Graphify implementation itself is tooling, not product architecture.
+.agents/skills/graphify/
+
+# Generated graph artifacts are outputs, not graph input.
+graphify-out/
+
+# Build/vendor artifacts are not project relationships.
+blazor/bin/
+blazor/obj/
+blazor/wwwroot/lib/

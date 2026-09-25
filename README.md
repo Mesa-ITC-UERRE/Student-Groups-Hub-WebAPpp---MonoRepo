@@ -11,8 +11,15 @@ Platform for managing student groups, events, members, and participation at **Un
 ```
 Student-Groups-Hub/
 ├── blazor/    — Blazor Server (.NET 10)  ← main application
-└── docs/      — Project documentation (12 markdown files)
+├── docs/          — Project documentation and issue plans
+├── graphify-out/  — Generated Graphify knowledge graph and report
+└── .agents/skills/ — ARIA-style collaboration skills + Graphify
 ```
+
+The repository uses the ARIA-style skill mechanism described in
+[`docs/13-collaboration-skills.md`](./docs/13-collaboration-skills.md). Start
+with [`student-groups-navigator`](./.agents/skills/student-groups-navigator/SKILL.md)
+and `repo-standards` before changing code.
 
 ---
 
@@ -45,6 +52,17 @@ Copy `blazor/appsettings.Development.json.template` to `blazor/appsettings.Devel
 | `Resend.ApiKey` | resend.com Dashboard → API Keys |
 
 ---
+
+## Collaboration by skills
+
+- `issue-to-change`: issue → plan → code → tests → documentation.
+- `security-review`: authorization, privacy, validation and sensitive data.
+- `documentation-maintainer`: keeps affected documents and contracts aligned.
+- `graphify-maintainer`: updates architecture, dependencies and roadmap graph.
+- `release-readiness`: release-branch gate before `main`.
+
+See the [operational guide](./docs/13-collaboration-skills.md) and the
+[skills index](./.agents/skills/README.md) and the [Graphify output](./graphify-out/GRAPH_REPORT.md).
 
 ## Committing
 

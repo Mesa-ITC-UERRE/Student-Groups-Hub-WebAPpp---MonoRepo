@@ -17,3 +17,7 @@ Thumbs.db
 
 # ── Logs ─────────────────────────────────────────────────────────────────────
 *.log
+
+# ── Graphify local state ─────────────────────────────────────────────────────
+graphify-out/.graphify_root
+graphify-out/cache/
