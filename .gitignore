@@ -15,6 +15,21 @@ blazor/appsettings.Development.json
 .DS_Store
 Thumbs.db
 
+# ── Local credentials / issue sync ───────────────────────────────────────────
+.env
+.env.github
+.env.github.example
+.env.local
+!.env.example
+
+# Personal GitHub issue synchronization tooling
+scripts/README-github-issues.md
+scripts/github_issues.py
+scripts/test_github_issues.py
+
+# Python local caches
+__pycache__/
+*.py[cod]
 .tools/
 
 # ── Logs ─────────────────────────────────────────────────────────────────────
