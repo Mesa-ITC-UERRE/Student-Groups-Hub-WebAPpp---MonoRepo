@@ -48,7 +48,7 @@ public class MembershipsController(
     public async Task<IActionResult> GetMembers(Guid groupId)
     {
         var members = await membershipService.GetAcceptedAsync(groupId);
-        return Ok(members.Select(MembershipService.ToResponse));
+        return Ok(members.Select(MembershipService.ToPublicResponse));
     }
 
     // GET /api/groups/{groupId}/memberships/me

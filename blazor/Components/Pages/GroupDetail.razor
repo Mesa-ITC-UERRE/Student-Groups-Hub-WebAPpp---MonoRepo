@@ -390,10 +390,7 @@ else
 
                                     <div class="min-w-0">
                                         <div class="fw-600 text-dark line-clamp-1 small">
-                                            @member.DisplayLabel
-                                        </div>
-                                        <div class="text-muted line-clamp-1" style="font-size:.72rem;">
-                                            @member.Email
+                                            @member.DisplayName
                                         </div>
                                     </div>
                                 </div>
@@ -817,7 +814,7 @@ else
     public string Slug { get; set; } = "";
 
     private GroupModel? _group;
-    private List<GroupMemberModel> _members = [];
+    private List<PublicGroupMemberModel> _members = [];
     private List<EventModel> _events = [];
     private List<GroupPostModel> _posts = [];
 
@@ -883,7 +880,7 @@ else
             {
                 try
                 {
-                var membersTask = GroupService.GetMembersAsync(_group.Id);
+                var membersTask = GroupService.GetPublicMembersAsync(_group.Id);
                 var eventsTask  = EventService.GetForGroupAsync(_group.Id);
                 var postsTask   = PostService.GetPostsAsync(_group.Id);
 

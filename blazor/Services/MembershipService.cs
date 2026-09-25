@@ -116,4 +116,10 @@ public class MembershipService(IDbContextFactory<AppDbContext> dbFactory)
     public static MembershipResponse ToResponse(Membership m) => new(
         m.Id, m.UserId, m.GroupId, m.User?.Email ?? "", m.User?.DisplayName,
         m.User?.AvatarUrl, m.Status, m.RequestedAt, m.RespondedAt);
+
+    public static PublicMemberResponse ToPublicResponse(Membership m) => new(
+        PublicDisplayName(m.User), m.User?.AvatarUrl, m.RespondedAt);
+
+    private static string PublicDisplayName(User? user)
+        => !string.IsNullOrWhiteSpace(user?.DisplayName) ? user.DisplayName : "Miembro";
 }

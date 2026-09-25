@@ -70,9 +70,20 @@ public class GroupApiService(
             return MapGroup(g, count);
         }, null);
 
-    public async Task<List<GroupMemberModel>> GetMembersAsync(Guid groupId)
+    public async Task<List<PublicGroupMemberModel>> GetPublicMembersAsync(Guid groupId)
         => await DbSafe.TryAsync(async () =>
         {
+            var members = await membershipService.GetAcceptedAsync(groupId);
+            return members.Select(m => MembershipService.ToPublicResponse(m))
+                .Select(m => new PublicGroupMemberModel(
+                    m.DisplayName, m.AvatarUrl, m.JoinedAt))
+                .ToList();
+        }, []);
+
+    public async Task<List<GroupMemberModel>> GetManagedMembersAsync(Guid groupId)
+        => await DbSafe.TryAsync(async () =>
+        {
+            await RequireGroupManagerAsync(groupId);
             var members = await membershipService.GetAcceptedAsync(groupId);
             return members.Select(m => new GroupMemberModel(
                 m.Id, m.UserId,

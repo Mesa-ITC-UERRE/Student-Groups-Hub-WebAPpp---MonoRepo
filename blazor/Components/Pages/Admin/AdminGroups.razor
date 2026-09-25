@@ -502,7 +502,7 @@
         try
         {
             _pendingList = await GroupService.GetPendingMembershipsAsync(groupId);
-            _memberList  = await GroupService.GetMembersAsync(groupId);
+            _memberList  = await GroupService.GetManagedMembersAsync(groupId);
         }
         catch
         {

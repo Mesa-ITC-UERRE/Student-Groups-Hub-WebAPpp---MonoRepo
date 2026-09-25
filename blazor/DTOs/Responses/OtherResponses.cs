@@ -12,6 +12,12 @@ public record MembershipResponse(
     DateTime? RespondedAt
 );
 
+public record PublicMemberResponse(
+    string DisplayName,
+    string? AvatarUrl,
+    DateTime? JoinedAt
+);
+
 public record EventResponse(
     Guid Id,
     Guid GroupId,

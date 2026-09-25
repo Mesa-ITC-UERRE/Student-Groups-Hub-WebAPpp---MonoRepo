@@ -63,6 +63,14 @@ public record GroupMemberModel(
     public string Initial => (DisplayName ?? Email).Substring(0, 1).ToUpper();
 }
 
+public record PublicGroupMemberModel(
+    string DisplayName,
+    string? AvatarUrl,
+    DateTime? JoinedAt)
+{
+    public string Initial => DisplayName[..1].ToUpperInvariant();
+}
+
 public record JoinGroupResponse(Guid MembershipId, Guid GroupId, Guid UserId, string Status, DateTime RequestedAt);
 
 // ─── Membership ───────────────────────────────────────────────────────────────

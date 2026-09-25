@@ -150,7 +150,7 @@
     private GroupModel? _feurGroup;
     private List<GroupTermModel> _terms = [];
     private GroupTermModel? _currentTerm;
-    private List<GroupMemberModel> _currentMembers = [];
+    private List<PublicGroupMemberModel> _currentMembers = [];
     private bool _loading = true;
     private string _activeTab = "timeline";
     private bool _canManage;
@@ -164,7 +164,7 @@
             {
                 _terms = await TermService.GetTermsAsync(_feurGroup.Id);
                 _currentTerm = _terms.FirstOrDefault(t => t.IsCurrent) ?? _terms.FirstOrDefault();
-                _currentMembers = await GroupService.GetMembersAsync(_feurGroup.Id);
+                _currentMembers = await GroupService.GetPublicMembersAsync(_feurGroup.Id);
 
                 // Check if current user can manage
                 var authState = await AuthState.GetAuthenticationStateAsync();
