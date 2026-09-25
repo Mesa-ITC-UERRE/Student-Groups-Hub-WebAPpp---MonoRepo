@@ -116,16 +116,24 @@ public class GroupApiService(
 
     public async Task<MembershipModel?> ApproveMembershipAsync(Guid groupId, Guid membershipId, string? notes = null)
     {
-        await currentUser.RequireActiveUserAsync();
-        var m = await membershipService.ApproveAsync(membershipId, notes);
+        await RequireGroupManagerAsync(groupId);
+        var m = await membershipService.ApproveAsync(groupId, membershipId, notes);
         return m is null ? null : MapMembership(m);
     }
 
     public async Task<MembershipModel?> RejectMembershipAsync(Guid groupId, Guid membershipId, string? notes = null)
     {
-        await currentUser.RequireActiveUserAsync();
-        var m = await membershipService.RejectAsync(membershipId, notes);
+        await RequireGroupManagerAsync(groupId);
+        var m = await membershipService.RejectAsync(groupId, membershipId, notes);
         return m is null ? null : MapMembership(m);
+    }
+
+    private async Task RequireGroupManagerAsync(Guid groupId)
+    {
+        var user = await currentUser.RequireActiveUserAsync();
+        if (user.Role != "admin" && !await groupService.IsLeaderOfGroupAsync(user.Id, groupId))
+            throw new InvalidOperationException(
+                "No tienes permiso para administrar miembros de este grupo.");
     }
 
     public async Task RemoveMemberAsync(Guid groupId, Guid userId)
@@ -1243,4 +1251,3 @@ public class CalendarApiService(
             return result;
         }, []);
 }
-

@@ -80,22 +80,22 @@ public class MembershipService(IDbContextFactory<AppDbContext> dbFactory)
             .ToListAsync();
     }
 
-    public async Task<Membership?> ApproveAsync(Guid membershipId, string? notes)
+    public async Task<Membership?> ApproveAsync(Guid groupId, Guid membershipId, string? notes)
     {
         using var db = dbFactory.CreateDbContext();
         var m = await db.Memberships.Include(m => m.User)
-            .FirstOrDefaultAsync(m => m.Id == membershipId);
+            .FirstOrDefaultAsync(m => m.Id == membershipId && m.GroupId == groupId);
         if (m is null || m.Status != "pending") return null;
         m.Status = "accepted"; m.Notes = notes; m.RespondedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
         return m;
     }
 
-    public async Task<Membership?> RejectAsync(Guid membershipId, string? notes)
+    public async Task<Membership?> RejectAsync(Guid groupId, Guid membershipId, string? notes)
     {
         using var db = dbFactory.CreateDbContext();
         var m = await db.Memberships.Include(m => m.User)
-            .FirstOrDefaultAsync(m => m.Id == membershipId);
+            .FirstOrDefaultAsync(m => m.Id == membershipId && m.GroupId == groupId);
         if (m is null || m.Status != "pending") return null;
         m.Status = "rejected"; m.Notes = notes; m.RespondedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();

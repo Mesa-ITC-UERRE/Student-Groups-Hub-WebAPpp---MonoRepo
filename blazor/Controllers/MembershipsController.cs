@@ -90,12 +90,13 @@ public class MembershipsController(
         var oid  = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var isAdmin  = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
         if (!isAdmin && !isLeader) return Forbid();
 
-        var m = await membershipService.ApproveAsync(membershipId, body?.Notes);
+        var m = await membershipService.ApproveAsync(groupId, membershipId, body?.Notes);
         if (m is null) return NotFound();
 
         var group = await groupService.GetByIdAsync(groupId);
@@ -117,12 +118,13 @@ public class MembershipsController(
         var oid  = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var isAdmin  = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
         if (!isAdmin && !isLeader) return Forbid();
 
-        var m = await membershipService.RejectAsync(membershipId, body?.Notes);
+        var m = await membershipService.RejectAsync(groupId, membershipId, body?.Notes);
         if (m is null) return NotFound();
 
         var group = await groupService.GetByIdAsync(groupId);
