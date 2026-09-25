@@ -2,6 +2,7 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject AdminApiService AdminService
 @inject GroupApiService GroupService
+@inject IJSRuntime JS
 @attribute [Authorize(Policy = "AdminOnly")]
 
 <PageTitle>Gestionar Grupos — Admin</PageTitle>
@@ -45,6 +46,13 @@
             </button>
         </div>
 
+        @if (_seasonResetMessage is not null)
+        {
+            <div class="alert alert-success rounded-3 border-0" role="status">
+                @_seasonResetMessage
+            </div>
+        }
+
         @if (_showSeasonReset)
         {
             <div class="card-uerre no-hover p-4 mb-4">
@@ -76,7 +84,7 @@
                         {
                             <label class="d-flex align-items-center gap-3 px-3 py-2 border-bottom bg-white" style="cursor:pointer;">
                                 <input class="form-check-input mt-0" type="checkbox"
-                                       checked="@(!_seasonSkipGroupIds.Contains(group.Id))"
+                                       checked="@_seasonSelectedGroupIds.Contains(group.Id)"
                                        @onchange="e => ToggleSeasonGroup(group.Id, (bool)(e.Value ?? false))" />
                                 <div class="flex-grow-1 min-w-0">
                                     <div class="fw-semibold small text-dark">@group.Name</div>
@@ -87,13 +95,28 @@
                         }
                     </div>
 
+                    <div class="alert alert-warning border-0 rounded-3 small">
+                        Seleccionaste <strong>@_seasonSelectedGroupIds.Count</strong> grupo(s).
+                        Esta acción elimina liderazgos, cierra administraciones y remueve membresías activas.
+                    </div>
+                    <label class="form-label small fw-semibold" for="seasonResetConfirmation">
+                        Escribe <code>@SeasonConfirmationPhrase</code> para confirmar.
+                    </label>
+                    <input id="seasonResetConfirmation"
+                           class="form-control rounded-3 mb-3"
+                           autocomplete="off"
+                           @bind="_seasonConfirmation"
+                           @bind:event="oninput"
+                           disabled="@(_resettingSeason || _seasonSelectedGroupIds.Count == 0)" />
+
                     <div class="d-flex justify-content-end gap-2">
                         <button class="btn btn-outline-secondary rounded-pill px-4"
                                 type="button" @onclick="ToggleSeasonReset" disabled="@_resettingSeason">
                             Cancelar
                         </button>
                         <button class="btn btn-danger rounded-pill px-4"
-                                type="button" @onclick="ConfirmSeasonReset" disabled="@_resettingSeason">
+                                type="button" @onclick="ConfirmSeasonReset"
+                                disabled="@(_resettingSeason || !CanConfirmSeasonReset)">
                             @if (_resettingSeason) { <span class="spinner-border spinner-border-sm me-1"></span> }
                             Reiniciar grupos seleccionados
                         </button>
@@ -371,7 +394,9 @@
     private bool _seasonGroupsLoading;
     private bool _resettingSeason;
     private List<GroupModel> _seasonGroups = [];
-    private HashSet<Guid> _seasonSkipGroupIds = [];
+    private HashSet<Guid> _seasonSelectedGroupIds = [];
+    private string _seasonConfirmation = "";
+    private string? _seasonResetMessage;
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -436,7 +461,8 @@
         try
         {
             _seasonGroups = await AdminService.GetActiveGroupsForSeasonResetAsync();
-            _seasonSkipGroupIds = [];
+            _seasonSelectedGroupIds = [];
+            _seasonConfirmation = "";
         }
         finally
         {
@@ -446,16 +472,19 @@
 
     private void ToggleSeasonGroup(Guid groupId, bool include)
     {
-        if (include) _seasonSkipGroupIds.Remove(groupId);
-        else _seasonSkipGroupIds.Add(groupId);
+        if (include) _seasonSelectedGroupIds.Add(groupId);
+        else _seasonSelectedGroupIds.Remove(groupId);
+        _seasonConfirmation = "";
     }
 
     private async Task ConfirmSeasonReset()
     {
+        if (!CanConfirmSeasonReset) return;
         _resettingSeason = true;
         try
         {
-            await AdminService.ResetSeasonAsync(_seasonSkipGroupIds);
+            var result = await AdminService.ResetSeasonAsync(_seasonSelectedGroupIds);
+            _seasonResetMessage = $"Se reiniciaron {result.Groups} grupo(s), {result.LeaderAssignments} liderazgo(s) y {result.Memberships} membresía(s).";
             _showSeasonReset = false;
             _expandedGroupId = null;
             await LoadAsync();
@@ -465,6 +494,10 @@
             _resettingSeason = false;
         }
     }
+
+    private string SeasonConfirmationPhrase => $"REINICIAR {_seasonSelectedGroupIds.Count}";
+    private bool CanConfirmSeasonReset => _seasonSelectedGroupIds.Count > 0
+        && string.Equals(_seasonConfirmation.Trim(), SeasonConfirmationPhrase, StringComparison.Ordinal);
 
     private async Task ResetGroupSeason(Guid groupId)
     {

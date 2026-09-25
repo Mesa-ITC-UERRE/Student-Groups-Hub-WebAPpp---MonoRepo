@@ -909,25 +909,26 @@ public class AdminApiService(
         return user is null ? null : MapUser(user);
     }
 
-    public async Task ResetSeasonAsync(IEnumerable<Guid> skipGroupIds)
+    public async Task<GroupSeasonResetResult> ResetSeasonAsync(IEnumerable<Guid> groupIds)
     {
-        await RequireAdminAsync();
+        var actor = await RequireAdminAsync();
         using var db = dbFactory.CreateDbContext();
-        var skipIds = skipGroupIds.Distinct().ToHashSet();
+        var requestedIds = groupIds.Distinct().ToHashSet();
         var targetGroups = await db.Groups
-            .Where(g => g.Status == "active" && !skipIds.Contains(g.Id))
+            .Where(g => g.Status == "active" && requestedIds.Contains(g.Id))
             .Select(g => new { g.Id, g.Name, g.Slug })
             .ToListAsync();
         var targetIds = targetGroups.Select(g => g.Id).ToList();
-        if (targetIds.Count == 0) return;
+        if (targetIds.Count == 0)
+            return new GroupSeasonResetResult(0, 0, 0, 0);
 
-        await NotifyAndResetAsync(targetIds);
+        return await NotifyAndResetAsync(targetIds, actor.Id);
     }
 
-    public async Task ResetGroupSeasonAsync(Guid groupId)
+    public async Task<GroupSeasonResetResult> ResetGroupSeasonAsync(Guid groupId)
     {
-        await RequireAdminAsync();
-        await NotifyAndResetAsync([groupId]);
+        var actor = await RequireAdminAsync();
+        return await NotifyAndResetAsync([groupId], actor.Id);
     }
 
     private async Task<User> RequireAdminAsync()
@@ -938,11 +939,14 @@ public class AdminApiService(
         return user;
     }
 
-    private async Task NotifyAndResetAsync(IEnumerable<Guid> groupIds)
+    private async Task<GroupSeasonResetResult> NotifyAndResetAsync(
+        IEnumerable<Guid> groupIds,
+        Guid performedByUserId)
     {
         using var db = dbFactory.CreateDbContext();
         var targetIds = groupIds.Distinct().ToList();
-        if (targetIds.Count == 0) return;
+        if (targetIds.Count == 0)
+            return new GroupSeasonResetResult(0, 0, 0, 0);
 
         var affectedLeaders = await db.RoleAssignments
             .Include(r => r.User)
@@ -955,7 +959,7 @@ public class AdminApiService(
             .Where(m => targetIds.Contains(m.GroupId) && (m.Status == "accepted" || m.Status == "pending"))
             .ToListAsync();
 
-        await groupSeasonService.ResetSeasonAsync(targetIds);
+        var result = await groupSeasonService.ResetSeasonAsync(targetIds, performedByUserId);
 
         foreach (var leader in affectedLeaders)
         {
@@ -979,6 +983,8 @@ public class AdminApiService(
                 $"/groups/{membership.Group?.Slug}",
                 membership.GroupId, "group");
         }
+
+        return result;
     }
 
     private static UserModel MapUser(User u) => new(

@@ -108,9 +108,11 @@ public class AdminController(
         if (!UserService.IsActive(actingUser)) return Forbid();
 
         using var db = dbFactory.CreateDbContext();
-        var skipIds = (request?.SkipGroupIds ?? []).Distinct().ToHashSet();
+        var requestedIds = (request?.GroupIds ?? []).Distinct().ToHashSet();
+        if (requestedIds.Count == 0)
+            return BadRequest(new { message = "Selecciona al menos un grupo para reiniciar." });
         var targetIds = await db.Groups
-            .Where(g => g.Status == "active" && !skipIds.Contains(g.Id))
+            .Where(g => g.Status == "active" && requestedIds.Contains(g.Id))
             .Select(g => g.Id)
             .ToListAsync();
 
@@ -124,7 +126,7 @@ public class AdminController(
             .Where(m => targetIds.Contains(m.GroupId) && (m.Status == "accepted" || m.Status == "pending"))
             .ToListAsync();
 
-        await groupSeasonService.ResetSeasonAsync(targetIds);
+        var result = await groupSeasonService.ResetSeasonAsync(targetIds, actingUser!.Id);
 
         foreach (var leader in affectedLeaders)
         {
@@ -148,7 +150,7 @@ public class AdminController(
                 membership.GroupId, "group");
         }
 
-        return NoContent();
+        return Ok(result);
     }
 
     // POST /api/admin/groups/{id}/reset-season
@@ -170,7 +172,7 @@ public class AdminController(
             .Where(m => m.GroupId == id && (m.Status == "accepted" || m.Status == "pending"))
             .ToListAsync();
 
-        await groupSeasonService.ResetGroupAsync(id);
+        var result = await groupSeasonService.ResetGroupAsync(id, actingUser!.Id);
 
         foreach (var leader in affectedLeaders)
         {
@@ -194,10 +196,10 @@ public class AdminController(
                 membership.GroupId, "group");
         }
 
-        return NoContent();
+        return Ok(result);
     }
 }
 
 public record SetRoleRequest(string Role, Guid? GroupId = null);
 public record SetUserStatusRequest(string Status);
-public record ResetSeasonRequest(List<Guid> SkipGroupIds);
+public record ResetSeasonRequest(List<Guid> GroupIds);
