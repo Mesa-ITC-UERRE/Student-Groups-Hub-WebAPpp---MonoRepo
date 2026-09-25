@@ -1,39 +1,27 @@
 {
-  ".husky/commit-msg": {
-    "mtime": 1790125998.420126,
-    "seen": 1790365228.5586555,
-    "ast_hash": "bd8d39e0d745d847614887efbef0323d",
-    "semantic_hash": ""
-  },
-  ".husky/pre-commit": {
-    "mtime": 1790125998.4211066,
-    "seen": 1790365228.5586703,
-    "ast_hash": "5689078291089a62409540aa1b33b6f4",
-    "semantic_hash": ""
-  },
   "blazor/Components/App.razor": {
     "mtime": 1790125998.4213622,
-    "seen": 1790365228.5586774,
+    "seen": 1790367652.837567,
     "ast_hash": "0c3e93e4588a61110e79e1d8747d1466",
-    "semantic_hash": ""
+    "semantic_hash": "0c3e93e4588a61110e79e1d8747d1466"
   },
   "blazor/Components/Layout/MainLayout.razor": {
     "mtime": 1790361937.3166966,
-    "seen": 1790365228.5586832,
+    "seen": 1790367652.8375757,
     "ast_hash": "5323a6d282ddb35243dd345b2999c28f",
-    "semantic_hash": ""
+    "semantic_hash": "5323a6d282ddb35243dd345b2999c28f"
   },
   "blazor/Components/Layout/MobileTabBar.razor": {
     "mtime": 1790361937.316957,
-    "seen": 1790365228.5586867,
+    "seen": 1790367652.83758,
     "ast_hash": "90f5e29cc6705d96760458e52bad2e2e",
-    "semantic_hash": ""
+    "semantic_hash": "90f5e29cc6705d96760458e52bad2e2e"
   },
   "blazor/Components/Layout/NavMenu.razor": {
     "mtime": 1790361937.31717,
-    "seen": 1790365228.5586896,
+    "seen": 1790367652.8375819,
     "ast_hash": "7b0cdda73418912008e1e68f965019d3",
-    "semantic_hash": ""
+    "semantic_hash": "7b0cdda73418912008e1e68f965019d3"
   },
   "blazor/Components/Layout/ReconnectModal.razor": {
     "mtime": 1790125998.4215837,
@@ -49,39 +37,39 @@
   },
   "blazor/Components/Pages/Admin/AdminGroups.razor": {
     "mtime": 1790361937.3175433,
-    "seen": 1790365228.5587,
+    "seen": 1790367652.8377576,
     "ast_hash": "59e228c243fd79143f494d1fa7462482",
-    "semantic_hash": ""
+    "semantic_hash": "59e228c243fd79143f494d1fa7462482"
   },
   "blazor/Components/Pages/Admin/AdminIndex.razor": {
     "mtime": 1790361937.317818,
-    "seen": 1790365228.5587027,
+    "seen": 1790367652.8377597,
     "ast_hash": "f143e0e1baa2b4100b7c78e560dd603e",
-    "semantic_hash": ""
+    "semantic_hash": "f143e0e1baa2b4100b7c78e560dd603e"
   },
   "blazor/Components/Pages/Admin/AdminRequests.razor": {
     "mtime": 1790361937.3180785,
-    "seen": 1790365228.558705,
+    "seen": 1790367652.8377616,
     "ast_hash": "5a3a9a518ab44cee015ac3e57a6d1ce7",
-    "semantic_hash": ""
+    "semantic_hash": "5a3a9a518ab44cee015ac3e57a6d1ce7"
   },
   "blazor/Components/Pages/Admin/AdminUsers.razor": {
     "mtime": 1790361937.3205965,
-    "seen": 1790365228.5587077,
+    "seen": 1790367652.8377633,
     "ast_hash": "ebf4cbf49190b8200b590f617e1e3815",
-    "semantic_hash": ""
+    "semantic_hash": "ebf4cbf49190b8200b590f617e1e3815"
   },
   "blazor/Components/Pages/ApplyForLeadership.razor": {
     "mtime": 1790361937.3208315,
-    "seen": 1790365228.5587103,
+    "seen": 1790367652.8377652,
     "ast_hash": "d5464920c7335b12b0567f93690550ad",
-    "semantic_hash": ""
+    "semantic_hash": "d5464920c7335b12b0567f93690550ad"
   },
   "blazor/Components/Pages/Calendario.razor": {
     "mtime": 1790361937.3211331,
-    "seen": 1790365228.5587127,
+    "seen": 1790367652.837767,
     "ast_hash": "3b30eaed0b9601ef13d7716ff11f5eec",
-    "semantic_hash": ""
+    "semantic_hash": "3b30eaed0b9601ef13d7716ff11f5eec"
   },
   "blazor/Components/Pages/Error.razor": {
     "mtime": 1790125998.4224524,
@@ -91,351 +79,351 @@
   },
   "blazor/Components/Pages/EventDetail.razor": {
     "mtime": 1790361937.3215497,
-    "seen": 1790365228.558719,
+    "seen": 1790367652.8378282,
     "ast_hash": "61478253ff149cae8c271a48836603b1",
-    "semantic_hash": ""
+    "semantic_hash": "61478253ff149cae8c271a48836603b1"
   },
   "blazor/Components/Pages/Events.razor": {
     "mtime": 1790361937.3218262,
-    "seen": 1790365228.5587213,
+    "seen": 1790367652.8378298,
     "ast_hash": "0ea90a15bf79bcb9b295adeea5dc967f",
-    "semantic_hash": ""
+    "semantic_hash": "0ea90a15bf79bcb9b295adeea5dc967f"
   },
   "blazor/Components/Pages/Feur.razor": {
     "mtime": 1790361937.3218262,
-    "seen": 1790365228.558724,
+    "seen": 1790367652.8378317,
     "ast_hash": "1d441a4ef90d033cc1944af754dd37c7",
-    "semantic_hash": ""
+    "semantic_hash": "1d441a4ef90d033cc1944af754dd37c7"
   },
   "blazor/Components/Pages/GroupDetail.razor": {
     "mtime": 1790361937.3226185,
-    "seen": 1790365228.5587263,
+    "seen": 1790367652.8378334,
     "ast_hash": "fbc482c2c0b6d15dfc44cf0b85b0ef0a",
-    "semantic_hash": ""
+    "semantic_hash": "fbc482c2c0b6d15dfc44cf0b85b0ef0a"
   },
   "blazor/Components/Pages/Groups.razor": {
     "mtime": 1790361937.3229053,
-    "seen": 1790365228.5587287,
+    "seen": 1790367652.8378353,
     "ast_hash": "ac953f81eb6792bd5d13102d537188d9",
-    "semantic_hash": ""
+    "semantic_hash": "ac953f81eb6792bd5d13102d537188d9"
   },
   "blazor/Components/Pages/Home.razor": {
     "mtime": 1790361937.3233683,
-    "seen": 1790365228.5587313,
+    "seen": 1790367652.8378367,
     "ast_hash": "91fdeb8a1d71234eff4092cf30be2370",
-    "semantic_hash": ""
+    "semantic_hash": "91fdeb8a1d71234eff4092cf30be2370"
   },
   "blazor/Components/Pages/MisGrupos.razor": {
     "mtime": 1790361937.3235364,
-    "seen": 1790365228.558734,
+    "seen": 1790367652.8378384,
     "ast_hash": "93bcf6f6e95c643193176de13ce2f20f",
-    "semantic_hash": ""
+    "semantic_hash": "93bcf6f6e95c643193176de13ce2f20f"
   },
   "blazor/Components/Pages/NotFound.razor": {
     "mtime": 1790125998.4239902,
-    "seen": 1790365228.5587363,
+    "seen": 1790367652.8378398,
     "ast_hash": "effd9f93770e34c9805b2a2bfcf0fc0b",
-    "semantic_hash": ""
+    "semantic_hash": "effd9f93770e34c9805b2a2bfcf0fc0b"
   },
   "blazor/Components/Pages/Perfil.razor": {
     "mtime": 1790125998.4239902,
-    "seen": 1790365228.558739,
+    "seen": 1790367652.8378415,
     "ast_hash": "ee0621a5bfb1a29511a3236013cd59fd",
-    "semantic_hash": ""
+    "semantic_hash": "ee0621a5bfb1a29511a3236013cd59fd"
   },
   "blazor/Components/Pages/RegisterGroup.razor": {
     "mtime": 1790361937.3237448,
-    "seen": 1790365228.5587413,
+    "seen": 1790367652.837843,
     "ast_hash": "65ce9a130105d359fc5c4e367d19c8e1",
-    "semantic_hash": ""
+    "semantic_hash": "65ce9a130105d359fc5c4e367d19c8e1"
   },
   "blazor/Components/Pages/Timeline.razor": {
     "mtime": 1790361937.3240435,
-    "seen": 1790365228.5587437,
+    "seen": 1790367652.8378444,
     "ast_hash": "b69f06d62a123016ea016088764ae3ef",
-    "semantic_hash": ""
+    "semantic_hash": "b69f06d62a123016ea016088764ae3ef"
   },
   "blazor/Components/Routes.razor": {
     "mtime": 1790125998.4249902,
-    "seen": 1790365228.5587463,
+    "seen": 1790367652.8378458,
     "ast_hash": "1381b777a75bae4f607a0e7857d21014",
-    "semantic_hash": ""
+    "semantic_hash": "1381b777a75bae4f607a0e7857d21014"
   },
   "blazor/Components/Shared/AdminDashboardView.razor": {
     "mtime": 1790361937.3242178,
-    "seen": 1790365228.558749,
+    "seen": 1790367652.8378472,
     "ast_hash": "e7d57498f441e5b1619daf6a6ee14d16",
-    "semantic_hash": ""
+    "semantic_hash": "e7d57498f441e5b1619daf6a6ee14d16"
   },
   "blazor/Components/Shared/AdminKpiGrid.razor": {
     "mtime": 1790361937.3243098,
-    "seen": 1790365228.5587516,
+    "seen": 1790367652.8378487,
     "ast_hash": "f84e38d62c9fd75876258a2c3939804c",
-    "semantic_hash": ""
+    "semantic_hash": "f84e38d62c9fd75876258a2c3939804c"
   },
   "blazor/Components/Shared/FluentIcon.razor": {
     "mtime": 1790125998.4262185,
-    "seen": 1790365228.5587537,
+    "seen": 1790367652.83785,
     "ast_hash": "aa0cc468214d23d43f72cbe0f6342f3e",
-    "semantic_hash": ""
+    "semantic_hash": "aa0cc468214d23d43f72cbe0f6342f3e"
   },
   "blazor/Components/Shared/GroupTermsTab.razor": {
     "mtime": 1790125998.4262185,
-    "seen": 1790365228.5587568,
+    "seen": 1790367652.8378522,
     "ast_hash": "278df419593bcb34fc161ea14d8da9b4",
-    "semantic_hash": ""
+    "semantic_hash": "278df419593bcb34fc161ea14d8da9b4"
   },
   "blazor/Components/Shared/JoinButton.razor": {
     "mtime": 1790125998.4262185,
-    "seen": 1790365228.5587595,
+    "seen": 1790367652.8378541,
     "ast_hash": "dabe441db76d65ca4b3d295c1147b355",
-    "semantic_hash": ""
+    "semantic_hash": "dabe441db76d65ca4b3d295c1147b355"
   },
   "blazor/Components/Shared/LeaderDashboardView.razor": {
     "mtime": 1790125998.4262185,
-    "seen": 1790365228.558762,
+    "seen": 1790367652.837856,
     "ast_hash": "a1f9ffba7058c2ed6ab375adfe5ae5a7",
-    "semantic_hash": ""
+    "semantic_hash": "a1f9ffba7058c2ed6ab375adfe5ae5a7"
   },
   "blazor/Components/Shared/NotificationsPanel.razor": {
     "mtime": 1790125998.4262185,
-    "seen": 1790365228.5587652,
+    "seen": 1790367652.837858,
     "ast_hash": "ee2d77c4c7779898dde1923f3a85dc7d",
-    "semantic_hash": ""
+    "semantic_hash": "ee2d77c4c7779898dde1923f3a85dc7d"
   },
   "blazor/Components/Shared/RedirectToLogin.razor": {
     "mtime": 1790125998.4262185,
-    "seen": 1790365228.5587676,
+    "seen": 1790367652.8378596,
     "ast_hash": "2d0094afe39217b8247c7ee9e163da27",
-    "semantic_hash": ""
+    "semantic_hash": "2d0094afe39217b8247c7ee9e163da27"
   },
   "blazor/Components/Shared/RsvpButton.razor": {
     "mtime": 1790125998.4262185,
-    "seen": 1790365228.55877,
+    "seen": 1790367652.837861,
     "ast_hash": "e49de7f32e86155eff7efaa8b5952d28",
-    "semantic_hash": ""
+    "semantic_hash": "e49de7f32e86155eff7efaa8b5952d28"
   },
   "blazor/Components/Shared/StudentDashboardView.razor": {
     "mtime": 1790125998.4262185,
-    "seen": 1790365228.5587726,
+    "seen": 1790367652.837863,
     "ast_hash": "312a2603237e20798ffe0b059a0a7415",
-    "semantic_hash": ""
+    "semantic_hash": "312a2603237e20798ffe0b059a0a7415"
   },
   "blazor/Components/_Imports.razor": {
     "mtime": 1790125998.4262185,
-    "seen": 1790365228.5587747,
+    "seen": 1790367652.8378642,
     "ast_hash": "d7ba215fe97f0117eb3fe4f4b463759b",
-    "semantic_hash": ""
+    "semantic_hash": "d7ba215fe97f0117eb3fe4f4b463759b"
   },
   "blazor/Controllers/AdminController.cs": {
     "mtime": 1790361937.3245058,
-    "seen": 1790365228.5587773,
+    "seen": 1790367652.8378658,
     "ast_hash": "b2d427ad04117498feee6c4868804ecb",
-    "semantic_hash": ""
+    "semantic_hash": "b2d427ad04117498feee6c4868804ecb"
   },
   "blazor/Controllers/DashboardController.cs": {
     "mtime": 1790125998.4272883,
-    "seen": 1790365228.55878,
+    "seen": 1790367652.8378673,
     "ast_hash": "45e19a2224d6fd71bdc467ea53e56c0b",
-    "semantic_hash": ""
+    "semantic_hash": "45e19a2224d6fd71bdc467ea53e56c0b"
   },
   "blazor/Controllers/EventsController.cs": {
     "mtime": 1790361937.324634,
-    "seen": 1790365228.5587828,
+    "seen": 1790367652.8378692,
     "ast_hash": "af8f49349da6f8d4b5fb5a1016b67d24",
-    "semantic_hash": ""
+    "semantic_hash": "af8f49349da6f8d4b5fb5a1016b67d24"
   },
   "blazor/Controllers/GroupRegistrationRequestsController.cs": {
     "mtime": 1790361937.3247733,
-    "seen": 1790365228.5587854,
+    "seen": 1790367652.8378706,
     "ast_hash": "0e4b3b480bcd79aa872827c290d6c033",
-    "semantic_hash": ""
+    "semantic_hash": "0e4b3b480bcd79aa872827c290d6c033"
   },
   "blazor/Controllers/GroupsController.cs": {
     "mtime": 1790361937.3248837,
-    "seen": 1790365228.5587885,
+    "seen": 1790367652.837872,
     "ast_hash": "4e0e533e2546c1d25266df1370326ebe",
-    "semantic_hash": ""
+    "semantic_hash": "4e0e533e2546c1d25266df1370326ebe"
   },
   "blazor/Controllers/HealthController.cs": {
     "mtime": 1790125998.4272883,
-    "seen": 1790365228.5587912,
+    "seen": 1790367652.8378737,
     "ast_hash": "e1f5eeffcb6eeeb37bcd392284ff0aa9",
-    "semantic_hash": ""
+    "semantic_hash": "e1f5eeffcb6eeeb37bcd392284ff0aa9"
   },
   "blazor/Controllers/LeadershipRequestsController.cs": {
     "mtime": 1790361937.3250108,
-    "seen": 1790365228.5587935,
+    "seen": 1790367652.8378754,
     "ast_hash": "5f9d066c94c1c2c22abcd98e60a9af0d",
-    "semantic_hash": ""
+    "semantic_hash": "5f9d066c94c1c2c22abcd98e60a9af0d"
   },
   "blazor/Controllers/MembershipsController.cs": {
     "mtime": 1790361937.3251288,
-    "seen": 1790365228.558796,
+    "seen": 1790367652.8378768,
     "ast_hash": "00117f4a6285f90f04d557b63ed8d57c",
-    "semantic_hash": ""
+    "semantic_hash": "00117f4a6285f90f04d557b63ed8d57c"
   },
   "blazor/Controllers/NotificationsController.cs": {
     "mtime": 1790361937.3251288,
-    "seen": 1790365228.5587986,
+    "seen": 1790367652.8378782,
     "ast_hash": "450cc2a68524d26eaf46fbe61ce9700b",
-    "semantic_hash": ""
+    "semantic_hash": "450cc2a68524d26eaf46fbe61ce9700b"
   },
   "blazor/Controllers/UsersController.cs": {
     "mtime": 1790361937.3252785,
-    "seen": 1790365228.558801,
+    "seen": 1790367652.8378801,
     "ast_hash": "b4b71af43878b607cda3876a3f05ad7c",
-    "semantic_hash": ""
+    "semantic_hash": "b4b71af43878b607cda3876a3f05ad7c"
   },
   "blazor/DTOs/Requests/GroupRequests.cs": {
     "mtime": 1790125998.4280221,
-    "seen": 1790365228.5588036,
+    "seen": 1790367652.8378816,
     "ast_hash": "7d47b0575628a3df325b0688de8dad92",
-    "semantic_hash": ""
+    "semantic_hash": "7d47b0575628a3df325b0688de8dad92"
   },
   "blazor/DTOs/Requests/OtherRequests.cs": {
     "mtime": 1790361937.3253813,
-    "seen": 1790365228.558806,
+    "seen": 1790367652.8378835,
     "ast_hash": "03b7721d2be2023be5c0154affaa7cf0",
-    "semantic_hash": ""
+    "semantic_hash": "03b7721d2be2023be5c0154affaa7cf0"
   },
   "blazor/DTOs/Requests/UserRequests.cs": {
     "mtime": 1790125998.428094,
-    "seen": 1790365228.5588086,
+    "seen": 1790367652.8378854,
     "ast_hash": "6ae0e25f5cdb82fc43977fa47479eaac",
-    "semantic_hash": ""
+    "semantic_hash": "6ae0e25f5cdb82fc43977fa47479eaac"
   },
   "blazor/DTOs/Responses/GroupResponses.cs": {
     "mtime": 1790125998.428094,
-    "seen": 1790365228.558811,
+    "seen": 1790367652.8378873,
     "ast_hash": "6a6694e7f1b534c04ff4510b8585ddb9",
-    "semantic_hash": ""
+    "semantic_hash": "6a6694e7f1b534c04ff4510b8585ddb9"
   },
   "blazor/DTOs/Responses/OtherResponses.cs": {
     "mtime": 1790361937.3254874,
-    "seen": 1790365228.558814,
+    "seen": 1790367652.8378894,
     "ast_hash": "b6c819b9cd67bec5690155223870d48f",
-    "semantic_hash": ""
+    "semantic_hash": "b6c819b9cd67bec5690155223870d48f"
   },
   "blazor/DTOs/Responses/UserResponses.cs": {
     "mtime": 1790125998.4283655,
-    "seen": 1790365228.5588167,
+    "seen": 1790367652.8378913,
     "ast_hash": "f9652dba78a95398ed18b3448ac42b9e",
-    "semantic_hash": ""
+    "semantic_hash": "f9652dba78a95398ed18b3448ac42b9e"
   },
   "blazor/Data/AppDbContext.cs": {
     "mtime": 1790125998.4283655,
-    "seen": 1790365228.558819,
+    "seen": 1790367652.8378928,
     "ast_hash": "6a57529a88e039ed3c75bd132f89bdea",
-    "semantic_hash": ""
+    "semantic_hash": "6a57529a88e039ed3c75bd132f89bdea"
   },
   "blazor/Data/Migrations/20260610220943_InitialSchema.Designer.cs": {
     "mtime": 1790125998.4286442,
-    "seen": 1790365228.558822,
+    "seen": 1790367652.8378944,
     "ast_hash": "9be01061efb91998cb6945c350dac1ef",
-    "semantic_hash": ""
+    "semantic_hash": "9be01061efb91998cb6945c350dac1ef"
   },
   "blazor/Data/Migrations/20260610220943_InitialSchema.cs": {
     "mtime": 1790125998.4288733,
-    "seen": 1790365228.5588248,
+    "seen": 1790367652.837896,
     "ast_hash": "ac6ac69d8caff594afaf667883535411",
-    "semantic_hash": ""
+    "semantic_hash": "ac6ac69d8caff594afaf667883535411"
   },
   "blazor/Data/Migrations/20260610235205_RenameEntraOidToSupabaseId.Designer.cs": {
     "mtime": 1790125998.4288733,
-    "seen": 1790365228.5588276,
+    "seen": 1790367652.8378978,
     "ast_hash": "bf3574639fdf909bf716e326462dd419",
-    "semantic_hash": ""
+    "semantic_hash": "bf3574639fdf909bf716e326462dd419"
   },
   "blazor/Data/Migrations/20260610235205_RenameEntraOidToSupabaseId.cs": {
     "mtime": 1790125998.4288733,
-    "seen": 1790365228.55883,
+    "seen": 1790367652.8378992,
     "ast_hash": "faa4259997ac831860d28c94fbe0a934",
-    "semantic_hash": ""
+    "semantic_hash": "faa4259997ac831860d28c94fbe0a934"
   },
   "blazor/Data/Migrations/20260614000000_RenameSupabaseIdToEntraOid.Designer.cs": {
     "mtime": 1790125998.4288733,
-    "seen": 1790365228.558833,
+    "seen": 1790367652.837901,
     "ast_hash": "63379ad15d425eac19565c11b9ad792d",
-    "semantic_hash": ""
+    "semantic_hash": "63379ad15d425eac19565c11b9ad792d"
   },
   "blazor/Data/Migrations/20260614000000_RenameSupabaseIdToEntraOid.cs": {
     "mtime": 1790125998.4288733,
-    "seen": 1790365228.5588355,
+    "seen": 1790367652.8379025,
     "ast_hash": "69a2feb071b414cd37117972f40b1e00",
-    "semantic_hash": ""
+    "semantic_hash": "69a2feb071b414cd37117972f40b1e00"
   },
   "blazor/Data/Migrations/20260615120000_AddProposedCategory.Designer.cs": {
     "mtime": 1790125998.4288733,
-    "seen": 1790365228.5588381,
+    "seen": 1790367652.837904,
     "ast_hash": "0e061e657860191a7c851db3f168c85a",
-    "semantic_hash": ""
+    "semantic_hash": "0e061e657860191a7c851db3f168c85a"
   },
   "blazor/Data/Migrations/20260615120000_AddProposedCategory.cs": {
     "mtime": 1790125998.4288733,
-    "seen": 1790365228.5588405,
+    "seen": 1790367652.8379054,
     "ast_hash": "d8b8e7818be1045ee92919898b17010b",
-    "semantic_hash": ""
+    "semantic_hash": "d8b8e7818be1045ee92919898b17010b"
   },
   "blazor/Data/Migrations/20260622213133_AddLeadershipRequestsAndSeasonReset.Designer.cs": {
     "mtime": 1790125998.4288733,
-    "seen": 1790365228.5588431,
+    "seen": 1790367652.8379073,
     "ast_hash": "e2760949eeeae3f7cb1806af1f07b55e",
-    "semantic_hash": ""
+    "semantic_hash": "e2760949eeeae3f7cb1806af1f07b55e"
   },
   "blazor/Data/Migrations/20260622213133_AddLeadershipRequestsAndSeasonReset.cs": {
     "mtime": 1790125998.4288733,
-    "seen": 1790365228.5588458,
+    "seen": 1790367652.8379087,
     "ast_hash": "99cc9a7064083c53da77c836beaefdb5",
-    "semantic_hash": ""
+    "semantic_hash": "99cc9a7064083c53da77c836beaefdb5"
   },
   "blazor/Data/Migrations/20260625002047_AddEventPosts.Designer.cs": {
     "mtime": 1790125998.4288733,
-    "seen": 1790365228.5588486,
+    "seen": 1790367652.8379102,
     "ast_hash": "39c0c5bfb2a65ae2f51881b086516929",
-    "semantic_hash": ""
+    "semantic_hash": "39c0c5bfb2a65ae2f51881b086516929"
   },
   "blazor/Data/Migrations/20260625002047_AddEventPosts.cs": {
     "mtime": 1790125998.4288733,
-    "seen": 1790365228.5588512,
+    "seen": 1790367652.837912,
     "ast_hash": "648897e1d98721a05828661317cca93b",
-    "semantic_hash": ""
+    "semantic_hash": "648897e1d98721a05828661317cca93b"
   },
   "blazor/Data/Migrations/AppDbContextModelSnapshot.cs": {
     "mtime": 1790125998.4289901,
-    "seen": 1790365228.5588539,
+    "seen": 1790367652.8379135,
     "ast_hash": "343992b2b48dc800b1663631f596dd45",
-    "semantic_hash": ""
+    "semantic_hash": "343992b2b48dc800b1663631f596dd45"
   },
   "blazor/Extensions/ClaimsPrincipalExtensions.cs": {
     "mtime": 1790125998.4289901,
-    "seen": 1790365228.5588565,
+    "seen": 1790367652.8379152,
     "ast_hash": "022ea0f28bc24a60b6930fbc290f2ed1",
-    "semantic_hash": ""
+    "semantic_hash": "022ea0f28bc24a60b6930fbc290f2ed1"
   },
   "blazor/Middleware/GlobalExceptionHandler.cs": {
     "mtime": 1790125998.4289901,
-    "seen": 1790365228.558859,
+    "seen": 1790367652.8379169,
     "ast_hash": "edde09ff73517b4bf0dd6a55ae9929fe",
-    "semantic_hash": ""
+    "semantic_hash": "edde09ff73517b4bf0dd6a55ae9929fe"
   },
   "blazor/Models/AppModels.cs": {
     "mtime": 1790361937.3257296,
-    "seen": 1790365228.5588613,
+    "seen": 1790367652.8379185,
     "ast_hash": "0c96dae67b56c980551a195e45815ff3",
-    "semantic_hash": ""
+    "semantic_hash": "0c96dae67b56c980551a195e45815ff3"
   },
   "blazor/Models/Entities.cs": {
     "mtime": 1790125998.4301758,
-    "seen": 1790365228.5588639,
+    "seen": 1790367652.8379202,
     "ast_hash": "7b8aef40ac933c5f2024824a020cf07b",
-    "semantic_hash": ""
+    "semantic_hash": "7b8aef40ac933c5f2024824a020cf07b"
   },
   "blazor/Program.cs": {
     "mtime": 1790125998.4301758,
-    "seen": 1790365228.5588667,
+    "seen": 1790367652.837922,
     "ast_hash": "a4d8eaaef98efa2797b7fdb89dee20c7",
-    "semantic_hash": ""
+    "semantic_hash": "a4d8eaaef98efa2797b7fdb89dee20c7"
   },
   "blazor/Properties/launchSettings.json": {
     "mtime": 1790125998.4301758,
@@ -445,105 +433,105 @@
   },
   "blazor/Services/AdminRoleHandler.cs": {
     "mtime": 1790125998.4301758,
-    "seen": 1790365228.558873,
+    "seen": 1790367652.8379807,
     "ast_hash": "4b8dbac2168a302b3a88ca55b182396e",
-    "semantic_hash": ""
+    "semantic_hash": "4b8dbac2168a302b3a88ca55b182396e"
   },
   "blazor/Services/ApiServices.cs": {
     "mtime": 1790361937.326555,
-    "seen": 1790365228.5588763,
+    "seen": 1790367652.837983,
     "ast_hash": "d28ad474c2292d6b49079ed5fd033b7d",
-    "semantic_hash": ""
+    "semantic_hash": "d28ad474c2292d6b49079ed5fd033b7d"
   },
   "blazor/Services/CurrentUserService.cs": {
     "mtime": 1790361937.3267095,
-    "seen": 1790365228.5588787,
+    "seen": 1790367652.8379848,
     "ast_hash": "b93e33440825813954b5119eb597617c",
-    "semantic_hash": ""
+    "semantic_hash": "b93e33440825813954b5119eb597617c"
   },
   "blazor/Services/DashboardService.cs": {
     "mtime": 1790361937.3268735,
-    "seen": 1790365228.5588813,
+    "seen": 1790367652.8379862,
     "ast_hash": "22d6ff334bb9e216ad98271890950ee3",
-    "semantic_hash": ""
+    "semantic_hash": "22d6ff334bb9e216ad98271890950ee3"
   },
   "blazor/Services/EventPostService.cs": {
     "mtime": 1790125998.4306388,
-    "seen": 1790365228.5588837,
+    "seen": 1790367652.837988,
     "ast_hash": "3842783c3f9f0b4b745fcec06fbebf21",
-    "semantic_hash": ""
+    "semantic_hash": "3842783c3f9f0b4b745fcec06fbebf21"
   },
   "blazor/Services/EventService.cs": {
     "mtime": 1790361937.327049,
-    "seen": 1790365228.558886,
+    "seen": 1790367652.8379896,
     "ast_hash": "f6282b15b70da316dfc08d911b7d1ddf",
-    "semantic_hash": ""
+    "semantic_hash": "f6282b15b70da316dfc08d911b7d1ddf"
   },
   "blazor/Services/GroupPostService.cs": {
     "mtime": 1790125998.4306388,
-    "seen": 1790365228.558889,
+    "seen": 1790367652.8379912,
     "ast_hash": "450a478eaaa33e5cfe663f6d7e8ccea1",
-    "semantic_hash": ""
+    "semantic_hash": "450a478eaaa33e5cfe663f6d7e8ccea1"
   },
   "blazor/Services/GroupRegistrationRequestService.cs": {
     "mtime": 1790125998.4306388,
-    "seen": 1790365228.5588918,
+    "seen": 1790367652.8379931,
     "ast_hash": "994efd6e3c2d50145b09720e38bd09f9",
-    "semantic_hash": ""
+    "semantic_hash": "994efd6e3c2d50145b09720e38bd09f9"
   },
   "blazor/Services/GroupSeasonService.cs": {
     "mtime": 1790125998.4306388,
-    "seen": 1790365228.5588946,
+    "seen": 1790367652.8379948,
     "ast_hash": "b4276d8461e85d8297108ca84aa9122a",
-    "semantic_hash": ""
+    "semantic_hash": "b4276d8461e85d8297108ca84aa9122a"
   },
   "blazor/Services/GroupService.cs": {
     "mtime": 1790125998.4309902,
-    "seen": 1790365228.5588973,
+    "seen": 1790367652.8379965,
     "ast_hash": "63b24d9e55e4a029a6322b3eb99eaf66",
-    "semantic_hash": ""
+    "semantic_hash": "63b24d9e55e4a029a6322b3eb99eaf66"
   },
   "blazor/Services/GroupTermService.cs": {
     "mtime": 1790125998.4309902,
-    "seen": 1790365228.5588996,
+    "seen": 1790367652.8379984,
     "ast_hash": "73c9e10e5346f362bb60af9cb80611c5",
-    "semantic_hash": ""
+    "semantic_hash": "73c9e10e5346f362bb60af9cb80611c5"
   },
   "blazor/Services/LeadershipRequestService.cs": {
     "mtime": 1790125998.4309902,
-    "seen": 1790365228.5589023,
+    "seen": 1790367652.838,
     "ast_hash": "c79c26845f3aff0888bd8da496fc7845",
-    "semantic_hash": ""
+    "semantic_hash": "c79c26845f3aff0888bd8da496fc7845"
   },
   "blazor/Services/MembershipService.cs": {
     "mtime": 1790125998.4309902,
-    "seen": 1790365228.558905,
+    "seen": 1790367652.8380017,
     "ast_hash": "c6c54936b73d6c8c3099761007274b38",
-    "semantic_hash": ""
+    "semantic_hash": "c6c54936b73d6c8c3099761007274b38"
   },
   "blazor/Services/NotificationService.cs": {
     "mtime": 1790125998.4309902,
-    "seen": 1790365228.5589075,
+    "seen": 1790367652.8380032,
     "ast_hash": "91336fff0343a6f88c025a0162c263ed",
-    "semantic_hash": ""
+    "semantic_hash": "91336fff0343a6f88c025a0162c263ed"
   },
   "blazor/Services/StorageService.cs": {
     "mtime": 1790125998.4309902,
-    "seen": 1790365228.5589101,
+    "seen": 1790367652.8380048,
     "ast_hash": "c80c419c432f08ac48f54f58d49292b9",
-    "semantic_hash": ""
+    "semantic_hash": "c80c419c432f08ac48f54f58d49292b9"
   },
   "blazor/Services/UserService.cs": {
     "mtime": 1790361937.3271646,
-    "seen": 1790365228.558913,
+    "seen": 1790367652.8380063,
     "ast_hash": "e7fffa6fc3c7649540a8a4ee66577ecb",
-    "semantic_hash": ""
+    "semantic_hash": "e7fffa6fc3c7649540a8a4ee66577ecb"
   },
   "blazor/Services/UserStateService.cs": {
     "mtime": 1790125998.4309902,
-    "seen": 1790365228.5589154,
+    "seen": 1790367652.838008,
     "ast_hash": "ea6980656b57a1c91bdd82d3a86c8e83",
-    "semantic_hash": ""
+    "semantic_hash": "ea6980656b57a1c91bdd82d3a86c8e83"
   },
   "blazor/StudentGroupsHub.csproj": {
     "mtime": 1790125998.4309902,
@@ -553,321 +541,27 @@
   },
   "blazor/StudentGroupsHub.slnx": {
     "mtime": 1790125998.4309902,
-    "seen": 1790365228.5589209,
+    "seen": 1790367652.8380585,
     "ast_hash": "8956da2afaabf8e9efaf0de5833c5705",
-    "semantic_hash": ""
+    "semantic_hash": "8956da2afaabf8e9efaf0de5833c5705"
   },
   "blazor/appsettings.json": {
     "mtime": 1790125998.4309902,
-    "seen": 1790365228.5589237,
+    "seen": 1790367652.8380604,
     "ast_hash": "9b5d2d455cef6409abaf0b08cc88d7a9",
-    "semantic_hash": ""
+    "semantic_hash": "9b5d2d455cef6409abaf0b08cc88d7a9"
   },
   "blazor/dotnet-tools.json": {
     "mtime": 1790125998.4319901,
-    "seen": 1790365228.5589266,
+    "seen": 1790367652.838062,
     "ast_hash": "e7ac2873b936087263c6e5a2c3ae9d04",
-    "semantic_hash": ""
+    "semantic_hash": "e7ac2873b936087263c6e5a2c3ae9d04"
   },
   "blazor/wwwroot/avatar-crop.js": {
     "mtime": 1790361937.3279185,
-    "seen": 1790365228.558929,
+    "seen": 1790367652.8380637,
     "ast_hash": "59ba79b21ed4f52f0d368d875f8c1cc4",
-    "semantic_hash": ""
-  },
-  "skills-lock.json": {
-    "mtime": 1790361937.3441987,
-    "seen": 1790365228.5589502,
-    "ast_hash": "fa2e00a352f13e07d9038d049edf5642",
-    "semantic_hash": "fa2e00a352f13e07d9038d049edf5642"
-  },
-  ".agents/skills/README.md": {
-    "mtime": 1790365355.0268714,
-    "seen": 1790365366.0454495,
-    "ast_hash": "57b89e2bf47f4f0a6425f44f351b4b87",
-    "semantic_hash": ""
-  },
-  ".agents/skills/documentation-maintainer/SKILL.md": {
-    "mtime": 1790365180.1836932,
-    "seen": 1790365228.5589557,
-    "ast_hash": "e96ef16b29ed9810870c9b195dc3abdc",
-    "semantic_hash": ""
-  },
-  ".agents/skills/graphify-maintainer/SKILL.md": {
-    "mtime": 1790365180.719685,
-    "seen": 1790365228.5589721,
-    "ast_hash": "6d59bd534d7973d534deb6bf9df30440",
-    "semantic_hash": ""
-  },
-  ".agents/skills/issue-to-change/SKILL.md": {
-    "mtime": 1790365179.6517012,
-    "seen": 1790365228.5589786,
-    "ast_hash": "9fbe882d07d29d890694434ad6df9d6e",
-    "semantic_hash": ""
-  },
-  ".agents/skills/release-readiness/SKILL.md": {
-    "mtime": 1790365354.7399406,
-    "seen": 1790365366.0454714,
-    "ast_hash": "ee44b79fd1334a165f4f0e6ba5c29ac5",
-    "semantic_hash": ""
-  },
-  ".agents/skills/repo-standards/SKILL.md": {
-    "mtime": 1790365179.3547056,
-    "seen": 1790365228.5590076,
-    "ast_hash": "0b33f9158cd9501b24db24d32679441d",
-    "semantic_hash": ""
-  },
-  ".agents/skills/security-review/SKILL.md": {
-    "mtime": 1790365180.450689,
-    "seen": 1790365228.5590127,
-    "ast_hash": "1b4e6133e376a0c2d8a371ae5da7e3b6",
-    "semantic_hash": ""
-  },
-  ".agents/skills/student-groups-navigator/SKILL.md": {
-    "mtime": 1790365179.06071,
-    "seen": 1790365228.5590177,
-    "ast_hash": "b63f43058ff6f289f222cca7e02cb5e5",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/CHANGELOG.md": {
-    "mtime": 1790361937.3119504,
-    "seen": 1790365228.5590236,
-    "ast_hash": "c2431bd02e1717ed5f6a728643953695",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/SKILL.md": {
-    "mtime": 1790361937.31228,
-    "seen": 1790365228.5590262,
-    "ast_hash": "0e31e4a19cccde79afd7fee73982a158",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/_contributing.md": {
-    "mtime": 1790361937.31239,
-    "seen": 1790365228.5590286,
-    "ast_hash": "6389686da3a79efdf1e39e48e409a64e",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/_sections.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.5590315,
-    "ast_hash": "7cc4829a3718c745dfdbec554c30485f",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/_template.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.5590343,
-    "ast_hash": "384ee769a417d3001e81d81b139acbf6",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/advanced-full-text-search.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.559037,
-    "ast_hash": "f32a27eab306ad2a29db0a2a8a55b03c",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/advanced-jsonb-indexing.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.5590396,
-    "ast_hash": "5b4fbcc451879892d366fa02194bb536",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/conn-idle-timeout.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.5590417,
-    "ast_hash": "c73ea45eecdb007786cd3b3e08e31640",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/conn-limits.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.5590446,
-    "ast_hash": "59025fe12439048e81296f28feca4ce1",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/conn-pooling.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.5590475,
-    "ast_hash": "8561b805a5e0bdfa348840266861de66",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/conn-prepared-statements.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.55905,
-    "ast_hash": "fe941145678825d273baac1fe66d4dce",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/data-batch-inserts.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.5590527,
-    "ast_hash": "75a4e92f80b90818221fae51f8b994f1",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/data-n-plus-one.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.5590553,
-    "ast_hash": "4fc111bb51121f5181910b3759061ada",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/data-pagination.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.559058,
-    "ast_hash": "0e9b3211df99b3d35f7083c984b03ccb",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/data-upsert.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.5590606,
-    "ast_hash": "51a26138848f5fec547cd56b9bcb33d4",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/lock-advisory.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.559063,
-    "ast_hash": "3f3523b7b0a812a6906f92a6610a5a9b",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/lock-deadlock-prevention.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.5590653,
-    "ast_hash": "07eae98867b47074d82528df59d2135e",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/lock-short-transactions.md": {
-    "mtime": 1790361937.3125558,
-    "seen": 1790365228.5590682,
-    "ast_hash": "aea973297ac14bba2586a2ff57fd8ff7",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/lock-skip-locked.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.5590703,
-    "ast_hash": "26e9bd402801299afce06ee506a9f864",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/monitor-explain-analyze.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.559073,
-    "ast_hash": "93d5998318098652ac380cd354718924",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/monitor-pg-stat-statements.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.5590756,
-    "ast_hash": "ee51d9586cf18c848563799c14dcc638",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/monitor-vacuum-analyze.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.5590782,
-    "ast_hash": "e3d1e4f8831a37bdb1c7f364b911f7a6",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/query-composite-indexes.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.5590804,
-    "ast_hash": "bd959891036289cfaf3d54e49599b2d0",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/query-covering-indexes.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.5590832,
-    "ast_hash": "5e62afcfe9289405caec1f32f351dd29",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/query-index-types.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.5590856,
-    "ast_hash": "ef0d4ad9d1eb0466a0bde542ade59de2",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/query-missing-indexes.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.559089,
-    "ast_hash": "1bd5f85a9c930219dd479825986bd6ad",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/query-partial-indexes.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.5590918,
-    "ast_hash": "a6c64f9136f8a7880e53df3e259d90c9",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/schema-constraints.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.5590944,
-    "ast_hash": "e7362385f5b79c28f5e495d7c45a7a52",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/schema-data-types.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.559097,
-    "ast_hash": "a10f1ec17bd499622d9201af3d00e0d4",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/schema-foreign-key-indexes.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.5591,
-    "ast_hash": "6bc02b38edd88e56c89bab863f5c789b",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/schema-lowercase-identifiers.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.5591025,
-    "ast_hash": "1df2eae336d542d365f99abdfa968367",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/schema-partitioning.md": {
-    "mtime": 1790361937.3127515,
-    "seen": 1790365228.559105,
-    "ast_hash": "e95568857288b614ba0d4b8cd1b4fb72",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/schema-primary-keys.md": {
-    "mtime": 1790361937.3137515,
-    "seen": 1790365228.5591075,
-    "ast_hash": "63412819d632d8cbe39f14630e5de085",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/security-privileges.md": {
-    "mtime": 1790361937.3137515,
-    "seen": 1790365228.5591102,
-    "ast_hash": "212beb5d93e7c02cb61c95e117af3aaa",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/security-rls-basics.md": {
-    "mtime": 1790361937.3137515,
-    "seen": 1790365228.5591128,
-    "ast_hash": "2349e490ff266b1c2b81a2368c054baa",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase-postgres-best-practices/references/security-rls-performance.md": {
-    "mtime": 1790361937.3137515,
-    "seen": 1790365228.5591152,
-    "ast_hash": "6c87b7d050ba714a95a2b88eb0b6caf0",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase/CHANGELOG.md": {
-    "mtime": 1790361937.3137515,
-    "seen": 1790365228.5591176,
-    "ast_hash": "bd88eabad50a89d284a0f737bda015af",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase/SKILL.md": {
-    "mtime": 1790361937.3151681,
-    "seen": 1790365228.5591202,
-    "ast_hash": "24a2e7ad2c7e071f98c021cd4c32bccf",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase/assets/feedback-issue-template.md": {
-    "mtime": 1790361937.3154385,
-    "seen": 1790365228.5591238,
-    "ast_hash": "a38bcf7c09794faf287d91a992830b47",
-    "semantic_hash": ""
-  },
-  ".agents/skills/supabase/references/skill-feedback.md": {
-    "mtime": 1790361937.3155549,
-    "seen": 1790365228.5591264,
-    "ast_hash": "38a53e95ded880782190ddf2f2810317",
-    "semantic_hash": ""
+    "semantic_hash": "59ba79b21ed4f52f0d368d875f8c1cc4"
   },
   ".github/workflows/deploy-main.yml": {
     "mtime": 1790361937.315821,
@@ -879,12 +573,6 @@
     "mtime": 1790361937.3162746,
     "seen": 1790365228.5591314,
     "ast_hash": "a43ac9417f924836fc1ca7d7aa494308",
-    "semantic_hash": ""
-  },
-  "README.md": {
-    "mtime": 1790365355.5767415,
-    "seen": 1790365366.0455935,
-    "ast_hash": "f1c251089e25f8e630613fd2fb16ec3d",
     "semantic_hash": ""
   },
   "blazor/CHANGELOG.md": {
@@ -965,112 +653,10 @@
     "ast_hash": "0ecfb33ddec711530fff861b1981cb03",
     "semantic_hash": ""
   },
-  "docs/13-collaboration-skills.md": {
-    "mtime": 1790365355.2878098,
-    "seen": 1790365366.0456295,
-    "ast_hash": "b412c38145a4f10ca39bb2d3cff3cf36",
-    "semantic_hash": ""
-  },
-  "docs/README.md": {
-    "mtime": 1790361937.328142,
-    "seen": 1790365228.5591724,
-    "ast_hash": "3fb64e9f7a3442a68aa1640dae1ba8b8",
-    "semantic_hash": ""
-  },
-  "docs/plans/README.md": {
-    "mtime": 1790361937.328215,
-    "seen": 1790365228.5591755,
-    "ast_hash": "2e5d4c8560eba7622fba970c1d39cdad",
-    "semantic_hash": ""
-  },
   "blazor/wwwroot/favicon.png": {
     "mtime": 1790125998.4333174,
     "seen": 1790365228.559184,
     "ast_hash": "eab4f24ab5ff80be586dcdab8e87dc9c",
-    "semantic_hash": ""
-  },
-  "scripts/check-graphify.sh": {
-    "mtime": 1790365279.3158357,
-    "seen": 1790365290.7011108,
-    "ast_hash": "1fcf543c289b4c633c70ea1a1c39b6c9",
-    "semantic_hash": ""
-  },
-  "scripts/github_issues.py": {
-    "mtime": 1790301592.4382203,
-    "seen": 1790365228.5589378,
-    "ast_hash": "a4f8059a40a9029de1bfa63f008454dd",
-    "semantic_hash": ""
-  },
-  "scripts/graphify.sh": {
-    "mtime": 1790365184.893622,
-    "seen": 1790365228.5589411,
-    "ast_hash": "7b4c21f39f7205b232ecbf852fa76ced",
-    "semantic_hash": ""
-  },
-  "scripts/setup-graphify.sh": {
-    "mtime": 1790365184.6466258,
-    "seen": 1790365228.558944,
-    "ast_hash": "e5e8803c575999e80dcc9735bc6389d0",
-    "semantic_hash": ""
-  },
-  "scripts/test_github_issues.py": {
-    "mtime": 1790301004.013153,
-    "seen": 1790365228.5589466,
-    "ast_hash": "4c50c64c6202a6b6c51840cd52e4f729",
-    "semantic_hash": ""
-  },
-  ".agents/skills/documentation-maintainer/agents/openai.yaml": {
-    "mtime": 1790365183.0696495,
-    "seen": 1790365228.5589588,
-    "ast_hash": "bf0b39b407c53b0aa9a22fdddc9f3c79",
-    "semantic_hash": ""
-  },
-  ".agents/skills/graphify-maintainer/agents/openai.yaml": {
-    "mtime": 1790365183.6066415,
-    "seen": 1790365228.5589752,
-    "ast_hash": "c140e3a771d53252c407545f04b2c585",
-    "semantic_hash": ""
-  },
-  ".agents/skills/issue-to-change/agents/openai.yaml": {
-    "mtime": 1790365182.5426574,
-    "seen": 1790365228.5589812,
-    "ast_hash": "73d9d120bf2fb19ff789eac3de1939de",
-    "semantic_hash": ""
-  },
-  ".agents/skills/release-readiness/agents/openai.yaml": {
-    "mtime": 1790365182.7946537,
-    "seen": 1790365228.5590048,
-    "ast_hash": "a2dcb0d73b2ab075429aefe9c756c772",
-    "semantic_hash": ""
-  },
-  ".agents/skills/repo-standards/agents/openai.yaml": {
-    "mtime": 1790365182.2996612,
-    "seen": 1790365228.55901,
-    "ast_hash": "0f707e6450625b1220acd8a8fef75984",
-    "semantic_hash": ""
-  },
-  ".agents/skills/security-review/agents/openai.yaml": {
-    "mtime": 1790365183.3306456,
-    "seen": 1790365228.5590153,
-    "ast_hash": "9c573742289ddcf976be5969096a5e6c",
-    "semantic_hash": ""
-  },
-  ".agents/skills/student-groups-navigator/agents/openai.yaml": {
-    "mtime": 1790365182.0296652,
-    "seen": 1790365228.5590203,
-    "ast_hash": "b757c0b1ca4a54b61e9d7c20bbd25d9f",
-    "semantic_hash": ""
-  },
-  "requirements-graphify.txt": {
-    "mtime": 1790365184.3836298,
-    "seen": 1790365228.5591784,
-    "ast_hash": "0a529c1d95157ce46f68255e28ad5c1d",
-    "semantic_hash": ""
-  },
-  "scripts/README-github-issues.md": {
-    "mtime": 1790300840.5633018,
-    "seen": 1790365228.5591807,
-    "ast_hash": "1424ccd256ffb13dc90a2d7b6a63e5cb",
     "semantic_hash": ""
   }
 }

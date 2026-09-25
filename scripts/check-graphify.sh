@@ -14,6 +14,7 @@ cd "$repo_root"
 "$graphify_bin" --version
 "$python_bin" - <<'PY'
 import json
+import subprocess
 from pathlib import Path
 from graphify.detect import detect_incremental
 
@@ -37,16 +38,48 @@ if not isinstance(manifest, dict) or not manifest:
 print(f"graph.json: {len(graph['nodes'])} nodos, {len(graph['links'])} relaciones")
 print(f"manifest.json: {len(manifest)} archivos")
 
+manifest_paths = [str(Path(path)) for path in manifest]
+ignored = subprocess.run(
+    ["git", "check-ignore", "--no-index", "--stdin"],
+    input="\n".join(manifest_paths),
+    text=True,
+    capture_output=True,
+    check=False,
+)
+if ignored.returncode not in (0, 1):
+    raise SystemExit("No se pudo verificar .gitignore: " + ignored.stderr.strip())
+ignored_paths = [path for path in ignored.stdout.splitlines() if path]
+if ignored_paths:
+    preview = ", ".join(ignored_paths[:10])
+    suffix = " ..." if len(ignored_paths) > 10 else ""
+    raise SystemExit(
+        "manifest.json contiene archivos ignorados por Git: " + preview + suffix
+    )
+
+sensitive_paths = {
+    ".env",
+    ".env.github",
+    ".env.github.example",
+    "blazor/appsettings.Development.json",
+}
+leaked = sorted(sensitive_paths.intersection(manifest_paths))
+if leaked:
+    raise SystemExit(
+        "manifest.json contiene configuración local/sensible: " + ", ".join(leaked)
+    )
+print("manifest.json: sin archivos ignorados o configuración local sensible")
+
 freshness = detect_incremental(
     Path("."),
     manifest_path="graphify-out/manifest.json",
     kind="ast",
 )
-if freshness["new_total"] or freshness["deleted_files"]:
+if freshness["new_total"] or freshness["deleted_files"] or freshness["excluded_files"]:
     raise SystemExit(
         "El grafo estructural requiere actualización: "
         f"{freshness['new_total']} modificados, "
-        f"{len(freshness['deleted_files'])} eliminados"
+        f"{len(freshness['deleted_files'])} eliminados, "
+        f"{len(freshness['excluded_files'])} ahora excluidos"
     )
 print("manifest.json: grafo estructural actualizado")
 PY

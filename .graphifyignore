@@ -1,5 +1,9 @@
-# Graphify implementation itself is tooling, not product architecture.
-.agents/skills/graphify/
+# Agent skills and collaboration metadata are tooling, not product architecture.
+.agents/skills/
+skills-lock.json
+docs/13-collaboration-skills.md
+docs/plans/
+README.md
 
 # Generated graph artifacts are outputs, not graph input.
 graphify-out/
@@ -8,6 +12,16 @@ graphify-out/
 blazor/bin/
 blazor/obj/
 blazor/wwwroot/lib/
+
+# Repository maintenance tooling is not part of the runtime architecture.
+.husky/
+requirements-graphify.txt
+scripts/setup-graphify.sh
+scripts/graphify.sh
+scripts/check-graphify.sh
+scripts/README-github-issues.md
+scripts/github_issues.py
+scripts/test_github_issues.py
 
 # Local configuration and credentials must never enter graph artifacts.
 .env
