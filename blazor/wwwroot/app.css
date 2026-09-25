@@ -1180,3 +1180,70 @@ a:hover .hero-float-card {
 .calendar-indicator--other .calendar-indicator-dot {
     background: var(--uerre-gold);
 }
+
+/* ─── Calendar: mobile agenda (<768px replacement for the grid) ─── */
+.calendar-agenda { display: flex; flex-direction: column; gap: 1rem; }
+
+.calendar-agenda-day {
+    background: #fff;
+    border: 1px solid var(--uerre-border);
+    border-radius: var(--bs-border-radius-xl);
+    padding: 1rem 1.125rem;
+}
+
+.calendar-agenda-date {
+    font-size: .78rem; font-weight: 700;
+    text-transform: capitalize;
+    color: var(--uerre-muted);
+    margin-bottom: .75rem;
+}
+
+.calendar-agenda-date--today { color: var(--uerre-purple); }
+
+.calendar-agenda-event {
+    display: block;
+    padding: .625rem .75rem;
+    border-radius: 10px;
+    border-left: 3px solid var(--uerre-gold);
+    background: #fffbeb;
+}
+
+.calendar-agenda-event + .calendar-agenda-event { margin-top: .1rem; }
+
+.calendar-agenda-event--mine {
+    border-left-color: var(--uerre-purple);
+    background: var(--uerre-tag-bg);
+}
+
+/* ─── Mobile hardening (<=390px) ─────────────────────────────── */
+@media (max-width: 390px) {
+    .container-uerre { padding: 0 .75rem; }
+
+    .card-uerre,
+    .stat-card,
+    .admin-kpi-card,
+    .calendar-agenda-day,
+    .term-card,
+    .timeline-content {
+        padding: 1rem;
+    }
+
+    .admin-kpi-grid { grid-template-columns: 1fr; }
+
+    .event-hero-actions { min-width: 0; width: 100%; }
+    .event-hero-actions .btn { width: 100%; }
+
+    .event-edit-modal .modal-dialog,
+    .modal-dialog {
+        margin-left: .5rem;
+        margin-right: .5rem;
+    }
+
+    .event-edit-actions { flex-wrap: wrap; }
+    .event-edit-actions .btn { flex: 1 1 auto; }
+
+    .site-footer .row > div { text-align: left; }
+    .footer-bottom { text-align: center; }
+
+    .calendar-legend-card { width: 100%; }
+}
