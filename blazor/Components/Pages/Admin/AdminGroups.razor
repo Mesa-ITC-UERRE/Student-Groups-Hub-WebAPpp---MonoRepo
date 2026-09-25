@@ -2,7 +2,7 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject AdminApiService AdminService
 @inject GroupApiService GroupService
-@inject IJSRuntime JS
+@inject UserConfirmationService Confirmations
 @attribute [Authorize(Policy = "AdminOnly")]
 
 <PageTitle>Gestionar Grupos — Admin</PageTitle>
@@ -446,9 +446,23 @@
         }
     }
 
-    private Task Activate(Guid id)   => SetStatus(id, "active");
-    private Task Deactivate(Guid id) => SetStatus(id, "inactive");
-    private Task Reject(Guid id)     => SetStatus(id, "rejected");
+    private Task Activate(Guid id) => SetStatus(id, "active");
+
+    private async Task Deactivate(Guid id)
+    {
+        var name = _groups.FirstOrDefault(g => g.Id == id)?.Name ?? "este grupo";
+        if (!await Confirmations.ConfirmAsync(
+            $"¿Desactivar {name}? Dejará de aparecer como grupo activo.")) return;
+        await SetStatus(id, "inactive");
+    }
+
+    private async Task Reject(Guid id)
+    {
+        var name = _groups.FirstOrDefault(g => g.Id == id)?.Name ?? "este grupo";
+        if (!await Confirmations.ConfirmAsync(
+            $"¿Rechazar {name}? La solicitud dejará de estar pendiente.")) return;
+        await SetStatus(id, "rejected");
+    }
 
     private async Task GoToPage(int page) { _page = page; await LoadAsync(); }
 
@@ -501,6 +515,10 @@
 
     private async Task ResetGroupSeason(Guid groupId)
     {
+        var name = _groups.FirstOrDefault(g => g.Id == groupId)?.Name ?? "este grupo";
+        if (!await Confirmations.ConfirmAsync(
+            $"¿Reiniciar el ciclo de {name}? Se eliminarán liderazgos y membresías activas.")) return;
+
         _resettingSeason = true;
         try
         {
@@ -565,6 +583,11 @@
 
     private async Task RejectMember(Guid groupId, Guid membershipId)
     {
+        var name = _pendingList.FirstOrDefault(m => m.MembershipId == membershipId)?.DisplayLabel
+            ?? "esta persona";
+        if (!await Confirmations.ConfirmAsync(
+            $"¿Rechazar la solicitud de {name}?")) return;
+
         _actingMember = true;
         try
         {
@@ -580,6 +603,11 @@
 
     private async Task RemoveMember(Guid groupId, Guid userId)
     {
+        var name = _memberList.FirstOrDefault(m => m.UserId == userId)?.DisplayLabel
+            ?? "esta persona";
+        if (!await Confirmations.ConfirmAsync(
+            $"¿Eliminar a {name} del grupo? Tendrá que volver a solicitar membresía.")) return;
+
         _actingMember = true;
         try
         {

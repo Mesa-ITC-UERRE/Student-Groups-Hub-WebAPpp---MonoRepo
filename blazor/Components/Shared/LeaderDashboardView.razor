@@ -1,5 +1,6 @@
 @* Leader Dashboard sub-component *@
 @inject GroupApiService GroupService
+@inject UserConfirmationService Confirmations
 
 <!-- Pending membership requests with inline approve/reject -->
 @if (Data?.PendingMembershipRequests?.Count > 0)
@@ -184,6 +185,9 @@
 
     private async Task Reject(MembershipModel req)
     {
+        if (!await Confirmations.ConfirmAsync(
+            $"¿Rechazar la solicitud de {req.DisplayLabel}?")) return;
+
         _acting = true;
         try
         {
@@ -222,6 +226,11 @@
 
     private async Task RemoveMember(Guid groupId, Guid userId)
     {
+        var member = _groupMembers.GetValueOrDefault(groupId)?
+            .FirstOrDefault(m => m.UserId == userId);
+        if (!await Confirmations.ConfirmAsync(
+            $"¿Eliminar a {member?.DisplayLabel ?? "esta persona"} del grupo?")) return;
+
         _acting = true;
         try
         {

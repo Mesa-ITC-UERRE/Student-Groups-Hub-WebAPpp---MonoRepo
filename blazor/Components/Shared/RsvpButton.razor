@@ -1,6 +1,7 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject EventApiService EventService
 @inject UserErrorService UserErrors
+@inject UserConfirmationService Confirmations
 
 @if (_rsvpStatus == "going")
 {
@@ -63,6 +64,8 @@ else
 
     private async Task HandleCancel()
     {
+        if (!await Confirmations.ConfirmAsync(
+            "¿Cancelar tu registro para este evento?")) return;
         _loading = true; _error = null;
         try
         {

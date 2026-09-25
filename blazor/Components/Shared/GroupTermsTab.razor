@@ -3,6 +3,7 @@
 @inject GroupTermApiService TermService
 @inject AuthenticationStateProvider AuthState
 @inject UserErrorService UserErrors
+@inject UserConfirmationService Confirmations
 
 @if (_loading)
 {
@@ -325,12 +326,16 @@ else
 
     private async Task RemoveMember(Guid memberId)
     {
+        if (!await Confirmations.ConfirmAsync(
+            "¿Eliminar a este integrante de la administración?")) return;
         await TermService.RemoveMemberAsync(memberId);
         await LoadAsync();
     }
 
     private async Task DeleteTerm(Guid termId)
     {
+        if (!await Confirmations.ConfirmAsync(
+            "¿Eliminar esta administración y todos sus integrantes?")) return;
         await TermService.DeleteTermAsync(termId);
         await LoadAsync();
     }

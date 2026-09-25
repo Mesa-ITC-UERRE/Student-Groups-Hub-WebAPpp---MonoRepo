@@ -4,6 +4,7 @@
 @inject EventPostApiService EventPostService
 @inject CurrentUserService CurrentUser
 @inject UserErrorService UserErrors
+@inject UserConfirmationService Confirmations
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Components.Forms
 @using System.IO
@@ -478,6 +479,8 @@ else
     private async Task DeletePost(Guid postId)
     {
         if (_event is null) return;
+        if (!await Confirmations.ConfirmAsync(
+            "¿Eliminar esta evidencia? Esta acción no se puede deshacer.")) return;
         var ok = await EventPostService.DeletePostAsync(_event.Id, postId);
         if (ok)
         {

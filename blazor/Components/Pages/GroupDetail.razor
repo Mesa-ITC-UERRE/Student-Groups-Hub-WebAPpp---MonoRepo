@@ -11,6 +11,7 @@
 @inject LeadershipRequestApiService LeadershipService
 @inject CurrentUserService CurrentUser
 @inject UserErrorService UserErrors
+@inject UserConfirmationService Confirmations
 @inject IJSRuntime JS
 @attribute [Authorize]
 
@@ -1308,6 +1309,8 @@ else
     private async Task DeletePost(Guid postId)
     {
         if (_group is null) return;
+        if (!await Confirmations.ConfirmAsync(
+            "¿Eliminar esta publicación? Esta acción no se puede deshacer.")) return;
         var ok = await PostService.DeletePostAsync(_group.Id, postId);
         if (ok) _posts.RemoveAll(p => p.Id == postId);
     }
@@ -1315,6 +1318,8 @@ else
     private async Task TogglePostAuthor(Guid userId, bool allowed)
     {
         if (_group is null) return;
+        if (!allowed && !await Confirmations.ConfirmAsync(
+            "¿Quitar a esta persona el permiso para publicar en el grupo?")) return;
         await PostService.SetAuthorAsync(_group.Id, userId, allowed);
         if (allowed) _postAuthorIds.Add(userId);
         else         _postAuthorIds.Remove(userId);

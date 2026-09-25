@@ -2,6 +2,7 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject AdminApiService AdminService
 @inject IJSRuntime JS
+@inject UserConfirmationService Confirmations
 @attribute [Authorize(Policy = "AdminOnly")]
 
 <PageTitle>Gestionar Usuarios — Admin</PageTitle>
@@ -264,6 +265,13 @@
 
     private async Task SetRole(Guid id, string role)
     {
+        if (role == "student")
+        {
+            var name = _users.FirstOrDefault(u => u.Id == id)?.DisplayLabel ?? "esta persona";
+            if (!await Confirmations.ConfirmAsync(
+                $"¿Cambiar a {name} a estudiante? Se eliminarán sus liderazgos activos.")) return;
+        }
+
         _acting = true;
         _actionError = null;
         try
@@ -328,6 +336,10 @@
 
     private async Task Deactivate(Guid id)
     {
+        var name = _users.FirstOrDefault(u => u.Id == id)?.DisplayLabel ?? "esta persona";
+        if (!await Confirmations.ConfirmAsync(
+            $"¿Desactivar la cuenta de {name}? Perderá acceso inmediatamente.")) return;
+
         _acting = true;
         _actionError = null;
         try
