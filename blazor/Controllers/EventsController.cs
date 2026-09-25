@@ -11,8 +11,7 @@ namespace StudentGroupsHub.Controllers;
 public class EventsController(
     EventService eventService,
     GroupService groupService,
-    UserService userService,
-    NotificationService notificationService) : ControllerBase
+    UserService userService) : ControllerBase
 {
     // GET /api/events
     [HttpGet("events")]
@@ -29,7 +28,7 @@ public class EventsController(
     [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var ev = await eventService.GetByIdAsync(id);
+        var ev = await eventService.GetPublicByIdAsync(id);
         if (ev is null) return NotFound();
         return Ok(await eventService.ToResponseAsync(ev));
     }
@@ -39,7 +38,7 @@ public class EventsController(
     [AllowAnonymous]
     public async Task<IActionResult> GetForGroup(Guid groupId)
     {
-        var events = await eventService.GetForGroupAsync(groupId);
+        var events = await eventService.GetPublicForGroupAsync(groupId);
         var responses = await Task.WhenAll(events.Select(e => eventService.ToResponseAsync(e)));
         return Ok(responses);
     }
@@ -135,6 +134,12 @@ public class EventsController(
     [Authorize(AuthenticationSchemes = "Bearer")]
     public async Task<IActionResult> GetRsvps(Guid id)
     {
+        var oid = User.GetEntraOid();
+        var user = await userService.GetByEntraOidAsync(oid);
+        if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
+        if (!await eventService.CanManageEventAsync(id, user.Id)) return Forbid();
+
         var rsvps = await eventService.GetRsvpsAsync(id);
         return Ok(rsvps.Select(p => new {
             p.Id, p.EventId, p.UserId,

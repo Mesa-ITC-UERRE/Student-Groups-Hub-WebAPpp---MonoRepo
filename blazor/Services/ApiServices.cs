@@ -282,7 +282,14 @@ public class EventApiService(
             await eventService.GetUpcomingAsync(search, groupId, fromUtc, toUtc)), []);
 
     public async Task<List<EventModel>> GetForGroupAsync(Guid groupId)
-        => await DbSafe.TryAsync(async () => await MapEventsAsync(await eventService.GetForGroupAsync(groupId)), []);
+        => await DbSafe.TryAsync(async () =>
+        {
+            var user = await currentUser.GetUserAsync();
+            var events = UserService.IsActive(user)
+                ? await eventService.GetAccessibleForGroupAsync(groupId, user!.Id)
+                : await eventService.GetPublicForGroupAsync(groupId);
+            return await MapEventsAsync(events);
+        }, []);
 
     public async Task<List<EventModel>> GetAllPublishedAsync()
         => await DbSafe.TryAsync(async () => await MapEventsAsync(await eventService.GetAllPublishedAsync()), []);
@@ -290,7 +297,10 @@ public class EventApiService(
     public async Task<EventModel?> GetByIdAsync(Guid id)
         => await DbSafe.TryAsync(async () =>
         {
-            var ev = await eventService.GetByIdAsync(id);
+            var user = await currentUser.GetUserAsync();
+            var ev = UserService.IsActive(user)
+                ? await eventService.GetAccessibleByIdAsync(id, user!.Id)
+                : await eventService.GetPublicByIdAsync(id);
             if (ev is null) return null;
             var count = await eventService.GetRsvpCountAsync(ev.Id);
             return MapEvent(ev, count);

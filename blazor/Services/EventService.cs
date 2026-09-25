@@ -20,7 +20,9 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         using var db = dbFactory.CreateDbContext();
         var from = fromUtc ?? DateTime.UtcNow;
         var q = db.Events.Include(e => e.Group)
-            .Where(e => e.Status == "published" && e.StartAt >= from)
+            .Where(e => e.Status == "published"
+                     && e.Visibility == "public"
+                     && e.StartAt >= from)
             .AsQueryable();
         if (toUtc.HasValue) q = q.Where(e => e.StartAt <= toUtc.Value);
         if (groupId.HasValue) q = q.Where(e => e.GroupId == groupId.Value);
@@ -38,10 +40,54 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
             .ToListAsync();
     }
 
+    public async Task<List<Event>> GetPublicForGroupAsync(Guid groupId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        return await db.Events.Include(e => e.Group)
+            .Where(e => e.GroupId == groupId
+                     && e.Status == "published"
+                     && e.Visibility == "public")
+            .OrderByDescending(e => e.StartAt)
+            .ToListAsync();
+    }
+
+    public async Task<List<Event>> GetAccessibleForGroupAsync(Guid groupId, Guid userId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        return await ApplyUserAccess(db.Events.Include(e => e.Group), db, userId)
+            .Where(e => e.GroupId == groupId)
+            .OrderByDescending(e => e.StartAt)
+            .ToListAsync();
+    }
+
     public async Task<Event?> GetByIdAsync(Guid id)
     {
         using var db = dbFactory.CreateDbContext();
         return await db.Events.Include(e => e.Group).FirstOrDefaultAsync(e => e.Id == id);
+    }
+
+    public async Task<Event?> GetPublicByIdAsync(Guid id)
+    {
+        using var db = dbFactory.CreateDbContext();
+        return await db.Events.Include(e => e.Group).FirstOrDefaultAsync(e =>
+            e.Id == id && e.Status == "published" && e.Visibility == "public");
+    }
+
+    public async Task<Event?> GetAccessibleByIdAsync(Guid id, Guid userId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        return await ApplyUserAccess(db.Events.Include(e => e.Group), db, userId)
+            .FirstOrDefaultAsync(e => e.Id == id);
+    }
+
+    public async Task<bool> CanManageEventAsync(Guid eventId, Guid userId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        var groupId = await db.Events
+            .Where(e => e.Id == eventId)
+            .Select(e => (Guid?)e.GroupId)
+            .SingleOrDefaultAsync();
+        return groupId.HasValue && await CanManageGroupAsync(db, groupId.Value, userId);
     }
 
     public async Task<List<Event>> GetAllPublishedAsync()
@@ -49,7 +95,7 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         using var db = dbFactory.CreateDbContext();
         return await db.Events
             .Include(e => e.Group)
-            .Where(e => e.Status == "published")
+            .Where(e => e.Status == "published" && e.Visibility == "public")
             .OrderByDescending(e => e.StartAt)
             .ToListAsync();
     }
@@ -117,6 +163,8 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         using var db = dbFactory.CreateDbContext();
         var ev = await db.Events.FindAsync(eventId);
         if (ev is null) throw new KeyNotFoundException("Evento no encontrado.");
+        if (!await CanAccessEventAsync(db, ev, userId))
+            throw new KeyNotFoundException("Evento no encontrado.");
         if (ev.Status == "canceled")
             throw new InvalidOperationException("No puedes registrarte en un evento cancelado.");
         if (status == "going" && ev.Capacity.HasValue)
@@ -183,6 +231,7 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         var q = db.Events
             .Include(e => e.Group)
             .Where(e => e.Status == "published"
+                     && e.Visibility == "public"
                      && e.StartAt >= from
                      && e.StartAt < to)
             .AsQueryable();
@@ -211,6 +260,57 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static IQueryable<Event> ApplyUserAccess(
+        IQueryable<Event> query,
+        AppDbContext db,
+        Guid userId)
+        => query.Where(e =>
+            (e.Status == "published" && e.Visibility == "public")
+            || db.Users.Any(u => u.Id == userId && u.Status == "active" && u.Role == "admin")
+            || (db.Users.Any(u => u.Id == userId && u.Status == "active")
+                && db.RoleAssignments.Any(r =>
+                    r.UserId == userId
+                    && r.GroupId == e.GroupId
+                    && r.PermissionRole == "leader"))
+            || (e.Status == "published"
+                && e.Visibility == "members"
+                && db.Users.Any(u => u.Id == userId && u.Status == "active")
+                && db.Memberships.Any(m =>
+                    m.UserId == userId
+                    && m.GroupId == e.GroupId
+                    && m.Status == "accepted")));
+
+    private static async Task<bool> CanAccessEventAsync(
+        AppDbContext db,
+        Event ev,
+        Guid userId)
+    {
+        if (ev.Status == "published" && ev.Visibility == "public") return true;
+        if (await CanManageGroupAsync(db, ev.GroupId, userId)) return true;
+        return ev.Status == "published"
+            && ev.Visibility == "members"
+            && await db.Memberships.AnyAsync(m =>
+                m.UserId == userId
+                && m.GroupId == ev.GroupId
+                && m.Status == "accepted");
+    }
+
+    private static async Task<bool> CanManageGroupAsync(
+        AppDbContext db,
+        Guid groupId,
+        Guid userId)
+    {
+        var activeRole = await db.Users
+            .Where(u => u.Id == userId && u.Status == "active")
+            .Select(u => u.Role)
+            .SingleOrDefaultAsync();
+        if (activeRole is null) return false;
+        return activeRole == "admin" || await db.RoleAssignments.AnyAsync(r =>
+            r.UserId == userId
+            && r.GroupId == groupId
+            && r.PermissionRole == "leader");
+    }
 
     private static void ValidateEvent(
         string title,
