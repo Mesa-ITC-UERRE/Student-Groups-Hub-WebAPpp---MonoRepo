@@ -8,3 +8,8 @@ graphify-out/
 blazor/bin/
 blazor/obj/
 blazor/wwwroot/lib/
+
+# Local configuration and credentials must never enter graph artifacts.
+.env
+.env.*
+blazor/appsettings.Development.json
