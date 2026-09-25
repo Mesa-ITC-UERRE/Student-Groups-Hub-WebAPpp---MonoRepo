@@ -4,7 +4,7 @@
     protected override void OnInitialized()
     {
         Navigation.NavigateTo(
-            $"MicrosoftIdentity/Account/SignIn?returnUrl={Uri.EscapeDataString(Navigation.Uri)}",
+            AuthenticationNavigation.BuildSignInUrl(Navigation.BaseUri, Navigation.Uri),
             forceLoad: true);
     }
 }
