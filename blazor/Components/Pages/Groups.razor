@@ -11,10 +11,10 @@
             <div class="container-uerre">
                 <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
                     <div>
-                        <h1 class="text-white fw-bold mb-1" style="font-size:clamp(1.5rem,4vw,2.25rem);">
+                        <h1 class="page-hero-title fw-bold mb-1">
                             Grupos Estudiantiles
                         </h1>
-                        <p class="mb-0" style="color:rgba(255,255,255,.7);font-size:.9375rem;">
+                        <p class="page-hero-subtitle mb-0" style="font-size:.9375rem;">
                             @(_total > 0 ? $"{_total} grupo{(_total != 1 ? "s" : "")} activo{(_total != 1 ? "s" : "")} en U-ERRE"
                                          : "Explora los grupos de la Universidad Regiomontana")
                         </p>
@@ -119,9 +119,18 @@
                                 <div class="p-4 d-flex flex-column flex-grow-1">
                                     <!-- Header -->
                                     <div class="d-flex align-items-start gap-3 mb-3">
-                                        <div class="group-icon" style="background:@GradientFor(i);">
-                                            @group.Name.Substring(0,1).ToUpper()
-                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(group.LogoUrl))
+                                        {
+                                            <img src="@group.LogoUrl" alt="@group.Name"
+                                                 class="rounded-3 flex-shrink-0"
+                                                 style="width:48px;height:48px;object-fit:cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="group-icon" style="background:@GradientFor(i);">
+                                                @group.Name.Substring(0,1).ToUpper()
+                                            </div>
+                                        }
                                         <div class="min-w-0 flex-grow-1">
                                             <h6 class="fw-bold mb-0 text-dark line-clamp-1">@group.Name</h6>
                                             @if (group.Category is not null)

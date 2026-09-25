@@ -20,6 +20,7 @@ public class GroupRegistrationRequestsController(
         var oid = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var req = await requestService.CreateAsync(
             user.Id,
@@ -51,6 +52,7 @@ public class GroupRegistrationRequestsController(
         var oid = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null || user.Role != "admin") return Forbid();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var reqs = await requestService.GetAllPendingAsync();
         return Ok(reqs.Select(GroupRegistrationRequestService.ToResponse));
@@ -81,6 +83,7 @@ public class GroupRegistrationRequestsController(
         var oid = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null || user.Role != "admin") return Forbid();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var req = await requestService.ApproveAsync(id, user.Id, body?.DecisionNotes, body?.FinalCategory);
         if (req is null) return NotFound(new { status = 404, message = "Solicitud no encontrada o ya procesada." });

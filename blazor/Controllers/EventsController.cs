@@ -52,6 +52,7 @@ public class EventsController(
         var oid  = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var isAdmin  = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
@@ -71,6 +72,7 @@ public class EventsController(
         var oid  = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var isAdmin  = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
@@ -89,6 +91,7 @@ public class EventsController(
         var oid  = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var isAdmin  = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
@@ -106,6 +109,7 @@ public class EventsController(
         var oid  = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var participation = await eventService.UpsertRsvpAsync(id, user.Id, request.Status);
         return Ok(new { participation!.Id, participation.EventId, participation.UserId,
@@ -120,6 +124,7 @@ public class EventsController(
         var oid  = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         await eventService.RemoveRsvpAsync(id, user.Id);
         return NoContent();

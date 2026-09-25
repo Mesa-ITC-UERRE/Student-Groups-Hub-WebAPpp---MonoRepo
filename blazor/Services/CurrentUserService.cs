@@ -58,6 +58,16 @@ public class CurrentUserService(AuthenticationStateProvider authStateProvider, U
         return user?.Id ?? Guid.Empty;
     }
 
+    public async Task<StudentGroupsHub.Models.User> RequireActiveUserAsync()
+    {
+        var user = await GetUserAsync();
+        UserService.EnsureCanAct(user);
+        return user!;
+    }
+
+    public async Task<Guid> GetActiveUserIdAsync()
+        => (await RequireActiveUserAsync()).Id;
+
     public async Task<bool> IsAuthenticatedAsync()
     {
         var principal = await GetPrincipalAsync();

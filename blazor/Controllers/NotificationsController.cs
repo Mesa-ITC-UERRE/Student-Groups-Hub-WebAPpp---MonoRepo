@@ -31,6 +31,7 @@ public class NotificationsController(
         var oid  = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         await notificationService.MarkReadAsync(id, user.Id);
         return NoContent();
@@ -43,6 +44,7 @@ public class NotificationsController(
         var oid  = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         await notificationService.MarkAllReadAsync(user.Id);
         return NoContent();

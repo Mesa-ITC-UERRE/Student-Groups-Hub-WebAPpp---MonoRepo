@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using StudentGroupsHub.Data;
 using StudentGroupsHub.DTOs.Requests;
 using StudentGroupsHub.Extensions;
+using StudentGroupsHub.Models;
 using StudentGroupsHub.Services;
 
 namespace StudentGroupsHub.Controllers;
@@ -24,6 +25,9 @@ public class AdminController(
         var user = await userService.GetByEntraOidAsync(oid);
         return user?.Role == "admin";
     }
+
+    private async Task<User?> GetCurrentUserAsync()
+        => await userService.GetByEntraOidAsync(User.GetEntraOid());
 
     // GET /api/admin/users?search=&role=&status=&page=1&pageSize=20
     [HttpGet("users")]
@@ -53,12 +57,36 @@ public class AdminController(
     public async Task<IActionResult> SetRole(Guid id, [FromBody] SetRoleRequest request)
     {
         if (!await IsAdminAsync()) return Forbid();
-        using var db = dbFactory.CreateDbContext();
-        var user = await db.Users.FindAsync(id);
-        if (user is null) return NotFound();
-        user.Role = request.Role; user.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync();
-        return Ok(UserService.ToResponse(user));
+        var actingUser = await GetCurrentUserAsync();
+        if (!UserService.IsActive(actingUser)) return Forbid();
+
+        User? user;
+        try
+        {
+            user = request.Role switch
+            {
+                "group_leader" when request.GroupId.HasValue => await userService.AssignLeaderAsync(id, request.GroupId.Value),
+                "group_leader" => throw new InvalidOperationException("Debes seleccionar un grupo para asignar liderazgo."),
+                "student" => await userService.DemoteToStudentAsync(id),
+                _ => null
+            };
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+
+        if (request.Role != "group_leader" && request.Role != "student")
+        {
+            using var db = dbFactory.CreateDbContext();
+            user = await db.Users.FindAsync(id);
+            if (user is null) return NotFound();
+            user.Role = request.Role;
+            user.UpdatedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+        }
+
+        return user is null ? NotFound() : Ok(UserService.ToResponse(user));
     }
 
     // PATCH /api/admin/users/{id}/status
@@ -66,6 +94,8 @@ public class AdminController(
     public async Task<IActionResult> SetStatus(Guid id, [FromBody] SetUserStatusRequest request)
     {
         if (!await IsAdminAsync()) return Forbid();
+        var actingUser = await GetCurrentUserAsync();
+        if (!UserService.IsActive(actingUser)) return Forbid();
         using var db = dbFactory.CreateDbContext();
         var user = await db.Users.FindAsync(id);
         if (user is null) return NotFound();
@@ -88,6 +118,8 @@ public class AdminController(
     public async Task<IActionResult> ResetSeason([FromBody] ResetSeasonRequest? request)
     {
         if (!await IsAdminAsync()) return Forbid();
+        var actingUser = await GetCurrentUserAsync();
+        if (!UserService.IsActive(actingUser)) return Forbid();
 
         using var db = dbFactory.CreateDbContext();
         var skipIds = (request?.SkipGroupIds ?? []).Distinct().ToHashSet();
@@ -138,6 +170,8 @@ public class AdminController(
     public async Task<IActionResult> ResetGroupSeason(Guid id)
     {
         if (!await IsAdminAsync()) return Forbid();
+        var actingUser = await GetCurrentUserAsync();
+        if (!UserService.IsActive(actingUser)) return Forbid();
 
         using var db = dbFactory.CreateDbContext();
         var affectedLeaders = await db.RoleAssignments
@@ -178,6 +212,6 @@ public class AdminController(
     }
 }
 
-public record SetRoleRequest(string Role);
+public record SetRoleRequest(string Role, Guid? GroupId = null);
 public record SetUserStatusRequest(string Status);
 public record ResetSeasonRequest(List<Guid> SkipGroupIds);

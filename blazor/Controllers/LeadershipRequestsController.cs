@@ -20,6 +20,7 @@ public class LeadershipRequestsController(
         var oid = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var req = await leadershipRequestService.CreateAsync(
             request.GroupId, user.Id, request.ContactEmail, request.Reason);
@@ -44,6 +45,7 @@ public class LeadershipRequestsController(
         var oid = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null || user.Role != "admin") return Forbid();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var reqs = await leadershipRequestService.GetAllPendingAsync();
         return Ok(reqs.Select(LeadershipRequestService.ToResponse));
@@ -55,6 +57,7 @@ public class LeadershipRequestsController(
         var oid = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null || user.Role != "admin") return Forbid();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var req = await leadershipRequestService.ApproveAsync(id, user.Id, body?.DecisionNotes);
         if (req is null) return NotFound();

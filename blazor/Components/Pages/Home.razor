@@ -1,24 +1,18 @@
-﻿@page "/"
+@page "/"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
-@inject GroupApiService GroupService
-@inject EventApiService EventService
+@inject DashboardService DashboardService
 
 <PageTitle>Grupos Estudiantiles Hub — U-ERRE</PageTitle>
 
 <AuthorizeView>
-
-    <!-- ══════════════════════════════════════════════════════════
-         AUTHENTICATED VIEW — full platform, no login prompts
-         ══════════════════════════════════════════════════════════ -->
     <Authorized>
-        <!-- Hero — authenticated, no login CTA -->
         <section class="hero-gradient text-white position-relative overflow-hidden"
                  style="padding-top:4.5rem;padding-bottom:5rem;">
             <div class="hero-blob-1"></div>
             <div class="hero-blob-2"></div>
             <div class="container-uerre position-relative" style="z-index:1;">
-                <div class="row align-items-center g-5">
-                    <div class="col-12 col-lg-7">
+                <div class="row justify-content-center text-center">
+                    <div class="col-12 col-lg-8">
                         <div class="animate-fade-up mb-3">
                             <span class="rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2"
                                   style="border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);
@@ -30,84 +24,25 @@
                         <h1 class="animate-fade-up delay-1 fw-bold text-white lh-1 mb-3"
                             style="font-family:'Montserrat',sans-serif;
                                    font-size:clamp(2rem,5vw,3.5rem);letter-spacing:-.02em;">
-                            Tu comunidad<br />universitaria
-                            <span class="d-block" style="color:#fbbf24;">empieza aquí.</span>
+                            Una base clara<br />
+                            <span class="d-block" style="color:#fbbf24;">para construir comunidad.</span>
                         </h1>
-                        <p class="animate-fade-up delay-2 mb-4 lh-lg"
-                           style="color:rgba(255,255,255,.75);max-width:440px;font-size:1.0625rem;">
-                            Descubre grupos, únete a eventos y conecta con estudiantes que
-                            comparten tus intereses en U-ERRE.
+                        <p class="animate-fade-up delay-2 mb-4 lh-lg mx-auto"
+                           style="color:rgba(255,255,255,.75);max-width:560px;font-size:1.0625rem;">
+                            Entra a la plataforma y comienza a explorar, organizar y construir comunidad dentro de U-ERRE.
                         </p>
-                        <div class="animate-fade-up delay-3 d-flex flex-wrap gap-3">
-                            <a href="/groups" class="btn btn-light btn-lg px-4 fw-bold"
-                               style="color:#5b21b6;border-radius:12px;
-                                      font-family:'Montserrat',sans-serif;font-size:.875rem;">
-                                Explorar Grupos →
+                        <div class="animate-fade-up delay-3 d-flex justify-content-center flex-wrap gap-3">
+                            <a href="/perfil" class="btn btn-light btn-lg px-4 fw-bold"
+                               style="color:#5b21b6;border-radius:12px;font-family:'Montserrat',sans-serif;font-size:.875rem;">
+                                Mi Panel
                             </a>
-                            <a href="/perfil" class="btn btn-lg px-4 fw-semibold"
+                            <a href="/admin" class="btn btn-lg px-4 fw-semibold"
                                style="border:1.5px solid rgba(255,255,255,.25);
                                       background:rgba(255,255,255,.1);color:#fff;
                                       border-radius:12px;backdrop-filter:blur(8px);font-size:.875rem;">
-                                Mi Panel
+                                Administracion
                             </a>
                         </div>
-                    </div>
-
-                    <!-- Floating cards — desktop only, real groups -->
-                    <div class="col-lg-5 d-none d-lg-block position-relative" style="height:320px;" aria-hidden="true">
-                        <div class="position-absolute top-50 start-50 translate-middle rounded-circle"
-                             style="width:240px;height:240px;background:rgba(139,92,246,.18);filter:blur(70px);"></div>
-                        @{
-                            var cardStyles = new[]
-                            {
-                                "right:-1rem;top:1rem;width:230px;",
-                                "left:1rem;top:8rem;width:200px;",
-                                "right:-1rem;bottom:.5rem;width:180px;"
-                            };
-                            var cardDelays = new[] { "", "float-delay-1", "float-delay-2" };
-                            var heroGroups = (_groups ?? []).Take(3).ToList();
-                        }
-                        @for (int ci = 0; ci < Math.Min(3, heroGroups.Count); ci++)
-                        {
-                            var g = heroGroups[ci];
-                            var st = cardStyles[ci];
-                            var dl = cardDelays[ci];
-                            var grad = GradientFor(ci);
-                            var initial = g.Name.Substring(0, 1).ToUpper();
-                            <a href="/groups/@g.Slug" class="text-decoration-none">
-                                <div class="hero-float-card animate-float @dl"
-                                     style="@st cursor:pointer;">
-                                    <div class="d-flex align-items-center gap-3">
-                                        @if (!string.IsNullOrEmpty(g.LogoUrl))
-                                        {
-                                            <img src="@g.LogoUrl" alt=""
-                                                 class="rounded-3 flex-shrink-0"
-                                                 style="width:38px;height:38px;object-fit:cover;" />
-                                        }
-                                        else
-                                        {
-                                            <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
-                                                 style="width:38px;height:38px;background:@grad;font-size:.9rem;">
-                                                @initial
-                                            </div>
-                                        }
-                                        <div class="min-w-0">
-                                            <div class="fw-bold text-white line-clamp-1" style="font-size:.82rem;">@g.Name</div>
-                                            <div style="font-size:.7rem;color:rgba(255,255,255,.55);">@g.MemberCount miembros</div>
-                                        </div>
-                                    </div>
-                                    @if (g.Category is not null && ci == 0)
-                                    {
-                                        <div class="mt-2">
-                                            <span class="rounded-pill px-2 py-1"
-                                                  style="background:rgba(245,158,11,.2);color:#fbbf24;font-size:.65rem;font-weight:600;">
-                                                @g.Category
-                                            </span>
-                                        </div>
-                                    }
-                                </div>
-                            </a>
-                        }
                     </div>
                 </div>
             </div>
@@ -119,267 +54,63 @@
             </div>
         </section>
 
-        <!-- Stats band -->
         <section class="bg-white py-3">
             <div class="container-uerre">
                 <div class="stats-band px-4 px-md-5 py-4 py-md-5">
-                    <div class="row g-4 text-center position-relative" style="z-index:1;">
-                        @foreach (var s in _stats)
-                        {
-                            <div class="col-6 col-md-3">
-                                <div class="stat-value">@s.Value</div>
-                                <div class="stat-label mt-1">@s.Label</div>
-                            </div>
-                        }
+                    <div class="row g-4 text-center justify-content-center position-relative" style="z-index:1;">
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="stat-value">@FormatCompact(_totalUsers)</div>
+                            <div class="stat-label mt-1">Usuarios Registrados</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Featured Groups -->
-        <section style="background:var(--uerre-surface);padding:4.5rem 0;">
-            <div class="container-uerre">
-                <div class="text-center mb-5">
-                    <span class="section-label">Comunidad</span>
-                    <h2 class="mt-3 mb-2">Grupos Destacados</h2>
-                    <p class="text-muted mx-auto" style="max-width:520px;">
-                        Encuentra tu lugar. Únete a grupos donde podrás crecer y compartir.
-                    </p>
-                </div>
-
-                @if (_loadingGroups)
-                {
-                    <div class="row g-4">
-                        @for (int i = 0; i < 6; i++)
-                        {
-                            <div class="col-12 col-sm-6 col-lg-4">
-                                <div class="card-uerre no-hover p-4">
-                                    <div class="skeleton mb-3" style="height:3px;"></div>
-                                    <div class="d-flex gap-3 mb-3">
-                                        <div class="skeleton flex-shrink-0" style="width:48px;height:48px;border-radius:12px;"></div>
-                                        <div class="flex-grow-1">
-                                            <div class="skeleton mb-2" style="height:14px;width:70%;"></div>
-                                            <div class="skeleton" style="height:11px;width:40%;"></div>
-                                        </div>
-                                    </div>
-                                    <div class="skeleton mb-2" style="height:11px;"></div>
-                                    <div class="skeleton" style="height:11px;width:75%;"></div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <div class="row g-4">
-                        @foreach (var (group, i) in (_groups ?? []).Select((g, i) => (g, i)))
-                        {
-                            <div class="col-12 col-sm-6 col-lg-4">
-                                <a href="/groups/@group.Slug" class="text-decoration-none d-block h-100">
-                                    <div class="card-uerre h-100 d-flex flex-column">
-                                        <div style="height:3px;background:@GradientFor(i);flex-shrink:0;"></div>
-                                        <div class="p-4 d-flex flex-column flex-grow-1">
-                                            <div class="d-flex align-items-start gap-3 mb-3">
-                                                <div class="group-icon" style="background:@GradientFor(i);">
-                                                    @group.Name.Substring(0,1).ToUpper()
-                                                </div>
-                                                <div class="min-w-0 flex-grow-1">
-                                                    <h6 class="fw-bold mb-0 text-dark line-clamp-1">@group.Name</h6>
-                                                    @if (group.Category is not null)
-                                                    {
-                                                        <span class="tag-uerre mt-1 d-inline-block">@group.Category</span>
-                                                    }
-                                                </div>
-                                            </div>
-                                            @if (group.Description is not null)
-                                            {
-                                                <p class="text-muted small line-clamp-2 mb-0 flex-grow-1"
-                                                   style="line-height:1.6;">@group.Description</p>
-                                            }
-                                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3"
-                                                 style="border-top:1px solid var(--uerre-border);">
-                                                <span class="small text-muted d-inline-flex align-items-center gap-1">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg>
-                                                    @group.MemberCount @(group.MemberCount == 1 ? "miembro" : "miembros")
-                                                </span>
-                                                <span class="small fw-600 text-purple">Ver →</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        }
-                    </div>
-                    <div class="text-center mt-5">
-                        <a href="/groups" class="btn btn-uerre-outline px-5">Ver todos los grupos →</a>
-                    </div>
-                }
-            </div>
-        </section>
-
-        <!-- Upcoming Events -->
-        <section class="bg-white" style="padding:4.5rem 0;">
-            <div class="container-uerre">
-                <div class="text-center mb-5">
-                    <span class="section-label" style="background:#fef3c7;color:#b45309;">Próximamente</span>
-                    <h2 class="mt-3 mb-2">Eventos que Vienen</h2>
-                    <p class="text-muted mx-auto" style="max-width:520px;">
-                        No te pierdas lo que está pasando en tu campus.
-                    </p>
-                </div>
-                @if (_upcomingEvents.Count == 0)
-                {
-                    <div class="empty-state">
-                        <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg></div>
-                        <h5 class="fw-bold mb-1">Sin eventos en las próximas dos semanas</h5>
-                        <p class="text-muted small mb-0">Los próximos eventos publicados aparecerán aquí automáticamente.</p>
-                    </div>
-                }
-                else
-                {
-                    <div class="row g-4">
-                        @foreach (var evt in _upcomingEvents)
-                        {
-                            <div class="col-12 col-md-6">
-                                <a href="/events/@evt.Id" class="text-decoration-none">
-                                    <div class="card-event">
-                                        <div class="event-date-badge">
-                                            <span class="event-date-month">@evt.MonthLabel</span>
-                                            <span class="event-date-day">@evt.DayLabel</span>
-                                        </div>
-                                        <div class="flex-grow-1 min-w-0">
-                                            <h6 class="fw-bold mb-1 text-dark">@evt.Title</h6>
-                                            <p class="fw-600 mb-2 text-purple" style="font-size:.78rem;">@evt.GroupName</p>
-                                            <div class="d-flex flex-wrap gap-3 text-muted-sm">
-                                                <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2m0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17M12 7a.75.75 0 0 1 .75.75v4.69l2.28 2.28a.75.75 0 1 1-1.06 1.06l-2.5-2.5a.75.75 0 0 1-.22-.53V7.75A.75.75 0 0 1 12 7"/></svg> @evt.StartLocal</span>
-                                                @if (evt.Location is not null)
-                                                {
-                                                    <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7.5 7.5 0 0 1 7.5 7.5c0 3.5-2.404 7.268-7.066 11.35a.75.75 0 0 1-.968 0C6.904 16.768 4.5 13 4.5 9.5A7.5 7.5 0 0 1 12 2m0 1.5a6 6 0 0 0-6 6c0 2.885 2.066 6.276 6 10.066 3.934-3.79 6-7.181 6-10.066a6 6 0 0 0-6-6m0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 1.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/></svg> @evt.Location</span>
-                                                }
-                                                @if (evt.SpotsLeft.HasValue)
-                                                {
-                                                    <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg> @evt.SpotsLeft lugares</span>
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        }
-                    </div>
-                }
             </div>
         </section>
     </Authorized>
 
-    <!-- ══════════════════════════════════════════════════════════
-         GUEST VIEW — preview only, locked behind login prompt
-         ══════════════════════════════════════════════════════════ -->
     <NotAuthorized>
-        <!-- Hero — guest, prominent login CTA -->
         <section class="hero-gradient text-white position-relative overflow-hidden"
                  style="padding-top:5rem;padding-bottom:6rem;">
             <div class="hero-blob-1"></div>
             <div class="hero-blob-2"></div>
             <div class="container-uerre position-relative" style="z-index:1;">
-                <div class="row align-items-center g-5">
-                    <div class="col-12 col-lg-6">
+                <div class="row justify-content-center text-center">
+                    <div class="col-12 col-lg-8">
                         <div class="animate-fade-up mb-4">
                             <span class="rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2"
                                   style="border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);
                                          backdrop-filter:blur(8px);font-size:.7rem;font-weight:600;
                                          letter-spacing:.08em;text-transform:uppercase;">
-                                • Para estudiantes, por estudiantes
+                                Acceso institucional U-ERRE
                             </span>
                         </div>
                         <h1 class="animate-fade-up delay-1 fw-bold text-white lh-1 mb-3"
                             style="font-family:'Montserrat',sans-serif;
                                    font-size:clamp(2.25rem,5vw,3.75rem);letter-spacing:-.02em;">
-                            Tu comunidad<br />universitaria
-                            <span class="d-block" style="color:#fbbf24;">empieza aquí.</span>
+                            Un nuevo inicio<br />
+                            <span style="color:#fbbf24;">para la comunidad <span style="white-space:nowrap;">U-ERRE</span>.</span>
                         </h1>
-                        <p class="animate-fade-up delay-2 mb-4 lh-lg"
-                           style="color:rgba(255,255,255,.75);max-width:440px;font-size:1.0625rem;">
-                            Descubre grupos, únete a eventos y conecta con estudiantes que
-                            comparten tus intereses en U-ERRE.
+                        <p class="animate-fade-up delay-2 mb-4 lh-lg mx-auto"
+                           style="color:rgba(255,255,255,.75);max-width:520px;font-size:1.0625rem;">
+                            Inicia sesion con tu cuenta institucional para entrar a la plataforma.
                         </p>
-                        <div class="animate-fade-up delay-3 d-flex flex-wrap gap-3 mb-4">
+                        <div class="animate-fade-up delay-3 d-flex justify-content-center gap-3 flex-wrap mb-4">
                             <a href="MicrosoftIdentity/Account/SignIn"
                                class="btn btn-light btn-lg px-5 fw-bold"
                                style="color:#5b21b6;border-radius:12px;
                                       font-family:'Montserrat',sans-serif;font-size:.9375rem;
                                       box-shadow:0 6px 20px rgba(255,255,255,.2);">
-                                Iniciar Sesión →
+                                Iniciar Sesion
                             </a>
                         </div>
-                        <!-- Social proof -->
-                        <div class="animate-fade-up delay-4 d-flex align-items-center gap-3">
-                            <div class="avatar-stack">
-                                <div class="avatar-item" style="background:#f43f5e;">MA</div>
-                                <div class="avatar-item" style="background:#0ea5e9;">LC</div>
-                                <div class="avatar-item" style="background:#f59e0b;">RG</div>
-                                <div class="avatar-item" style="background:#10b981;">JP</div>
-                            </div>
-                            <p class="mb-0 small" style="color:rgba(255,255,255,.7);">
-                                <strong class="text-white">+3,400</strong> estudiantes ya son parte
-                            </p>
+                        <div class="animate-fade-up delay-4 d-flex justify-content-center align-items-center gap-2">
+                            <span class="rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2"
+                                  style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);font-size:.82rem;color:rgba(255,255,255,.82);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg>
+                                <strong class="text-white">@FormatCompact(_totalUsers)</strong>
+                                usuarios registrados
+                            </span>
                         </div>
-                    </div>
-
-                    <!-- Floating cards — real groups, no-auth (decorative, link to sign-in) -->
-                    <div class="col-lg-6 d-none d-lg-block position-relative" style="height:340px;" aria-hidden="true">
-                        <div class="position-absolute top-50 start-50 translate-middle rounded-circle"
-                             style="width:260px;height:260px;background:rgba(139,92,246,.18);filter:blur(70px);"></div>
-                        @{
-                            var guestStyles = new[]
-                            {
-                                "right:-1rem;top:1rem;width:240px;",
-                                "left:2rem;top:8rem;width:210px;",
-                                "right:-2rem;bottom:0;width:185px;"
-                            };
-                            var guestDelays = new[] { "", "float-delay-1", "float-delay-2" };
-                            var guestGroups = (_groups ?? []).Take(3).ToList();
-                        }
-                        @for (int gi = 0; gi < Math.Min(3, guestGroups.Count); gi++)
-                        {
-                            var g = guestGroups[gi];
-                            var st = guestStyles[gi];
-                            var dl = guestDelays[gi];
-                            var grad = GradientFor(gi);
-                            var initial = g.Name.Substring(0, 1).ToUpper();
-                            <a href="MicrosoftIdentity/Account/SignIn" class="text-decoration-none">
-                                <div class="hero-float-card animate-float @dl" style="@st cursor:pointer;">
-                                    <div class="d-flex align-items-center gap-3">
-                                        @if (!string.IsNullOrEmpty(g.LogoUrl))
-                                        {
-                                            <img src="@g.LogoUrl" alt=""
-                                                 class="rounded-3 flex-shrink-0"
-                                                 style="width:40px;height:40px;object-fit:cover;" />
-                                        }
-                                        else
-                                        {
-                                            <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
-                                                 style="width:40px;height:40px;background:@grad;font-size:.9rem;">
-                                                @initial
-                                            </div>
-                                        }
-                                        <div class="min-w-0">
-                                            <div class="fw-bold text-white line-clamp-1 small">@g.Name</div>
-                                            <div style="font-size:.7rem;color:rgba(255,255,255,.55);">@g.MemberCount miembros</div>
-                                        </div>
-                                    </div>
-                                    @if (g.Category is not null && gi == 0)
-                                    {
-                                        <div class="mt-2">
-                                            <span class="rounded-pill px-2 py-1"
-                                                  style="background:rgba(245,158,11,.2);color:#fbbf24;font-size:.65rem;font-weight:600;">
-                                                @g.Category
-                                            </span>
-                                        </div>
-                                    }
-                                </div>
-                            </a>
-                        }
                     </div>
                 </div>
             </div>
@@ -390,134 +121,25 @@
                 </svg>
             </div>
         </section>
-
-        <!-- Stats band -->
-        <section class="bg-white py-3">
-            <div class="container-uerre">
-                <div class="stats-band px-4 px-md-5 py-4 py-md-5">
-                    <div class="row g-4 text-center position-relative" style="z-index:1;">
-                        @foreach (var s in _stats)
-                        {
-                            <div class="col-6 col-md-3">
-                                <div class="stat-value">@s.Value</div>
-                                <div class="stat-label mt-1">@s.Label</div>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Locked content preview -->
-        <section style="background:var(--uerre-surface);padding:4.5rem 0;">
-            <div class="container-uerre">
-                <div class="text-center mb-5">
-                    <span class="section-label">Comunidad</span>
-                    <h2 class="mt-3 mb-2">Grupos Destacados</h2>
-                    <p class="text-muted mx-auto" style="max-width:520px;">
-                        Inicia sesión para ver los grupos y unirte a la comunidad.
-                    </p>
-                </div>
-
-                <!-- Blurred / locked preview cards -->
-                <div class="row g-4" style="pointer-events:none;user-select:none;">
-                    @foreach (var (g, i) in _previewGroups.Select((g, i) => (g, i)))
-                    {
-                        <div class="col-12 col-sm-6 col-lg-4" style="filter:blur(4px);opacity:.55;">
-                            <div class="card-uerre h-100 d-flex flex-column">
-                                <div style="height:3px;background:@GradientFor(i);flex-shrink:0;"></div>
-                                <div class="p-4 d-flex flex-column flex-grow-1">
-                                    <div class="d-flex align-items-start gap-3 mb-3">
-                                        <div class="group-icon" style="background:@GradientFor(i);">@g[0]</div>
-                                        <div class="min-w-0">
-                                            <h6 class="fw-bold mb-0 text-dark">@g</h6>
-                                        </div>
-                                    </div>
-                                    <p class="text-muted small mb-0 flex-grow-1">
-                                        Inicia sesión para ver la descripción y unirte al grupo.
-                                    </p>
-                                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3"
-                                         style="border-top:1px solid var(--uerre-border);">
-                                        <span class="small text-muted d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg> — miembros</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-
-                <!-- Login gate overlay -->
-                <div class="text-center mt-5">
-                    <div class="card-uerre no-hover p-5 mx-auto" style="max-width:480px;">
-                        <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg></div>
-                        <h4 class="fw-bold mb-2">Acceso exclusivo para estudiantes U-ERRE</h4>
-                        <p class="text-muted small mb-4">
-                            Inicia sesión con tu cuenta institucional para explorar todos los grupos,
-                            unirte a actividades y ver el historial de administraciones.
-                        </p>
-                        <a href="MicrosoftIdentity/Account/SignIn"
-                           class="btn btn-uerre-primary w-100 py-2 fw-bold"
-                           style="font-family:'Montserrat',sans-serif;">
-                            Iniciar Sesión con cuenta U-ERRE →
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
     </NotAuthorized>
-
 </AuthorizeView>
 
 @code {
-    private List<GroupModel>? _groups;
-    private bool _loadingGroups = true;
-    private List<EventModel> _upcomingEvents = [];
-
-    private static readonly (string Value, string Label)[] _stats =
-    [
-        ("120+", "Grupos Activos"),
-        ("3,400", "Estudiantes"),
-        ("280",   "Eventos este año"),
-        ("95%",   "Satisfacción"),
-    ];
-
-    // Static preview group names shown blurred to guests
-    private static readonly string[] _previewGroups =
-    [
-        "Robótica U-ERRE",
-        "Ensamble Musical",
-        "Club de Diseño",
-        "Debate y Oratoria",
-        "Startup Lab U-ERRE",
-        "Voluntariado U-ERRE",
-    ];
-
-    private static readonly string[] _gradients =
-    [
-        "linear-gradient(135deg,#7c3aed,#4338ca)",
-        "linear-gradient(135deg,#f43f5e,#be185d)",
-        "linear-gradient(135deg,#f59e0b,#d97706)",
-        "linear-gradient(135deg,#10b981,#0d9488)",
-        "linear-gradient(135deg,#0ea5e9,#2563eb)",
-        "linear-gradient(135deg,#a855f7,#7c3aed)",
-    ];
-
-    private static string GradientFor(int i) => _gradients[i % _gradients.Length];
+    private int _totalUsers;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var groupsTask = GroupService.GetAllAsync(pageSize: 6);
-            var from = DateTime.UtcNow;
-            var to = from.AddDays(14);
-            var eventsTask = EventService.GetUpcomingAsync(fromUtc: from, toUtc: to);
-            await Task.WhenAll(groupsTask, eventsTask);
-
-            _groups = groupsTask.Result?.Data ?? [];
-            _upcomingEvents = eventsTask.Result;
+            var metrics = await DashboardService.GetAdminDashboardAsync();
+            _totalUsers = metrics.TotalUsers;
         }
-        catch { _groups = []; _upcomingEvents = []; }
-        finally { _loadingGroups = false; }
+        catch
+        {
+            _totalUsers = 0;
+        }
     }
+
+    private static string FormatCompact(int value)
+        => value >= 1000 ? value.ToString("N0") : value.ToString();
 }

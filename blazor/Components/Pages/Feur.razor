@@ -47,10 +47,10 @@
 
 <!-- Timeline nav -->
 <div class="bg-white border-bottom" style="border-color:var(--uerre-border)!important;">
-    <div class="container-uerre">
-        <ul class="nav" style="gap:.25rem;">
+    <div class="container-uerre mobile-tab-scroll">
+        <ul class="nav mobile-tab-list" style="gap:.25rem;">
             <li class="nav-item">
-                <button class="nav-link @(_activeTab == "timeline" ? "active fw-600 text-purple" : "text-muted")"
+                <button class="nav-link mobile-tab-button @(_activeTab == "timeline" ? "active fw-600 text-purple" : "text-muted")"
                         type="button" @onclick='() => _activeTab = "timeline"'
                         style="border:none;background:none;padding:.875rem 1rem;font-size:.875rem;
                                border-bottom:@(_activeTab == "timeline" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">
@@ -58,7 +58,7 @@
                 </button>
             </li>
             <li class="nav-item">
-                <button class="nav-link @(_activeTab == "members" ? "active fw-600 text-purple" : "text-muted")"
+                <button class="nav-link mobile-tab-button @(_activeTab == "members" ? "active fw-600 text-purple" : "text-muted")"
                         type="button" @onclick='() => _activeTab = "members"'
                         style="border:none;background:none;padding:.875rem 1rem;font-size:.875rem;
                                border-bottom:@(_activeTab == "members" ? "2px solid var(--uerre-purple)" : "2px solid transparent");">

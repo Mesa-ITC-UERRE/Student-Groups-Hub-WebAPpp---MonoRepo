@@ -7,6 +7,8 @@ namespace StudentGroupsHub.Services;
 
 public class UserService(IDbContextFactory<AppDbContext> dbFactory)
 {
+    public const string InactiveActionMessage = "Tu cuenta está inactiva. Puedes entrar a la plataforma, pero no realizar acciones.";
+
     public async Task<User> UpsertFromTokenAsync(string entraOid, string email, string? displayName)
     {
         using var db = dbFactory.CreateDbContext();
@@ -58,6 +60,97 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
         user.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
         return user;
+    }
+
+    public async Task<User?> AssignLeaderAsync(Guid userId, Guid groupId)
+    {
+        using var db = dbFactory.CreateDbContext();
+
+        var user = await db.Users.FindAsync(userId);
+        if (user is null) return null;
+
+        var group = await db.Groups.FindAsync(groupId);
+        if (group is null || group.Status != "active")
+            throw new InvalidOperationException("El grupo seleccionado no está disponible.");
+
+        var alreadyLeaderOfGroup = await db.RoleAssignments.AnyAsync(r =>
+            r.GroupId == groupId && r.UserId == userId && r.PermissionRole == "leader");
+        if (alreadyLeaderOfGroup)
+            throw new InvalidOperationException("La persona seleccionada ya lidera ese grupo.");
+
+        var groupHasAnotherLeader = await db.RoleAssignments.AnyAsync(r =>
+            r.GroupId == groupId && r.PermissionRole == "leader");
+        if (groupHasAnotherLeader)
+            throw new InvalidOperationException("Este grupo ya tiene un liderazgo activo. Quita al líder actual antes de asignar otro.");
+
+        db.RoleAssignments.Add(new RoleAssignment
+        {
+            Id = Guid.NewGuid(),
+            GroupId = groupId,
+            UserId = userId,
+            PermissionRole = "leader",
+            DisplayRole = "Líder",
+            CreatedAt = DateTime.UtcNow,
+        });
+
+        var membership = await db.Memberships.FirstOrDefaultAsync(m =>
+            m.GroupId == groupId && m.UserId == userId);
+        if (membership is null)
+        {
+            db.Memberships.Add(new Membership
+            {
+                Id = Guid.NewGuid(),
+                GroupId = groupId,
+                UserId = userId,
+                Status = "accepted",
+                RequestedAt = DateTime.UtcNow,
+                RespondedAt = DateTime.UtcNow,
+            });
+        }
+        else
+        {
+            membership.Status = "accepted";
+            membership.RespondedAt = DateTime.UtcNow;
+            membership.Notes = null;
+        }
+
+        if (user.Role != "admin")
+            user.Role = "group_leader";
+
+        user.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return user;
+    }
+
+    public async Task<User?> DemoteToStudentAsync(Guid userId)
+    {
+        using var db = dbFactory.CreateDbContext();
+
+        var user = await db.Users.FindAsync(userId);
+        if (user is null) return null;
+
+        var leaderAssignments = await db.RoleAssignments
+            .Where(r => r.UserId == userId && r.PermissionRole == "leader")
+            .ToListAsync();
+
+        if (leaderAssignments.Count > 0)
+            db.RoleAssignments.RemoveRange(leaderAssignments);
+
+        user.Role = "student";
+        user.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return user;
+    }
+
+    public static bool IsActive(User? user)
+        => string.Equals(user?.Status, "active", StringComparison.OrdinalIgnoreCase);
+
+    public static void EnsureCanAct(User? user)
+    {
+        if (user is null)
+            throw new InvalidOperationException("No autenticado.");
+        if (!IsActive(user))
+            throw new InvalidOperationException(InactiveActionMessage);
     }
 
     public static UserResponse ToResponse(User u) => new(

@@ -24,6 +24,12 @@
     --uerre-tag-text:      #6d28d9;
     --uerre-border:        #e5e7eb;
     --uerre-border-purple: rgba(91,33,182,.15);
+    --uerre-empty-title-color: var(--uerre-purple);
+    --uerre-hero-title-color: #fff;
+    --uerre-hero-subtitle-color: rgba(255,255,255,.7);
+    --uerre-hero-link-color: rgba(255,255,255,.5);
+    --uerre-hero-link-hover-color: rgba(255,255,255,.85);
+    --uerre-hero-title-size: clamp(1.5rem,4vw,2.25rem);
 
     /* Bootstrap overrides */
     --bs-primary:          var(--uerre-purple);
@@ -266,6 +272,10 @@ a:hover { color: var(--uerre-purple-dark); }
     position: relative; overflow: hidden;
 }
 
+.hero-gradient h1 {
+    color: var(--uerre-hero-title-color);
+}
+
 .hero-gradient .hero-blob-1 {
     position: absolute; top: -8rem; right: -8rem;
     width: 480px; height: 480px;
@@ -293,6 +303,24 @@ a:hover { color: var(--uerre-purple-dark); }
     content: '';
     position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
     background: linear-gradient(to bottom, transparent, rgba(91,33,182,.04));
+}
+
+.page-hero-link {
+    color: var(--uerre-hero-link-color);
+}
+
+.page-hero-link:hover,
+.page-hero-link:focus-visible {
+    color: var(--uerre-hero-link-hover-color);
+}
+
+.page-hero-title {
+    color: var(--uerre-hero-title-color);
+    font-size: var(--uerre-hero-title-size);
+}
+
+.page-hero-subtitle {
+    color: var(--uerre-hero-subtitle-color);
 }
 
 /* ─── Stats Band ─────────────────────────────────────────────── */
@@ -545,6 +573,15 @@ a:hover .hero-float-card {
     text-align: center; padding: 4rem 1.5rem;
 }
 
+.empty-state h1,
+.empty-state h2,
+.empty-state h3,
+.empty-state h4,
+.empty-state h5,
+.empty-state h6 {
+    color: var(--uerre-empty-title-color);
+}
+
 .empty-state .empty-icon {
     width: 72px; height: 72px; border-radius: 20px;
     background: var(--uerre-tag-bg);
@@ -603,6 +640,32 @@ a:hover .hero-float-card {
 .table-uerre tbody td { padding: .875rem 1rem; vertical-align: middle; }
 .table-uerre tbody tr { border-bottom: 1px solid #f3f4f6; transition: background .1s; }
 .table-uerre tbody tr:hover { background: var(--uerre-surface); }
+
+.mobile-tab-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.mobile-tab-list {
+    flex-wrap: nowrap;
+    width: max-content;
+    min-width: 100%;
+}
+
+.mobile-tab-button {
+    white-space: nowrap;
+}
+
+.mobile-action-group > .btn,
+.mobile-action-group > a.btn {
+    white-space: nowrap;
+}
+
+.mobile-admin-table table {
+    min-width: 760px;
+}
 
 /* ─── Dashboard Stat Cards ───────────────────────────────────── */
 .stat-card {
@@ -706,6 +769,70 @@ a:hover .hero-float-card {
 @media (max-width: 768px) {
     .stat-value { font-size: 1.75rem; }
     .hero-float-card { display: none; }
+
+    .container-uerre { padding: 0 1rem; }
+
+    .navbar-brand-name { font-size: .72rem; }
+    .navbar-brand-sub { font-size: .52rem; }
+    .navbar-collapse-uerre {
+        margin-top: .75rem;
+        padding-top: .75rem;
+        border-top: 1px solid var(--uerre-border);
+    }
+    .navbar-uerre .navbar-nav {
+        gap: .25rem;
+    }
+    .navbar-uerre .nav-link {
+        display: block;
+        width: 100%;
+        padding: .7rem .875rem;
+    }
+    .navbar-uerre .nav-link.active::after {
+        left: .875rem;
+        right: calc(100% - 3.25rem);
+    }
+    .navbar-user-actions {
+        width: 100%;
+        justify-content: space-between;
+        padding-top: .75rem;
+        margin-top: .5rem;
+        border-top: 1px solid var(--uerre-border);
+    }
+    .navbar-user-actions .dropdown-menu {
+        right: 0;
+        left: auto;
+    }
+
+    .mobile-tab-scroll {
+        padding-bottom: .25rem;
+    }
+    .mobile-tab-button {
+        font-size: .8125rem !important;
+        padding: .8rem .875rem !important;
+    }
+
+    .mobile-action-group {
+        width: 100%;
+        justify-content: stretch !important;
+    }
+    .mobile-action-group > .btn,
+    .mobile-action-group > a.btn {
+        flex: 1 1 100%;
+        text-align: center;
+    }
+
+    .mobile-admin-table table {
+        min-width: 680px;
+    }
+
+    .table-uerre thead th,
+    .table-uerre tbody td {
+        padding: .75rem .875rem;
+    }
+
+    .empty-state {
+        padding: 3rem 1rem;
+    }
 }
 
 /* ─── Administration Timeline ────────────────────────────────── */

@@ -29,6 +29,7 @@ public class UsersController(UserService userService) : ControllerBase
         var oid      = User.GetEntraOid();
         var existing = await userService.GetByEntraOidAsync(oid);
         if (existing is null) return NotFound();
+        if (!UserService.IsActive(existing)) return Forbid();
         var updated = await userService.UpdateAsync(existing.Id, request.DisplayName, request.AvatarUrl);
         return Ok(UserService.ToResponse(updated!));
     }

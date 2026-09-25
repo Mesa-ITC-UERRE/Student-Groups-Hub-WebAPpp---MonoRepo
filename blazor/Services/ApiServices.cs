@@ -95,9 +95,9 @@ public class GroupApiService(
     public async Task<bool> IsLeaderAsync(Guid groupId)
         => await DbSafe.TryAsync(async () =>
         {
-            var userId = await currentUser.GetUserIdAsync();
-            if (userId == Guid.Empty) return false;
-            return await groupService.IsLeaderOfGroupAsync(userId, groupId);
+            var user = await currentUser.GetUserAsync();
+            if (!UserService.IsActive(user)) return false;
+            return await groupService.IsLeaderOfGroupAsync(user!.Id, groupId);
         }, false);
 
     public async Task<List<MembershipModel>> GetPendingMembershipsAsync(Guid groupId)
@@ -108,8 +108,7 @@ public class GroupApiService(
 
     public async Task<JoinGroupResponse?> JoinAsync(Guid groupId)
     {
-        var userId = await currentUser.GetUserIdAsync();
-        if (userId == Guid.Empty) throw new InvalidOperationException("No autenticado.");
+        var userId = await currentUser.GetActiveUserIdAsync();
         var m = await membershipService.JoinAsync(userId, groupId);
         if (m is null) return null;
         return new JoinGroupResponse(m.Id, m.GroupId, m.UserId, m.Status, m.RequestedAt);
@@ -117,21 +116,21 @@ public class GroupApiService(
 
     public async Task<MembershipModel?> ApproveMembershipAsync(Guid groupId, Guid membershipId, string? notes = null)
     {
+        await currentUser.RequireActiveUserAsync();
         var m = await membershipService.ApproveAsync(membershipId, notes);
         return m is null ? null : MapMembership(m);
     }
 
     public async Task<MembershipModel?> RejectMembershipAsync(Guid groupId, Guid membershipId, string? notes = null)
     {
+        await currentUser.RequireActiveUserAsync();
         var m = await membershipService.RejectAsync(membershipId, notes);
         return m is null ? null : MapMembership(m);
     }
 
     public async Task RemoveMemberAsync(Guid groupId, Guid userId)
     {
-        var user = await currentUser.GetUserAsync();
-        if (user is null)
-            throw new InvalidOperationException("No autenticado.");
+        var user = await currentUser.RequireActiveUserAsync();
 
         var isAdmin = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
@@ -156,9 +155,7 @@ public class GroupApiService(
             throw new InvalidOperationException(
                 "El archivo supera el límite de 5 MB.");
 
-        var user = await currentUser.GetUserAsync();
-        if (user is null)
-            throw new InvalidOperationException("No autenticado.");
+        var user = await currentUser.RequireActiveUserAsync();
 
         var isAdmin  = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
@@ -205,9 +202,7 @@ public class GroupApiService(
             throw new InvalidOperationException(
                 "El archivo supera el límite de 5 MB.");
 
-        var user = await currentUser.GetUserAsync();
-        if (user is null)
-            throw new InvalidOperationException("No autenticado.");
+        var user = await currentUser.RequireActiveUserAsync();
 
         var isAdmin  = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
@@ -289,10 +284,8 @@ public class EventApiService(
         string? imageContentType = null,
         string? imageExt = null)
     {
-        var userId = await currentUser.GetUserIdAsync();
-        if (userId == Guid.Empty) throw new InvalidOperationException("No autenticado.");
-
-        var user = await currentUser.GetUserAsync();
+        var user = await currentUser.RequireActiveUserAsync();
+        var userId = user.Id;
         var isAdmin  = user?.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(userId, groupId);
         if (!isAdmin && !isLeader)
@@ -332,15 +325,13 @@ public class EventApiService(
 
     public async Task UpsertRsvpAsync(Guid eventId, string status)
     {
-        var userId = await currentUser.GetUserIdAsync();
-        if (userId == Guid.Empty) throw new InvalidOperationException("No autenticado.");
+        var userId = await currentUser.GetActiveUserIdAsync();
         await eventService.UpsertRsvpAsync(eventId, userId, status);
     }
 
     public async Task RemoveRsvpAsync(Guid eventId)
     {
-        var userId = await currentUser.GetUserIdAsync();
-        if (userId == Guid.Empty) return;
+        var userId = await currentUser.GetActiveUserIdAsync();
         await eventService.RemoveRsvpAsync(eventId, userId);
     }
 
@@ -391,11 +382,8 @@ public class UserApiService(
             throw new InvalidOperationException(
                 "El archivo supera el límite de 5 MB.");
 
-        var userId = await currentUser.GetUserIdAsync();
-        if (userId == Guid.Empty)
-            throw new InvalidOperationException("No autenticado.");
-
-        var existingUser = await currentUser.GetUserAsync();
+        var existingUser = await currentUser.RequireActiveUserAsync();
+        var userId = existingUser.Id;
         var oldUrl = existingUser?.AvatarUrl;
 
         var fileName = $"{Guid.NewGuid():N}.{ext}";
@@ -440,16 +428,14 @@ public class NotificationApiService(NotificationService notificationService, Cur
 
     public async Task MarkAllReadAsync()
     {
-        var userId = await currentUser.GetUserIdAsync();
-        if (userId != Guid.Empty)
-            await notificationService.MarkAllReadAsync(userId);
+        var userId = await currentUser.GetActiveUserIdAsync();
+        await notificationService.MarkAllReadAsync(userId);
     }
 
     public async Task MarkReadAsync(Guid id)
     {
-        var userId = await currentUser.GetUserIdAsync();
-        if (userId != Guid.Empty)
-            await notificationService.MarkReadAsync(id, userId);
+        var userId = await currentUser.GetActiveUserIdAsync();
+        await notificationService.MarkReadAsync(id, userId);
     }
 }
 
@@ -472,8 +458,7 @@ public class GroupRegistrationApiService(
 
     public async Task<GroupRegistrationRequestModel?> CreateAsync(StudentGroupsHub.DTOs.Requests.CreateGroupRegistrationRequest request)
     {
-        var userId = await currentUser.GetUserIdAsync();
-        if (userId == Guid.Empty) throw new InvalidOperationException("No autenticado.");
+        var userId = await currentUser.GetActiveUserIdAsync();
         var r = await registrationService.CreateAsync(
             userId, request.ProposedGroupName,
             request.ProposedDescription, request.ContactEmail,
@@ -490,14 +475,14 @@ public class GroupRegistrationApiService(
 
     public async Task<GroupRegistrationRequestModel?> ApproveAsync(Guid id, string? notes = null, string? finalCategory = null)
     {
-        var userId = await currentUser.GetUserIdAsync();
+        var userId = await currentUser.GetActiveUserIdAsync();
         var r = await registrationService.ApproveAsync(id, userId, notes, finalCategory);
         return r is null ? null : MapRequest(r);
     }
 
     public async Task<GroupRegistrationRequestModel?> RejectAsync(Guid id, string? notes = null)
     {
-        var userId = await currentUser.GetUserIdAsync();
+        var userId = await currentUser.GetActiveUserIdAsync();
         var r = await registrationService.RejectAsync(id, userId, notes);
         return r is null ? null : MapRequest(r);
     }
@@ -533,16 +518,17 @@ public class EventPostApiService(
     public async Task<bool> CanPostAsync(Guid eventId)
     {
         var user = await currentUser.GetUserAsync();
-        if (user is null) return false;
+        if (!UserService.IsActive(user)) return false;
+        var activeUser = user!;
 
         var ev = await eventService.GetByIdAsync(eventId);
         if (ev is null) return false;
         if (ev.EndAt >= DateTime.UtcNow && ev.Status != "canceled") return false;
 
-        if (user.Role == "admin") return true;
-        if (await groupService.IsLeaderOfGroupAsync(user.Id, ev.GroupId)) return true;
+        if (activeUser.Role == "admin") return true;
+        if (await groupService.IsLeaderOfGroupAsync(activeUser.Id, ev.GroupId)) return true;
 
-        var membership = await membershipService.GetByUserAndGroupAsync(user.Id, ev.GroupId);
+        var membership = await membershipService.GetByUserAndGroupAsync(activeUser.Id, ev.GroupId);
         return membership?.Status == "accepted";
     }
 
@@ -556,8 +542,7 @@ public class EventPostApiService(
         if (string.IsNullOrWhiteSpace(body) && imageBytes is null)
             throw new InvalidOperationException("Debes agregar texto o una imagen como evidencia.");
 
-        var user = await currentUser.GetUserAsync();
-        if (user is null) throw new InvalidOperationException("No autenticado.");
+        var user = await currentUser.RequireActiveUserAsync();
 
         var ev = await eventService.GetByIdAsync(eventId);
         if (ev is null) throw new InvalidOperationException("Evento no encontrado.");
@@ -592,8 +577,7 @@ public class EventPostApiService(
 
     public async Task<bool> DeletePostAsync(Guid eventId, Guid postId)
     {
-        var user = await currentUser.GetUserAsync();
-        if (user is null) return false;
+        var user = await currentUser.RequireActiveUserAsync();
         return await eventPostService.DeleteAsync(postId, user.Id, user.Role == "admin");
     }
 
@@ -627,15 +611,15 @@ public class LeadershipRequestApiService(
 
     public async Task<bool> CanRequestAsync(Guid groupId)
     {
-        var userId = await currentUser.GetUserIdAsync();
-        if (userId == Guid.Empty) return false;
+        var user = await currentUser.GetUserAsync();
+        if (!UserService.IsActive(user)) return false;
+        var userId = user!.Id;
         return await leadershipRequestService.CanRequestAsync(groupId, userId);
     }
 
     public async Task<LeadershipRequestModel?> CreateAsync(StudentGroupsHub.DTOs.Requests.CreateLeadershipRequest request)
     {
-        var userId = await currentUser.GetUserIdAsync();
-        if (userId == Guid.Empty) throw new InvalidOperationException("No autenticado.");
+        var userId = await currentUser.GetActiveUserIdAsync();
 
         var req = await leadershipRequestService.CreateAsync(
             request.GroupId, userId, request.ContactEmail, request.Reason);
@@ -644,7 +628,7 @@ public class LeadershipRequestApiService(
 
     public async Task<LeadershipRequestModel?> ApproveAsync(Guid id, string? notes = null)
     {
-        var reviewerId = await currentUser.GetUserIdAsync();
+        var reviewerId = await currentUser.GetActiveUserIdAsync();
         var req = await leadershipRequestService.ApproveAsync(id, reviewerId, notes);
         if (req is null) return null;
 
@@ -660,7 +644,7 @@ public class LeadershipRequestApiService(
 
     public async Task<LeadershipRequestModel?> RejectAsync(Guid id, string? notes = null)
     {
-        var reviewerId = await currentUser.GetUserIdAsync();
+        var reviewerId = await currentUser.GetActiveUserIdAsync();
         var req = await leadershipRequestService.RejectAsync(id, reviewerId, notes);
         if (req is null) return null;
 
@@ -756,6 +740,7 @@ public class DashboardApiService(DashboardService dashboardService, CurrentUserS
 
 public class AdminApiService(
     UserService userService,
+    CurrentUserService currentUser,
     DashboardService dashboardService,
     GroupService groupService,
     GroupSeasonService groupSeasonService,
@@ -829,22 +814,29 @@ public class AdminApiService(
 
     public async Task<bool> SetGroupStatusAsync(Guid groupId, string status)
     {
+        await currentUser.RequireActiveUserAsync();
         return await DbSafe.TryAsync(
             () => groupService.SetStatusAsync(groupId, status), false);
     }
 
-    public async Task<UserModel?> SetRoleAsync(Guid userId, string role)
+    public async Task<UserModel?> SetRoleAsync(Guid userId, string role, Guid? groupId = null)
     {
-        using var db = dbFactory.CreateDbContext();
-        var user = await db.Users.FindAsync(userId);
-        if (user is null) return null;
-        user.Role = role; user.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync();
-        return MapUser(user);
+        await currentUser.RequireActiveUserAsync();
+
+        User? user = role switch
+        {
+            "group_leader" when groupId.HasValue => await userService.AssignLeaderAsync(userId, groupId.Value),
+            "group_leader" => throw new InvalidOperationException("Debes seleccionar un grupo para asignar liderazgo."),
+            "student" => await userService.DemoteToStudentAsync(userId),
+            _ => await SetUserRoleAsync(userId, role)
+        };
+
+        return user is null ? null : MapUser(user);
     }
 
     public async Task<UserModel?> SetStatusAsync(Guid userId, string status)
     {
+        await currentUser.RequireActiveUserAsync();
         using var db = dbFactory.CreateDbContext();
         var user = await db.Users.FindAsync(userId);
         if (user is null) return null;
@@ -855,6 +847,7 @@ public class AdminApiService(
 
     public async Task ResetSeasonAsync(IEnumerable<Guid> skipGroupIds)
     {
+        await currentUser.RequireActiveUserAsync();
         using var db = dbFactory.CreateDbContext();
         var skipIds = skipGroupIds.Distinct().ToHashSet();
         var targetGroups = await db.Groups
@@ -869,7 +862,19 @@ public class AdminApiService(
 
     public async Task ResetGroupSeasonAsync(Guid groupId)
     {
+        await currentUser.RequireActiveUserAsync();
         await NotifyAndResetAsync([groupId]);
+    }
+
+    private async Task<User?> SetUserRoleAsync(Guid userId, string role)
+    {
+        using var db = dbFactory.CreateDbContext();
+        var user = await db.Users.FindAsync(userId);
+        if (user is null) return null;
+        user.Role = role;
+        user.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return user;
     }
 
     private async Task NotifyAndResetAsync(IEnumerable<Guid> groupIds)
@@ -943,6 +948,7 @@ public class GroupTermApiService(GroupTermService termService, CurrentUserServic
         Guid groupId, string label, DateOnly startDate,
         DateOnly? endDate, string? notes)
     {
+        await currentUser.RequireActiveUserAsync();
         var term = await termService.CreateTermAsync(groupId, label, startDate, endDate, notes);
         return MapTerm(term);
     }
@@ -950,15 +956,22 @@ public class GroupTermApiService(GroupTermService termService, CurrentUserServic
     public async Task<TermMemberModel?> AddMemberAsync(
         Guid termId, string displayName, string roleLabel, int sortOrder = 0)
     {
+        await currentUser.RequireActiveUserAsync();
         var m = await termService.AddMemberAsync(termId, displayName, roleLabel, sortOrder);
         return MapMember(m);
     }
 
     public async Task<bool> RemoveMemberAsync(Guid memberId)
-        => await termService.RemoveMemberAsync(memberId);
+    {
+        await currentUser.RequireActiveUserAsync();
+        return await termService.RemoveMemberAsync(memberId);
+    }
 
     public async Task<bool> DeleteTermAsync(Guid termId)
-        => await termService.DeleteTermAsync(termId);
+    {
+        await currentUser.RequireActiveUserAsync();
+        return await termService.DeleteTermAsync(termId);
+    }
 
     private static GroupTermModel MapTerm(GroupTerm t) => new(
         t.Id, t.GroupId, t.Label, t.StartDate, t.EndDate,
@@ -992,15 +1005,16 @@ public class GroupPostApiService(
     public async Task<bool> CanPostAsync(Guid groupId)
     {
         var user = await currentUser.GetUserAsync();
-        if (user is null) return false;
+        if (!UserService.IsActive(user)) return false;
+        var activeUser = user!;
 
-        if (await groupService.IsLeaderOfGroupAsync(user.Id, groupId)) return true;
+        if (await groupService.IsLeaderOfGroupAsync(activeUser.Id, groupId)) return true;
 
-        var membership = await membershipService.GetByUserAndGroupAsync(user.Id, groupId);
+        var membership = await membershipService.GetByUserAndGroupAsync(activeUser.Id, groupId);
         if (membership?.Status != "accepted") return false;
 
-        if (user.Role == "admin") return true;
-        return await postService.IsAuthorizedToPostAsync(groupId, user.Id);
+        if (activeUser.Role == "admin") return true;
+        return await postService.IsAuthorizedToPostAsync(groupId, activeUser.Id);
     }
 
     public async Task<GroupPostModel?> CreatePostAsync(
@@ -1010,8 +1024,7 @@ public class GroupPostApiService(
         if (string.IsNullOrWhiteSpace(body))
             throw new InvalidOperationException("La publicación no puede estar vacía.");
 
-        var user = await currentUser.GetUserAsync();
-        if (user is null) throw new InvalidOperationException("No autenticado.");
+        var user = await currentUser.RequireActiveUserAsync();
 
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
         var membership = await membershipService.GetByUserAndGroupAsync(user.Id, groupId);
@@ -1043,8 +1056,7 @@ public class GroupPostApiService(
 
     public async Task<bool> DeletePostAsync(Guid groupId, Guid postId)
     {
-        var user = await currentUser.GetUserAsync();
-        if (user is null) return false;
+        var user = await currentUser.RequireActiveUserAsync();
         return await postService.DeleteAsync(postId, user.Id, user.Role == "admin");
     }
 

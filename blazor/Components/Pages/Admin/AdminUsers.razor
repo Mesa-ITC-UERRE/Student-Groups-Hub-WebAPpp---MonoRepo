@@ -1,19 +1,20 @@
 @page "/admin/users"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject AdminApiService AdminService
+@inject IJSRuntime JS
 @attribute [Authorize(Policy = "AdminOnly")]
 
 <PageTitle>Gestionar Usuarios — Admin</PageTitle>
 
 <div class="page-header">
     <div class="container-uerre">
-        <a href="/admin" class="text-white-50 text-decoration-none small mb-2 d-inline-block">
+        <a href="/admin" class="page-hero-link text-decoration-none small mb-2 d-inline-block">
             &larr; Panel Admin
         </a>
-        <h1 class="text-white fw-bold mb-1" style="font-size:clamp(1.5rem,4vw,2.25rem);">
+        <h1 class="page-hero-title fw-bold mb-1">
             Gestionar Usuarios
         </h1>
-        <p class="mb-0" style="color:rgba(255,255,255,.7);">
+        <p class="page-hero-subtitle mb-0">
             Busca, filtra y administra las cuentas de la plataforma.
         </p>
     </div>
@@ -37,6 +38,11 @@
             </select>
         </div>
 
+        @if (!string.IsNullOrWhiteSpace(_actionError))
+        {
+            <div class="alert alert-warning rounded-3 border-0 mb-4">@_actionError</div>
+        }
+
         @if (_loading)
         {
             <div class="d-flex justify-content-center py-5"><div class="spinner-uerre"></div></div>
@@ -48,6 +54,7 @@
         else
         {
             <div class="card-uerre overflow-hidden mb-4">
+                <div class="table-responsive mobile-admin-table">
                 <table class="table table-uerre mb-0">
                     <thead>
                         <tr>
@@ -95,12 +102,12 @@
                                     </span>
                                 </td>
                                 <td class="py-3 px-4 align-middle text-end">
-                                    <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                    <div class="d-flex justify-content-end gap-2 flex-wrap mobile-action-group">
                                         <!-- Role promotion -->
                                         @if (user.Role == "student")
                                         {
                                             <button class="btn btn-xs btn-uerre-outline rounded-2"
-                                                    @onclick="() => PromoteToLeader(user.Id)"
+                                                    @onclick="() => StartPromoteToLeader(user.Id)"
                                                     disabled="@_acting"
                                                     title="Promover a Líder de Grupo">
                                                 &rarr; Líder
@@ -121,8 +128,8 @@
                                             <button class="btn btn-xs btn-outline-secondary rounded-2"
                                                     @onclick="() => DemoteToStudent(user.Id)"
                                                     disabled="@_acting"
-                                                    title="Quitar rol, volver a Estudiante">
-                                                Estudiante
+                                                    title="Quitar liderazgo y volver a Estudiante">
+                                                @(user.Role == "group_leader" ? "Quitar líder" : "Estudiante")
                                             </button>
                                         }
                                         <!-- Status toggle -->
@@ -145,9 +152,45 @@
                                     </div>
                                 </td>
                             </tr>
+
+                            @if (_leaderAssignmentUserId == user.Id)
+                            {
+                                <tr style="background:var(--uerre-surface,#f8f9fa);">
+                                    <td colspan="4" class="py-3 px-4 border-top-0">
+                                        <div class="d-flex flex-column flex-md-row align-items-md-end gap-3">
+                                            <div class="flex-grow-1">
+                                                <label class="form-label fw-semibold small mb-1">Selecciona el grupo para asignar liderazgo</label>
+                                                <select class="form-select rounded-3"
+                                                        @bind="_selectedLeaderGroupId"
+                                                        disabled="@_acting">
+                                                    <option value="">Selecciona un grupo activo...</option>
+                                                    @foreach (var group in _leaderGroups)
+                                                    {
+                                                        <option value="@group.Id">@group.Name</option>
+                                                    }
+                                                </select>
+                                                <div class="form-text">Si el grupo ya tiene líder, la asignación se bloquea hasta quitarlo.</div>
+                                            </div>
+                                            <div class="d-flex gap-2 flex-wrap mobile-action-group">
+                                                <button class="btn btn-sm btn-uerre-primary rounded-2"
+                                                        @onclick="() => ConfirmPromoteToLeader(user.Id)"
+                                                        disabled="@_acting || string.IsNullOrWhiteSpace(_selectedLeaderGroupId)">
+                                                    Asignar liderazgo
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary rounded-2"
+                                                        @onclick="CancelPromoteToLeader"
+                                                        disabled="@_acting">
+                                                    Cancelar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
                         }
                     </tbody>
                 </table>
+                </div>
             </div>
 
             @if (_totalPages > 1)
@@ -169,12 +212,26 @@
 
 @code {
     private List<UserModel> _users = [];
+    private List<GroupModel> _leaderGroups = [];
     private bool _loading = true, _acting;
     private string _search = "", _roleFilter = "";
+    private string? _actionError;
+    private Guid? _leaderAssignmentUserId;
+    private string _selectedLeaderGroupId = "";
     private int _page = 1, _totalPages = 1;
     private CancellationTokenSource? _debounce;
 
-    protected override async Task OnInitializedAsync() => await LoadAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLeaderGroupsAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadLeaderGroupsAsync()
+    {
+        try { _leaderGroups = await AdminService.GetActiveGroupsForSeasonResetAsync(); }
+        catch { _leaderGroups = []; }
+    }
 
     private async Task LoadAsync()
     {
@@ -208,29 +265,103 @@
     private async Task SetRole(Guid id, string role)
     {
         _acting = true;
-        await AdminService.SetRoleAsync(id, role);
-        await LoadAsync();
-        _acting = false;
+        _actionError = null;
+        try
+        {
+            await AdminService.SetRoleAsync(id, role);
+            CancelPromoteToLeader();
+            await LoadLeaderGroupsAsync();
+            await LoadAsync();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _actionError = ex.Message;
+        }
+        finally
+        {
+            _acting = false;
+        }
     }
 
-    private Task PromoteToLeader(Guid id) => SetRole(id, "group_leader");
     private Task PromoteToAdmin(Guid id)  => SetRole(id, "admin");
     private Task DemoteToStudent(Guid id) => SetRole(id, "student");
+
+    private void StartPromoteToLeader(Guid id)
+    {
+        _actionError = null;
+        _leaderAssignmentUserId = id;
+        _selectedLeaderGroupId = "";
+    }
+
+    private void CancelPromoteToLeader()
+    {
+        _leaderAssignmentUserId = null;
+        _selectedLeaderGroupId = "";
+    }
+
+    private async Task ConfirmPromoteToLeader(Guid id)
+    {
+        if (!Guid.TryParse(_selectedLeaderGroupId, out var groupId))
+        {
+            _actionError = "Debes seleccionar un grupo para asignar liderazgo.";
+            return;
+        }
+
+        _acting = true;
+        _actionError = null;
+        try
+        {
+            await AdminService.SetRoleAsync(id, "group_leader", groupId);
+            CancelPromoteToLeader();
+            await LoadAsync();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _actionError = ex.Message;
+            await JS.InvokeVoidAsync("alert", ex.Message);
+        }
+        finally
+        {
+            _acting = false;
+        }
+    }
 
     private async Task Deactivate(Guid id)
     {
         _acting = true;
-        await AdminService.SetStatusAsync(id, "inactive");
-        await LoadAsync();
-        _acting = false;
+        _actionError = null;
+        try
+        {
+            await AdminService.SetStatusAsync(id, "inactive");
+            await LoadAsync();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _actionError = ex.Message;
+        }
+        finally
+        {
+            _acting = false;
+        }
     }
 
     private async Task Activate(Guid id)
     {
         _acting = true;
-        await AdminService.SetStatusAsync(id, "active");
-        await LoadAsync();
-        _acting = false;
+        _actionError = null;
+        try
+        {
+            await AdminService.SetStatusAsync(id, "active");
+            await LoadAsync();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _actionError = ex.Message;
+        }
+        finally
+        {
+            _acting = false;
+        }
     }
 
     private async Task GoToPage(int page) { _page = page; await LoadAsync(); }

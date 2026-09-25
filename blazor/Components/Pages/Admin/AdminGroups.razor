@@ -8,13 +8,13 @@
 
 <div class="page-header">
     <div class="container-uerre">
-        <a href="/admin" class="text-white-50 text-decoration-none small mb-2 d-inline-block">
+        <a href="/admin" class="page-hero-link text-decoration-none small mb-2 d-inline-block">
             &larr; Panel Admin
         </a>
-        <h1 class="text-white fw-bold mb-1" style="font-size:clamp(1.5rem,4vw,2.25rem);">
+        <h1 class="page-hero-title fw-bold mb-1">
             Gestionar Grupos
         </h1>
-        <p class="mb-0" style="color:rgba(255,255,255,.7);">
+        <p class="page-hero-subtitle mb-0">
             Todos los grupos de la plataforma — activos, pendientes e inactivos.
         </p>
     </div>
@@ -117,6 +117,7 @@
         else
         {
             <div class="card-uerre overflow-hidden mb-4">
+                <div class="table-responsive mobile-admin-table">
                 <table class="table table-uerre mb-0">
                     <thead>
                         <tr>
@@ -159,7 +160,7 @@
                                     @group.CreatedAt.ToString("dd MMM yyyy")
                                 </td>
                                 <td class="py-3 px-4 align-middle text-end">
-                                    <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                    <div class="d-flex justify-content-end gap-2 flex-wrap mobile-action-group">
                                         <a href="/groups/@group.Slug"
                                            class="btn btn-xs btn-uerre-outline rounded-2">
                                             Ver
@@ -207,7 +208,7 @@
                                     <td colspan="6" class="p-0 border-top-0">
                                         <div class="px-4 py-3 border-top border-2" style="border-color:var(--uerre-primary,#c8102e)!important;">
 
-                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
                                                 <h6 class="fw-bold mb-0 small">
                                                     Gestionar miembros — <span class="text-muted fw-normal">@group.Name</span>
                                                 </h6>
@@ -223,7 +224,7 @@
                                             </div>
 
                                             <!-- Tabs -->
-                                            <div class="d-flex gap-2 mb-3">
+                                            <div class="d-flex gap-2 flex-wrap mobile-action-group mb-3">
                                                 <button class="btn btn-sm @(_memberTab == "pending" ? "btn-uerre-primary" : "btn-uerre-outline") rounded-2"
                                                         @onclick='() => _memberTab = "pending"'>
                                                     Solicitudes pendientes
@@ -265,7 +266,7 @@
                                                         {
                                                             var pm = m;
                                                             var pgId = group.Id;
-                                                            <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-white">
+                                                            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap px-3 py-2 border-bottom bg-white">
                                                                 <div>
                                                                     <div class="fw-semibold small">@pm.DisplayLabel</div>
                                                                     <div class="text-muted" style="font-size:.7rem;">@pm.Email</div>
@@ -273,7 +274,7 @@
                                                                         Solicitado @pm.RequestedAt.ToString("dd MMM yyyy")
                                                                     </div>
                                                                 </div>
-                                                                <div class="d-flex gap-2 flex-shrink-0">
+                                                                <div class="d-flex gap-2 flex-wrap flex-shrink-0 mobile-action-group">
                                                                     <button class="btn btn-xs btn-outline-success rounded-2"
                                                                             @onclick="() => ApproveMember(pgId, pm.MembershipId)"
                                                                             disabled="@_actingMember">
@@ -303,7 +304,7 @@
                                                         {
                                                             var am = m;
                                                             var agId = group.Id;
-                                                            <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-white">
+                                                            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap px-3 py-2 border-bottom bg-white">
                                                                 <div>
                                                                     <div class="fw-semibold small">@am.DisplayLabel</div>
                                                                     <div class="text-muted" style="font-size:.7rem;">@am.Email</div>
@@ -331,6 +332,7 @@
                         }
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- Pagination -->

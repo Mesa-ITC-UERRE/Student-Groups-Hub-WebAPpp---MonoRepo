@@ -68,6 +68,7 @@ public class GroupsController(GroupService groupService, UserService userService
         var oid = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null) return Unauthorized();
+        if (!UserService.IsActive(user)) return Forbid();
 
         // Must be admin OR the leader of this group
         var isAdmin = user.Role == "admin";
@@ -91,6 +92,7 @@ public class GroupsController(GroupService groupService, UserService userService
         var oid = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
         if (user is null || user.Role != "admin") return Forbid();
+        if (!UserService.IsActive(user)) return Forbid();
 
         var ok = await groupService.SetStatusAsync(id, request.Status);
         if (!ok) return NotFound();

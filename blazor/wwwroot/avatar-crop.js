@@ -4,8 +4,8 @@
  * No external dependencies — uses only the browser Canvas 2D API.
  *
  * API (window.avatarCrop):
- *   openFromInput(inputId, canvasId) — read file directly from <input> in JS (zero SignalR transfer)
- *   open(canvasId, dataUrl)          — load from data URL (fallback)
+ *   openFromInput(inputId, canvasId, options?) — read file directly from <input> in JS (zero SignalR transfer)
+ *   open(canvasId, dataUrl, options?)          — load from data URL (fallback)
  *   setZoom(canvasId, value)         — update zoom from a range input (value 0–100)
  *   export(canvasId)                 — returns Promise<string> base64 JPEG (no prefix)
  *   destroy(canvasId)               — clean up state and revoke object URL
@@ -23,14 +23,15 @@ window.avatarCrop = (() => {
     function getState(id) { return state[id]; }
 
     function draw(s) {
-        const { ctx, img, size, offsetX, offsetY, zoom } = s;
+        const { ctx, img, size, offsetX, offsetY, zoom, shape } = s;
         ctx.clearRect(0, 0, size, size);
 
-        // Clip to circle
         ctx.save();
-        ctx.beginPath();
-        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-        ctx.clip();
+        if (shape === 'circle') {
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+            ctx.clip();
+        }
 
         // Scaled image dimensions
         const scaledW = img.naturalWidth  * zoom;
@@ -43,9 +44,12 @@ window.avatarCrop = (() => {
         ctx.drawImage(img, x, y, scaledW, scaledH);
         ctx.restore();
 
-        // Circle border
         ctx.beginPath();
-        ctx.arc(size / 2, size / 2, size / 2 - 1, 0, Math.PI * 2);
+        if (shape === 'circle') {
+            ctx.arc(size / 2, size / 2, size / 2 - 1, 0, Math.PI * 2);
+        } else {
+            ctx.rect(1, 1, size - 2, size - 2);
+        }
         ctx.strokeStyle = 'rgba(255,255,255,0.5)';
         ctx.lineWidth = 2;
         ctx.stroke();
@@ -107,18 +111,20 @@ window.avatarCrop = (() => {
         canvas.style.cursor = 'grab';
     }
 
-    function initState(canvasId, img) {
+    function initState(canvasId, img, options) {
         const canvas = document.getElementById(canvasId);
         if (!canvas) return null;
         const size    = canvas.width;
         const ctx     = canvas.getContext('2d');
         const fitZoom = Math.max(size / img.naturalWidth, size / img.naturalHeight);
+        const shape   = options && options.shape === 'square' ? 'square' : 'circle';
         const s = {
             canvas, ctx, img, size,
             zoom: fitZoom, baseZoom: fitZoom,
             offsetX: 0, offsetY: 0,
             dragging: false, lastX: 0, lastY: 0,
-            objectUrl: null   // set by openFromInput
+            objectUrl: null,  // set by openFromInput
+            shape
         };
         state[canvasId] = s;
         attachEvents(s);
@@ -133,7 +139,7 @@ window.avatarCrop = (() => {
      * No base64 encoding, no SignalR data transfer.
      * Returns null on success, or an error string.
      */
-    function openFromInput(inputId, canvasId) {
+    function openFromInput(inputId, canvasId, options) {
         const input = document.getElementById(inputId);
         if (!input || !input.files || input.files.length === 0) {
             return 'No se encontró el archivo seleccionado.';
@@ -154,7 +160,7 @@ window.avatarCrop = (() => {
         const objectUrl = URL.createObjectURL(file);
         const img = new Image();
         img.onload = () => {
-            const s = initState(canvasId, img);
+            const s = initState(canvasId, img, options);
             if (s) s.objectUrl = objectUrl;
         };
         img.onerror = () => URL.revokeObjectURL(objectUrl);
@@ -164,9 +170,9 @@ window.avatarCrop = (() => {
     }
 
     /** Fallback: load from a data URL (e.g. when file bytes are already in memory) */
-    function open(canvasId, dataUrl) {
+    function open(canvasId, dataUrl, options) {
         const img = new Image();
-        img.onload = () => initState(canvasId, img);
+        img.onload = () => initState(canvasId, img, options);
         img.src = dataUrl;
     }
 
