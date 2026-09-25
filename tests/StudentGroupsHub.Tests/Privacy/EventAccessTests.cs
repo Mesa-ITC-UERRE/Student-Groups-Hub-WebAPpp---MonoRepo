@@ -64,9 +64,9 @@ public sealed class EventAccessTests(PostgreSqlFixture database)
         Assert.Equal([publicEvent.Id], publicUpcoming.Select(e => e.Id));
         Assert.Equal([publicEvent.Id], publicEvents.Select(e => e.Id));
         Assert.Equal([publicEvent.Id], outsiderEvents.Select(e => e.Id));
-        Assert.Equal(
-            [publicEvent.Id, membersEvent.Id],
-            memberEvents.Select(e => e.Id).OrderBy(id => id));
+        Assert.Equal(2, memberEvents.Count);
+        Assert.Contains(memberEvents, e => e.Id == publicEvent.Id);
+        Assert.Contains(memberEvents, e => e.Id == membersEvent.Id);
         Assert.Equal(3, leaderEvents.Count);
         Assert.Equal(3, adminEvents.Count);
         Assert.Null(await service.GetPublicByIdAsync(membersEvent.Id));

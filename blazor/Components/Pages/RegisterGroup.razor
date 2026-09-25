@@ -4,6 +4,7 @@
 @inject GroupApiService GroupService
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthState
+@inject UserErrorService UserErrors
 
 <PageTitle>Solicitar Grupo — Grupos Estudiantiles Hub</PageTitle>
 
@@ -213,7 +214,7 @@
         }
         catch (Exception ex)
         {
-            _error = ex.Message;
+            _error = UserErrors.Handle(ex, "No se pudo enviar la solicitud.");
         }
         finally
         {

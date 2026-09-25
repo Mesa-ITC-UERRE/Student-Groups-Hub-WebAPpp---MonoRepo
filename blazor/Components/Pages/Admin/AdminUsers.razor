@@ -273,7 +273,7 @@
             await LoadLeaderGroupsAsync();
             await LoadAsync();
         }
-        catch (InvalidOperationException ex)
+        catch (UserVisibleException ex)
         {
             _actionError = ex.Message;
         }
@@ -315,7 +315,7 @@
             CancelPromoteToLeader();
             await LoadAsync();
         }
-        catch (InvalidOperationException ex)
+        catch (UserVisibleException ex)
         {
             _actionError = ex.Message;
             await JS.InvokeVoidAsync("alert", ex.Message);
@@ -335,7 +335,7 @@
             await AdminService.SetStatusAsync(id, "inactive");
             await LoadAsync();
         }
-        catch (InvalidOperationException ex)
+        catch (UserVisibleException ex)
         {
             _actionError = ex.Message;
         }
@@ -354,7 +354,7 @@
             await AdminService.SetStatusAsync(id, "active");
             await LoadAsync();
         }
-        catch (InvalidOperationException ex)
+        catch (UserVisibleException ex)
         {
             _actionError = ex.Message;
         }

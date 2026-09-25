@@ -123,7 +123,7 @@ public class GroupService(IDbContextFactory<AppDbContext> dbFactory)
     public async Task<bool> SetStatusAsync(Guid id, string status)
     {
         if (!AllowedStatuses.Contains(status))
-            throw new InvalidOperationException("El estado del grupo no es válido.");
+            throw new UserVisibleException("El estado del grupo no es válido.");
 
         using var db = dbFactory.CreateDbContext();
         var group = await db.Groups.FindAsync(id);

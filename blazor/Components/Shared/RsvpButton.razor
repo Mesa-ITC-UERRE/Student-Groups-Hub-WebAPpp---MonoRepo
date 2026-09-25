@@ -1,5 +1,6 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject EventApiService EventService
+@inject UserErrorService UserErrors
 
 @if (_rsvpStatus == "going")
 {
@@ -55,7 +56,8 @@ else
             await EventService.UpsertRsvpAsync(EventId, "going");
             _rsvpStatus = "going";
         }
-        catch (Exception ex) { _error = ex.Message; }
+        catch (UserVisibleException ex) { _error = ex.Message; }
+        catch (Exception ex) { _error = UserErrors.Handle(ex, "No se pudo registrar tu asistencia."); }
         finally { _loading = false; }
     }
 
@@ -67,7 +69,8 @@ else
             await EventService.RemoveRsvpAsync(EventId);
             _rsvpStatus = null;
         }
-        catch (Exception ex) { _error = ex.Message; }
+        catch (UserVisibleException ex) { _error = ex.Message; }
+        catch (Exception ex) { _error = UserErrors.Handle(ex, "No se pudo cancelar tu asistencia."); }
         finally { _loading = false; }
     }
 }

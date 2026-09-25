@@ -10,6 +10,7 @@
 @inject GroupPostApiService PostService
 @inject LeadershipRequestApiService LeadershipService
 @inject CurrentUserService CurrentUser
+@inject UserErrorService UserErrors
 @inject IJSRuntime JS
 @attribute [Authorize]
 
@@ -892,7 +893,7 @@ else
                 }
                 catch (Exception ex)
                 {
-                    _loadError = $"No se pudo cargar toda la información del grupo: {ex.Message}";
+                    _loadError = UserErrors.Handle(ex, "No se pudo cargar toda la información del grupo.");
                 }
             }
         }
@@ -1046,13 +1047,13 @@ else
                 _logoError = "No se pudo guardar el logo.";
             }
         }
-        catch (InvalidOperationException ex)
+        catch (UserVisibleException ex)
         {
             _logoError = ex.Message;
         }
-        catch
+        catch (Exception ex)
         {
-            _logoError = "Error inesperado al subir el logo.";
+            _logoError = UserErrors.Handle(ex, "No se pudo subir el logo.");
         }
         finally
         {
@@ -1147,13 +1148,13 @@ else
                 _bannerError = "No se pudo guardar el banner.";
             }
         }
-        catch (InvalidOperationException ex)
+        catch (UserVisibleException ex)
         {
             _bannerError = ex.Message;
         }
-        catch
+        catch (Exception ex)
         {
-            _bannerError = "Error inesperado al subir el banner.";
+            _bannerError = UserErrors.Handle(ex, "No se pudo subir el banner.");
         }
         finally
         {
@@ -1227,8 +1228,8 @@ else
                 _eventError = "No se pudo crear el evento.";
             }
         }
-        catch (InvalidOperationException ex) { _eventError = ex.Message; }
-        catch { _eventError = "Error inesperado al crear el evento."; }
+        catch (UserVisibleException ex) { _eventError = ex.Message; }
+        catch (Exception ex) { _eventError = UserErrors.Handle(ex, "No se pudo crear el evento."); }
         finally { _savingEvent = false; }
     }
 
@@ -1299,8 +1300,8 @@ else
             }
             else { _postError = "No se pudo publicar."; }
         }
-        catch (InvalidOperationException ex) { _postError = ex.Message; }
-        catch { _postError = "Error inesperado al publicar."; }
+        catch (UserVisibleException ex) { _postError = ex.Message; }
+        catch (Exception ex) { _postError = UserErrors.Handle(ex, "No se pudo publicar."); }
         finally { _submittingPost = false; }
     }
 

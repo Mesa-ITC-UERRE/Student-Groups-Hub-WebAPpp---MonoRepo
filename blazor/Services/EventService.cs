@@ -162,7 +162,7 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
     public async Task<EventParticipation?> UpsertRsvpAsync(Guid eventId, Guid userId, string status)
     {
         if (!AllowedRsvpStatuses.Contains(status))
-            throw new InvalidOperationException("El estado de asistencia no es válido.");
+            throw new UserVisibleException("El estado de asistencia no es válido.");
 
         using var db = dbFactory.CreateDbContext();
         var ev = await db.Events.FindAsync(eventId);
@@ -170,12 +170,12 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         if (!await CanAccessEventAsync(db, ev, userId))
             throw new KeyNotFoundException("Evento no encontrado.");
         if (ev.Status == "canceled")
-            throw new InvalidOperationException("No puedes registrarte en un evento cancelado.");
+            throw new UserVisibleException("No puedes registrarte en un evento cancelado.");
         if (status == "going" && ev.Capacity.HasValue)
         {
             var cnt = await db.EventParticipations.CountAsync(p => p.EventId == eventId && p.Status == "going");
             if (cnt >= ev.Capacity.Value)
-                throw new InvalidOperationException("No hay lugares disponibles para este evento.");
+                throw new UserVisibleException("No hay lugares disponibles para este evento.");
         }
         var existing = await db.EventParticipations
             .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
@@ -326,18 +326,18 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         string visibility)
     {
         if (string.IsNullOrWhiteSpace(title))
-            throw new InvalidOperationException("El título es requerido.");
+            throw new UserVisibleException("El título es requerido.");
         if (title.Trim().Length > 200)
-            throw new InvalidOperationException("El título no puede exceder 200 caracteres.");
+            throw new UserVisibleException("El título no puede exceder 200 caracteres.");
         if (location?.Trim().Length > 300)
-            throw new InvalidOperationException("El lugar no puede exceder 300 caracteres.");
+            throw new UserVisibleException("El lugar no puede exceder 300 caracteres.");
         if (endAt <= startAt)
-            throw new InvalidOperationException("La fecha de fin debe ser posterior a la de inicio.");
+            throw new UserVisibleException("La fecha de fin debe ser posterior a la de inicio.");
         if (capacity is <= 0)
-            throw new InvalidOperationException("La capacidad debe ser mayor que cero.");
+            throw new UserVisibleException("La capacidad debe ser mayor que cero.");
         if (!AllowedStatuses.Contains(status))
-            throw new InvalidOperationException("El estado del evento no es válido.");
+            throw new UserVisibleException("El estado del evento no es válido.");
         if (!AllowedVisibilities.Contains(visibility))
-            throw new InvalidOperationException("La visibilidad del evento no es válida.");
+            throw new UserVisibleException("La visibilidad del evento no es válida.");
     }
 }

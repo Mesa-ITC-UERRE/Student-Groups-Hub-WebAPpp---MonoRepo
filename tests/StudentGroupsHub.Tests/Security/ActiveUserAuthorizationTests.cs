@@ -111,7 +111,7 @@ public sealed class ActiveUserAuthorizationTests(PostgreSqlFixture database)
         var refreshed = await currentUser.GetUserAsync();
         Assert.False(UserService.IsActive(refreshed));
         Assert.Equal("admin", refreshed!.Role);
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<UserVisibleException>(
             () => currentUser.RequireActiveUserAsync());
     }
 

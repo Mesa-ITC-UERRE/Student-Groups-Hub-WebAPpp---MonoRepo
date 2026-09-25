@@ -143,6 +143,7 @@ builder.Services.AddScoped<GroupTermService>();
 builder.Services.AddScoped<GroupPostService>();
 builder.Services.AddScoped<EventPostService>();
 builder.Services.AddScoped<GroupSeasonService>();
+builder.Services.AddScoped<UserErrorService>();
 
 // Current user context (reads ClaimsPrincipal, upserts user on first call)
 builder.Services.AddScoped<CurrentUserService>();

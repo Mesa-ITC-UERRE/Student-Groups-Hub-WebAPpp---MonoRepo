@@ -66,7 +66,7 @@ public class AdminController(
                 actingUser!.Id, id, request.Role, request.GroupId);
             return user is null ? NotFound() : Ok(UserService.ToResponse(user));
         }
-        catch (InvalidOperationException ex)
+        catch (UserVisibleException ex)
         {
             return BadRequest(new { message = ex.Message });
         }
@@ -84,7 +84,7 @@ public class AdminController(
             var user = await userService.SetStatusAsync(actingUser!.Id, id, request.Status);
             return user is null ? NotFound() : Ok(UserService.ToResponse(user));
         }
-        catch (InvalidOperationException ex)
+        catch (UserVisibleException ex)
         {
             return BadRequest(new { message = ex.Message });
         }

@@ -4,6 +4,7 @@
 @inject GroupApiService GroupService
 @inject LeadershipRequestApiService LeadershipService
 @inject CurrentUserService CurrentUser
+@inject UserErrorService UserErrors
 @attribute [Authorize]
 
 <PageTitle>Solicitar Liderazgo — Grupos Estudiantiles</PageTitle>
@@ -129,9 +130,13 @@
                     _error = "No cumples los requisitos para solicitar el liderazgo de este grupo.";
             }
         }
-        catch (Exception ex)
+        catch (UserVisibleException ex)
         {
             _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = UserErrors.Handle(ex, "No se pudo validar tu solicitud.");
         }
         finally
         {
@@ -157,9 +162,13 @@
             else
                 _error = "No se pudo enviar la solicitud. Inténtalo nuevamente.";
         }
-        catch (Exception ex)
+        catch (UserVisibleException ex)
         {
             _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = UserErrors.Handle(ex, "No se pudo enviar la solicitud.");
         }
         finally
         {

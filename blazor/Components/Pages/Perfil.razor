@@ -6,6 +6,7 @@
 @inject DashboardApiService DashboardService
 @inject NotificationApiService NotificationService
 @inject GroupRegistrationApiService RegistrationService
+@inject UserErrorService UserErrors
 @inject IJSRuntime JS
 @attribute [Authorize]
 
@@ -285,7 +286,7 @@ else
                 _notifications = notifTask.Result ?? [];
             }
         }
-        catch (Exception ex) { _error = ex.Message; }
+        catch (Exception ex) { _error = UserErrors.Handle(ex, "No se pudo cargar tu perfil."); }
         finally { _loading = false; }
     }
 
@@ -395,8 +396,8 @@ else
                 _avatarError = "No se pudo guardar la foto.";
             }
         }
-        catch (InvalidOperationException ex) { _avatarError = ex.Message; }
-        catch (Exception ex)                 { _avatarError = $"Error inesperado: {ex.Message}"; }
+        catch (UserVisibleException ex) { _avatarError = ex.Message; }
+        catch (Exception ex) { _avatarError = UserErrors.Handle(ex, "No se pudo guardar la foto."); }
         finally { _savingAvatar = false; }
     }
 }

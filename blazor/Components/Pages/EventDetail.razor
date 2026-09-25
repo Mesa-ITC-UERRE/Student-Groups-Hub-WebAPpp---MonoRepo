@@ -3,6 +3,7 @@
 @inject EventApiService EventService
 @inject EventPostApiService EventPostService
 @inject CurrentUserService CurrentUser
+@inject UserErrorService UserErrors
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Components.Forms
 @using System.IO
@@ -460,13 +461,13 @@ else
                 RemovePostImage();
             }
         }
-        catch (InvalidOperationException ex)
+        catch (UserVisibleException ex)
         {
             _postError = ex.Message;
         }
-        catch
+        catch (Exception ex)
         {
-            _postError = "Error inesperado al publicar evidencia del evento.";
+            _postError = UserErrors.Handle(ex, "No se pudo publicar la evidencia del evento.");
         }
         finally
         {
@@ -562,13 +563,13 @@ else
             _showEditEvent = false;
             _editSuccess = "Los cambios del evento se guardaron correctamente.";
         }
-        catch (InvalidOperationException ex)
+        catch (UserVisibleException ex)
         {
             _editError = ex.Message;
         }
-        catch
+        catch (Exception ex)
         {
-            _editError = "No se pudieron guardar los cambios. Inténtalo de nuevo.";
+            _editError = UserErrors.Handle(ex, "No se pudieron guardar los cambios.");
         }
         finally
         {

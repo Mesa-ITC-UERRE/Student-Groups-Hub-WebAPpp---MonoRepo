@@ -14,7 +14,7 @@ public class MembershipService(IDbContextFactory<AppDbContext> dbFactory)
         // Verify the group exists and is active
         var group = await db.Groups.FindAsync(groupId);
         if (group is null || group.Status != "active")
-            throw new InvalidOperationException("El grupo no existe o no está activo.");
+            throw new UserVisibleException("El grupo no existe o no está activo.");
 
         var existing = await db.Memberships
             .FirstOrDefaultAsync(m => m.UserId == userId && m.GroupId == groupId);
@@ -22,7 +22,7 @@ public class MembershipService(IDbContextFactory<AppDbContext> dbFactory)
         if (existing is not null)
         {
             if (existing.Status is "pending" or "accepted")
-                throw new InvalidOperationException("Ya tienes una solicitud activa para este grupo.");
+                throw new UserVisibleException("Ya tienes una solicitud activa para este grupo.");
             existing.Status      = "pending";
             existing.RequestedAt = DateTime.UtcNow;
             existing.RespondedAt = null;

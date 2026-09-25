@@ -143,7 +143,7 @@ public class GroupApiService(
     {
         var user = await currentUser.RequireActiveUserAsync();
         if (user.Role != "admin" && !await groupService.IsLeaderOfGroupAsync(user.Id, groupId))
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "No tienes permiso para administrar miembros de este grupo.");
     }
 
@@ -154,7 +154,7 @@ public class GroupApiService(
         var isAdmin = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
         if (!isAdmin && !isLeader)
-            throw new InvalidOperationException("No tienes permiso para administrar miembros de este grupo.");
+            throw new UserVisibleException("No tienes permiso para administrar miembros de este grupo.");
 
         await membershipService.RemoveAsync(groupId, userId);
     }
@@ -168,10 +168,10 @@ public class GroupApiService(
         Guid groupId, byte[] fileBytes, string contentType, string ext)
     {
         if (!StorageService.AllowedMimeTypes.Contains(contentType))
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "Formato no permitido. Usa JPEG, PNG, WebP o GIF.");
         if (fileBytes.Length > StorageService.MaxBytes)
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "El archivo supera el límite de 5 MB.");
 
         var user = await currentUser.RequireActiveUserAsync();
@@ -179,7 +179,7 @@ public class GroupApiService(
         var isAdmin  = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
         if (!isAdmin && !isLeader)
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "No tienes permiso para editar este grupo.");
 
         var existing = await groupService.GetByIdAsync(groupId);
@@ -191,7 +191,7 @@ public class GroupApiService(
             $"group-logos/{groupId}", fileName, stream, contentType);
 
         if (newUrl is null)
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "Error al subir la imagen. Inténtalo de nuevo.");
 
         var updated = await groupService.UpdateAsync(
@@ -215,10 +215,10 @@ public class GroupApiService(
         Guid groupId, byte[] fileBytes, string contentType, string ext)
     {
         if (!StorageService.AllowedMimeTypes.Contains(contentType))
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "Formato no permitido. Usa JPEG, PNG, WebP o GIF.");
         if (fileBytes.Length > StorageService.MaxBytes)
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "El archivo supera el límite de 5 MB.");
 
         var user = await currentUser.RequireActiveUserAsync();
@@ -226,7 +226,7 @@ public class GroupApiService(
         var isAdmin  = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
         if (!isAdmin && !isLeader)
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "No tienes permiso para editar este grupo.");
 
         var existing    = await groupService.GetByIdAsync(groupId);
@@ -238,7 +238,7 @@ public class GroupApiService(
             $"group-banners/{groupId}", fileName, stream, contentType);
 
         if (newUrl is null)
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "Error al subir la imagen. Inténtalo de nuevo.");
 
         var updated = await groupService.UpdateAsync(
@@ -318,7 +318,7 @@ public class EventApiService(
         var isAdmin  = user?.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(userId, groupId);
         if (!isAdmin && !isLeader)
-            throw new InvalidOperationException("No tienes permiso para crear eventos en este grupo.");
+            throw new UserVisibleException("No tienes permiso para crear eventos en este grupo.");
 
         var ev = await eventService.CreateAsync(groupId, userId, new DTOs.Requests.CreateEventRequest(
             req.Title,
@@ -333,9 +333,9 @@ public class EventApiService(
         if (imageBytes is not null && imageContentType is not null && imageExt is not null)
         {
             if (!StorageService.AllowedMimeTypes.Contains(imageContentType))
-                throw new InvalidOperationException("Formato de imagen no permitido.");
+                throw new UserVisibleException("Formato de imagen no permitido.");
             if (imageBytes.Length > StorageService.MaxBytes)
-                throw new InvalidOperationException("La imagen supera el límite de 5 MB.");
+                throw new UserVisibleException("La imagen supera el límite de 5 MB.");
 
             var fileName = $"{Guid.NewGuid():N}.{imageExt}";
             using var stream = new MemoryStream(imageBytes);
@@ -343,7 +343,7 @@ public class EventApiService(
                 $"event-banners/{groupId}", fileName, stream, imageContentType);
 
             if (imageUrl is null)
-                throw new InvalidOperationException("No se pudo subir la foto del evento.");
+                throw new UserVisibleException("No se pudo subir la foto del evento.");
 
             ev = await eventService.UpdateAsync(groupId, ev.Id, new DTOs.Requests.UpdateEventRequest(
                 null, null, null, imageUrl, null, null, null, null, null)) ?? ev;
@@ -367,7 +367,7 @@ public class EventApiService(
         var user = await currentUser.RequireActiveUserAsync();
         var canManage = user.Role == "admin" || await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
         if (!canManage)
-            throw new InvalidOperationException("No tienes permiso para editar este evento.");
+            throw new UserVisibleException("No tienes permiso para editar este evento.");
 
         var updated = await eventService.UpdateAsync(groupId, eventId, new DTOs.Requests.UpdateEventRequest(
             req.Title,
@@ -439,10 +439,10 @@ public class UserApiService(
         byte[] fileBytes, string contentType, string ext)
     {
         if (!StorageService.AllowedMimeTypes.Contains(contentType))
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "Formato no permitido. Usa JPEG, PNG, WebP o GIF.");
         if (fileBytes.Length > StorageService.MaxBytes)
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "El archivo supera el límite de 5 MB.");
 
         var existingUser = await currentUser.RequireActiveUserAsync();
@@ -455,7 +455,7 @@ public class UserApiService(
             $"avatars/{userId}", fileName, stream, contentType);
 
         if (newUrl is null)
-            throw new InvalidOperationException(
+            throw new UserVisibleException(
                 "Error al subir la imagen. Inténtalo de nuevo.");
 
         var updated = await userService.UpdateAsync(userId, null, newUrl);
@@ -603,35 +603,35 @@ public class EventPostApiService(
         string? imageExt = null)
     {
         if (string.IsNullOrWhiteSpace(body) && imageBytes is null)
-            throw new InvalidOperationException("Debes agregar texto o una imagen como evidencia.");
+            throw new UserVisibleException("Debes agregar texto o una imagen como evidencia.");
 
         var user = await currentUser.RequireActiveUserAsync();
 
         var ev = await eventService.GetByIdAsync(eventId);
-        if (ev is null) throw new InvalidOperationException("Evento no encontrado.");
+        if (ev is null) throw new UserVisibleException("Evento no encontrado.");
         if (ev.EndAt >= DateTime.UtcNow && ev.Status != "canceled")
-            throw new InvalidOperationException("La evidencia solo puede publicarse cuando el evento haya finalizado.");
+            throw new UserVisibleException("La evidencia solo puede publicarse cuando el evento haya finalizado.");
 
         var isAdmin = user.Role == "admin";
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, ev.GroupId);
         var membership = await membershipService.GetByUserAndGroupAsync(user.Id, ev.GroupId);
         var isMember = membership?.Status == "accepted";
         if (!isAdmin && !isLeader && !isMember)
-            throw new InvalidOperationException("Solo miembros del grupo pueden publicar evidencia del evento.");
+            throw new UserVisibleException("Solo miembros del grupo pueden publicar evidencia del evento.");
 
         string? imageUrl = null;
         if (imageBytes is not null && imageContentType is not null && imageExt is not null)
         {
             if (!StorageService.AllowedMimeTypes.Contains(imageContentType))
-                throw new InvalidOperationException("Formato de imagen no permitido.");
+                throw new UserVisibleException("Formato de imagen no permitido.");
             if (imageBytes.Length > StorageService.MaxBytes)
-                throw new InvalidOperationException("La imagen supera el límite de 5 MB.");
+                throw new UserVisibleException("La imagen supera el límite de 5 MB.");
 
             var fileName = $"{Guid.NewGuid():N}.{imageExt}";
             using var stream = new MemoryStream(imageBytes);
             imageUrl = await storageService.UploadAsync($"event-posts/{eventId}", fileName, stream, imageContentType);
             if (imageUrl is null)
-                throw new InvalidOperationException("No se pudo subir la imagen.");
+                throw new UserVisibleException("No se pudo subir la imagen.");
         }
 
         var post = await eventPostService.CreateAsync(eventId, user.Id, string.IsNullOrWhiteSpace(body) ? "Evidencia del evento" : body, imageUrl);
@@ -934,7 +934,7 @@ public class AdminApiService(
     {
         var user = await currentUser.RequireActiveUserAsync();
         if (user.Role != "admin")
-            throw new InvalidOperationException("No tienes permiso para realizar esta acción.");
+            throw new UserVisibleException("No tienes permiso para realizar esta acción.");
         return user;
     }
 
@@ -1083,7 +1083,7 @@ public class GroupPostApiService(
         string? imageContentType = null, string? imageExt = null)
     {
         if (string.IsNullOrWhiteSpace(body))
-            throw new InvalidOperationException("La publicación no puede estar vacía.");
+            throw new UserVisibleException("La publicación no puede estar vacía.");
 
         var user = await currentUser.RequireActiveUserAsync();
 
@@ -1095,15 +1095,15 @@ public class GroupPostApiService(
             || (isAcceptedMember && (user.Role == "admin"
                 || await postService.IsAuthorizedToPostAsync(groupId, user.Id)));
         if (!canPost)
-            throw new InvalidOperationException("No tienes permiso para publicar en este grupo.");
+            throw new UserVisibleException("No tienes permiso para publicar en este grupo.");
 
         string? imageUrl = null;
         if (imageBytes is not null && imageContentType is not null && imageExt is not null)
         {
             if (!StorageService.AllowedMimeTypes.Contains(imageContentType))
-                throw new InvalidOperationException("Formato de imagen no permitido.");
+                throw new UserVisibleException("Formato de imagen no permitido.");
             if (imageBytes.Length > StorageService.MaxBytes)
-                throw new InvalidOperationException("La imagen supera el límite de 5 MB.");
+                throw new UserVisibleException("La imagen supera el límite de 5 MB.");
 
             var fileName = $"{Guid.NewGuid():N}.{imageExt}";
             using var stream = new MemoryStream(imageBytes);

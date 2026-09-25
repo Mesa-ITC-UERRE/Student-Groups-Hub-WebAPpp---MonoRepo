@@ -1,5 +1,6 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject GroupApiService GroupService
+@inject UserErrorService UserErrors
 
 @if (_status == "accepted")
 {
@@ -62,9 +63,13 @@ else if (_status == "pending")
                 await OnJoined.InvokeAsync(_status);
             }
         }
-        catch (Exception ex)
+        catch (UserVisibleException ex)
         {
             _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = UserErrors.Handle(ex, "No se pudo enviar tu solicitud.");
         }
         finally
         {

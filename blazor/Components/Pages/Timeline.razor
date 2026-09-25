@@ -2,6 +2,7 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject GroupTermApiService TermService
 @inject EventApiService EventService
+@inject UserErrorService UserErrors
 @attribute [Authorize]
 
 <PageTitle>Línea del Tiempo — Grupos Estudiantiles Hub</PageTitle>
@@ -372,8 +373,9 @@
         }
         catch (Exception ex)
         {
-            _error = "Intenta recargar la página. Si el error persiste, el servidor puede estar ocupado.";
-            Console.Error.WriteLine($"[Timeline] Error: {ex.Message}");
+            _error = UserErrors.Handle(
+                ex,
+                "Intenta recargar la página. Si el error persiste, el servidor puede estar ocupado.");
         }
         finally
         {

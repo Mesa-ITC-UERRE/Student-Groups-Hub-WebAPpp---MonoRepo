@@ -77,9 +77,9 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
         Guid? groupId = null)
     {
         if (!AllowedRoles.Contains(role))
-            throw new InvalidOperationException("El rol seleccionado no es válido.");
+            throw new UserVisibleException("El rol seleccionado no es válido.");
         if (role == "group_leader" && !groupId.HasValue)
-            throw new InvalidOperationException("Debes seleccionar un grupo para asignar liderazgo.");
+            throw new UserVisibleException("Debes seleccionar un grupo para asignar liderazgo.");
 
         await using var db = await dbFactory.CreateDbContextAsync();
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -90,7 +90,7 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
         if (user is null) return null;
 
         if (actingUserId == userId && role != "admin")
-            throw new InvalidOperationException("No puedes quitarte tu propio rol de administrador.");
+            throw new UserVisibleException("No puedes quitarte tu propio rol de administrador.");
 
         if (user.Role == "admin" && role != "admin")
             await EnsureAnotherActiveAdminAsync(db, userId);
@@ -117,7 +117,7 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
     public async Task<User?> SetStatusAsync(Guid actingUserId, Guid userId, string status)
     {
         if (!AllowedStatuses.Contains(status))
-            throw new InvalidOperationException("El estado seleccionado no es válido.");
+            throw new UserVisibleException("El estado seleccionado no es válido.");
 
         await using var db = await dbFactory.CreateDbContextAsync();
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -127,7 +127,7 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
         if (user is null) return null;
 
         if (actingUserId == userId && status == "inactive")
-            throw new InvalidOperationException("No puedes desactivar tu propia cuenta.");
+            throw new UserVisibleException("No puedes desactivar tu propia cuenta.");
 
         if (user.Role == "admin" && user.Status == "active" && status == "inactive")
             await EnsureAnotherActiveAdminAsync(db, userId);
@@ -153,17 +153,17 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
     {
         var group = await db.Groups.FindAsync(groupId);
         if (group is null || group.Status != "active")
-            throw new InvalidOperationException("El grupo seleccionado no está disponible.");
+            throw new UserVisibleException("El grupo seleccionado no está disponible.");
 
         var alreadyLeaderOfGroup = await db.RoleAssignments.AnyAsync(r =>
             r.GroupId == groupId && r.UserId == user.Id && r.PermissionRole == "leader");
         if (alreadyLeaderOfGroup)
-            throw new InvalidOperationException("La persona seleccionada ya lidera ese grupo.");
+            throw new UserVisibleException("La persona seleccionada ya lidera ese grupo.");
 
         var groupHasAnotherLeader = await db.RoleAssignments.AnyAsync(r =>
             r.GroupId == groupId && r.PermissionRole == "leader");
         if (groupHasAnotherLeader)
-            throw new InvalidOperationException("Este grupo ya tiene un liderazgo activo. Quita al líder actual antes de asignar otro.");
+            throw new UserVisibleException("Este grupo ya tiene un liderazgo activo. Quita al líder actual antes de asignar otro.");
 
         db.RoleAssignments.Add(new RoleAssignment
         {
@@ -220,7 +220,7 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
         var canAdminister = await db.Users.AnyAsync(u =>
             u.Id == userId && u.Status == "active" && u.Role == "admin");
         if (!canAdminister)
-            throw new InvalidOperationException("No tienes permiso para administrar usuarios.");
+            throw new UserVisibleException("No tienes permiso para administrar usuarios.");
     }
 
     private static async Task EnsureAnotherActiveAdminAsync(AppDbContext db, Guid excludedUserId)
@@ -228,7 +228,7 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
         var anotherAdminExists = await db.Users.AnyAsync(u =>
             u.Id != excludedUserId && u.Status == "active" && u.Role == "admin");
         if (!anotherAdminExists)
-            throw new InvalidOperationException("Debe permanecer al menos un administrador activo.");
+            throw new UserVisibleException("Debe permanecer al menos un administrador activo.");
     }
 
     public static bool IsActive(User? user)
@@ -237,9 +237,9 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
     public static void EnsureCanAct(User? user)
     {
         if (user is null)
-            throw new InvalidOperationException("No autenticado.");
+            throw new UserVisibleException("No autenticado.");
         if (!IsActive(user))
-            throw new InvalidOperationException(InactiveActionMessage);
+            throw new UserVisibleException(InactiveActionMessage);
     }
 
     public static UserResponse ToResponse(User u) => new(

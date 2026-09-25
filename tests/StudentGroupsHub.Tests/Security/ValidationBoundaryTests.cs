@@ -26,13 +26,13 @@ public sealed class ValidationBoundaryTests(PostgreSqlFixture database)
         var groupService = new GroupService(dbFactory);
         var eventService = new EventService(dbFactory);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<UserVisibleException>(
             () => userService.SetRoleAsync(actor.Id, attendee.Id, "superadmin"));
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<UserVisibleException>(
             () => userService.SetStatusAsync(actor.Id, attendee.Id, "deleted"));
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<UserVisibleException>(
             () => groupService.SetStatusAsync(group.Id, "archived"));
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<UserVisibleException>(
             () => eventService.UpsertRsvpAsync(ev.Id, attendee.Id, "approved"));
 
         await using var verificationDb = await dbFactory.CreateDbContextAsync();

@@ -23,9 +23,9 @@ public sealed class UserAdministrationTests(PostgreSqlFixture database)
         var service = new UserService(dbFactory);
 
         var exception = operation == "role"
-            ? await Assert.ThrowsAsync<InvalidOperationException>(
+            ? await Assert.ThrowsAsync<UserVisibleException>(
                 () => service.SetRoleAsync(actor.Id, actor.Id, "student"))
-            : await Assert.ThrowsAsync<InvalidOperationException>(
+            : await Assert.ThrowsAsync<UserVisibleException>(
                 () => service.SetStatusAsync(actor.Id, actor.Id, "inactive"));
 
         Assert.Contains("propi", exception.Message, StringComparison.OrdinalIgnoreCase);
@@ -63,9 +63,9 @@ public sealed class UserAdministrationTests(PostgreSqlFixture database)
         await SeedUsersAsync(dbFactory, actor, target);
         var service = new UserService(dbFactory);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<UserVisibleException>(
             () => service.SetRoleAsync(actor.Id, target.Id, "admin"));
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<UserVisibleException>(
             () => service.SetStatusAsync(actor.Id, target.Id, "inactive"));
     }
 

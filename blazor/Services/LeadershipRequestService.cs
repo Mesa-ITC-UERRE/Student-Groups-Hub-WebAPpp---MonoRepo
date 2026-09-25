@@ -17,22 +17,22 @@ public class LeadershipRequestService(IDbContextFactory<AppDbContext> dbFactory)
 
         var group = await db.Groups.FindAsync(groupId);
         if (group is null || group.Status != "active")
-            throw new InvalidOperationException("El grupo no existe o no está activo.");
+            throw new UserVisibleException("El grupo no existe o no está activo.");
 
         var alreadyLeader = await db.RoleAssignments.AnyAsync(r =>
             r.GroupId == groupId && r.UserId == requestedByUserId && r.PermissionRole == "leader");
         if (alreadyLeader)
-            throw new InvalidOperationException("Ya eres líder de este grupo.");
+            throw new UserVisibleException("Ya eres líder de este grupo.");
 
         var groupHasLeader = await db.RoleAssignments.AnyAsync(r =>
             r.GroupId == groupId && r.PermissionRole == "leader");
         if (groupHasLeader)
-            throw new InvalidOperationException("Este grupo ya tiene un liderazgo activo.");
+            throw new UserVisibleException("Este grupo ya tiene un liderazgo activo.");
 
         var existing = await db.LeadershipRequests.FirstOrDefaultAsync(r =>
             r.GroupId == groupId && r.RequestedByUserId == requestedByUserId && r.Status == "pending");
         if (existing is not null)
-            throw new InvalidOperationException("Ya tienes una solicitud pendiente para este grupo.");
+            throw new UserVisibleException("Ya tienes una solicitud pendiente para este grupo.");
 
         var req = new LeadershipRequest
         {
@@ -124,12 +124,12 @@ public class LeadershipRequestService(IDbContextFactory<AppDbContext> dbFactory)
 
         var group = req.Group;
         if (group is null || group.Status != "active")
-            throw new InvalidOperationException("El grupo no está disponible para asignar liderazgo.");
+            throw new UserVisibleException("El grupo no está disponible para asignar liderazgo.");
 
         var groupHasLeader = await db.RoleAssignments.AnyAsync(r =>
             r.GroupId == req.GroupId && r.PermissionRole == "leader");
         if (groupHasLeader)
-            throw new InvalidOperationException("Este grupo ya tiene un liderazgo activo.");
+            throw new UserVisibleException("Este grupo ya tiene un liderazgo activo.");
 
         var hasLeader = await db.RoleAssignments.AnyAsync(r =>
             r.GroupId == req.GroupId && r.UserId == req.RequestedByUserId && r.PermissionRole == "leader");
