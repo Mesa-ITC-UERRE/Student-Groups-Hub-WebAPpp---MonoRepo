@@ -7,7 +7,7 @@ namespace StudentGroupsHub.Services;
 
 public class UserService(IDbContextFactory<AppDbContext> dbFactory)
 {
-    public const string InactiveActionMessage = "Tu cuenta está inactiva. Puedes entrar a la plataforma, pero no realizar acciones.";
+    public const string InactiveActionMessage = "Tu cuenta está inactiva. Contacta a un administrador para recuperar el acceso.";
 
     public async Task<User> UpsertFromTokenAsync(string entraOid, string email, string? displayName)
     {
@@ -30,9 +30,13 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
         }
         else
         {
-            user.DisplayName = displayName ?? user.DisplayName;
-            user.Email       = email;
-            user.UpdatedAt   = DateTime.UtcNow;
+            var resolvedName = displayName ?? user.DisplayName;
+            if (user.DisplayName != resolvedName || user.Email != email)
+            {
+                user.DisplayName = resolvedName;
+                user.Email       = email;
+                user.UpdatedAt   = DateTime.UtcNow;
+            }
         }
         await db.SaveChangesAsync();
         return user;

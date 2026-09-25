@@ -5,6 +5,35 @@ namespace StudentGroupsHub.Services;
 
 public class AdminRoleRequirement : IAuthorizationRequirement { }
 
+public class ActiveUserRequirement : IAuthorizationRequirement { }
+
+public class ActiveUserHandler(IServiceScopeFactory scopeFactory)
+    : AuthorizationHandler<ActiveUserRequirement>
+{
+    protected override async Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        ActiveUserRequirement requirement)
+    {
+        if (context.User.Identity?.IsAuthenticated != true) return;
+
+        try
+        {
+            using var scope = scopeFactory.CreateScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+            var user = await userService.UpsertFromTokenAsync(
+                context.User.GetEntraOid(),
+                context.User.GetEmail(),
+                context.User.GetDisplayName());
+            if (UserService.IsActive(user))
+                context.Succeed(requirement);
+        }
+        catch
+        {
+            // A missing/invalid identity or unavailable local user store denies access.
+        }
+    }
+}
+
 public class AdminRoleHandler(IServiceScopeFactory scopeFactory)
     : AuthorizationHandler<AdminRoleRequirement>
 {
@@ -26,7 +55,7 @@ public class AdminRoleHandler(IServiceScopeFactory scopeFactory)
         var userService = scope.ServiceProvider.GetRequiredService<UserService>();
 
         var user = await userService.GetByEntraOidAsync(entraOid);
-        if (user?.Role == "admin")
+        if (UserService.IsActive(user) && user!.Role == "admin")
             context.Succeed(requirement);
     }
 }

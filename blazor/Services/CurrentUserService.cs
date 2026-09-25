@@ -6,12 +6,12 @@ namespace StudentGroupsHub.Services;
 
 /// <summary>
 /// Provides the current user's identity to Blazor components.
-/// Caches both the AuthenticationState AND the resolved User so
-/// MSAL/Entra is only contacted once per Blazor circuit.
+/// Caches the immutable authentication principal for the Blazor circuit, while
+/// resolving the local user on every call so status and role changes take effect
+/// immediately.
 /// </summary>
 public class CurrentUserService(AuthenticationStateProvider authStateProvider, UserService userService)
 {
-    private StudentGroupsHub.Models.User? _cachedUser;
     private ClaimsPrincipal? _cachedPrincipal;
     private bool _authChecked;
 
@@ -35,8 +35,6 @@ public class CurrentUserService(AuthenticationStateProvider authStateProvider, U
 
     public async Task<StudentGroupsHub.Models.User?> GetUserAsync()
     {
-        if (_cachedUser is not null) return _cachedUser;
-
         var principal = await GetPrincipalAsync();
         if (principal is null) return null;
 
@@ -45,11 +43,9 @@ public class CurrentUserService(AuthenticationStateProvider authStateProvider, U
             var oid   = principal.GetEntraOid();
             var email = principal.GetEmail();
             var name  = principal.GetDisplayName();
-            _cachedUser = await userService.UpsertFromTokenAsync(oid, email, name);
+            return await userService.UpsertFromTokenAsync(oid, email, name);
         }
-        catch { _cachedUser = null; }
-
-        return _cachedUser;
+        catch { return null; }
     }
 
     public async Task<Guid> GetUserIdAsync()
@@ -76,7 +72,6 @@ public class CurrentUserService(AuthenticationStateProvider authStateProvider, U
 
     public void Invalidate()
     {
-        _cachedUser      = null;
         _cachedPrincipal = null;
         _authChecked     = false;
     }

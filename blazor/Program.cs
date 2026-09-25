@@ -69,8 +69,16 @@ builder.Services.AddAuthentication()
 
 builder.Services.AddAuthorization(options =>
 {
+    var activeUserPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .AddRequirements(new ActiveUserRequirement())
+        .Build();
+
+    options.DefaultPolicy = activeUserPolicy;
+    options.AddPolicy("ActiveUser", activeUserPolicy);
     options.AddPolicy("AdminOnly", policy =>
         policy.RequireAuthenticatedUser()
+              .AddRequirements(new ActiveUserRequirement())
               .AddRequirements(new AdminRoleRequirement()));
 });
 
@@ -86,16 +94,14 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 // Register the custom admin role authorization handler
 builder.Services.AddSingleton<IAuthorizationHandler, AdminRoleHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, ActiveUserHandler>();
 
 // ─── MVC controllers (REST API + Identity.Web.UI) ────────────────────────────
 builder.Services.AddControllersWithViews(options =>
 {
     // Blazor pages require authenticated users by default via cookie auth.
     // REST controllers override this with [Authorize(AuthenticationSchemes="Bearer")]
-    var policy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-    options.Filters.Add(new AuthorizeFilter(policy));
+    options.Filters.Add(new AuthorizeFilter("ActiveUser"));
 }).AddMicrosoftIdentityUI();
 
 // ─── Razor Components + Interactive Server ────────────────────────────────────

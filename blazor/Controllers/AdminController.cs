@@ -23,7 +23,7 @@ public class AdminController(
     {
         var oid  = User.GetEntraOid();
         var user = await userService.GetByEntraOidAsync(oid);
-        return user?.Role == "admin";
+        return UserService.IsActive(user) && user!.Role == "admin";
     }
 
     private async Task<User?> GetCurrentUserAsync()
