@@ -1,6 +1,6 @@
 interface:
   display_name: "Student Groups Navigator"
-  short_description: "Ubica dominio, código e invariantes del proyecto"
+  short_description: "Ubica capas, dominio e invariantes reales"
   default_prompt: "Usa $student-groups-navigator para ubicar este cambio en el dominio y señalar los archivos e invariantes afectados."
 
 policy:

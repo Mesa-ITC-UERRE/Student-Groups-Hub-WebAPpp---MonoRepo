@@ -1,43 +1,46 @@
 ---
 name: graphify-maintainer
-description: 'Mantener el grafo de arquitectura, dependencias y roadmap de Student Groups Hub usando la skill Graphify instalada en .agents/skills/graphify. Use when: crear o mover módulos, cambiar dependencias, auth, persistencia, despliegue, workflows, integraciones, fases, roadmap o límites entre UI, services, controllers y datos. Triggers: grafo, Graphify, graph, arquitectura, dependencias, roadmap, módulo, integración, despliegue.'
+description: 'Mantener limpio, actual y verificable el grafo de arquitectura, dependencias, callers y roadmap de Student Groups Hub mediante Graphify. Use when: cambia código, módulos, límites entre Components/ApiServices/services/controllers/data, auth, persistencia, integraciones, configuración, despliegue, documentación estructural o exclusiones del corpus. Triggers: grafo, Graphify, graph, arquitectura, dependencias, caller, affected, roadmap, módulo, integración, manifiesto, corpus.'
 ---
 
 # Graphify Maintainer
 
-## Fuente de verdad
+`graphify-out/` es el artefacto generado de navegación, no autoridad superior al
+código. Confirmar relaciones inferidas antes de tomar decisiones.
 
-El artefacto del grafo es `graphify-out/`, generado por la skill `graphify`.
-Sus entregables principales son:
+## Corpus
 
-- `graphify-out/graph.json`: knowledge graph consultable;
-- `graphify-out/graph.html`: visualización interactiva;
-- `graphify-out/GRAPH_REPORT.md`: reporte legible;
-- `graphify-out/graph.svg` cuando se exporta explícitamente.
-
-No crear un Mermaid paralelo como fuente de verdad.
+- Incluir código, configuración versionable y documentos de producto/roadmap.
+- Excluir bin/obj/vendor, outputs, skills y metadatos de colaboración,
+  implementaciones de herramientas, configuración local, secretos, PII y tooling
+  personal. Las reglas del agente no son módulos del producto.
+- `.gitignore` y `.graphifyignore` forman parte del contrato. Un archivo ignorado
+  no puede permanecer en `manifest.json`, aunque existiera en una ejecución previa.
 
 ## Procedimiento
 
-1. Ejecutar `student-groups-navigator` y clasificar el cambio.
-2. Preparar el entorno aislado una vez con `scripts/setup-graphify.sh`.
-3. Para reconstrucción completa usar:
-   `scripts/graphify.sh extract . --out .`.
-4. Para actualización incremental usar:
-   `scripts/graphify.sh update .`.
-5. Para consultar relaciones usar `scripts/graphify.sh query "..."`,
-   `path`, `affected`, `explain` o `god-nodes`.
-6. Verificar que Graphify respeta `.gitignore` y no ingiere secretos,
-   `appsettings.Development.json`, binarios ni artefactos sensibles.
-7. Ejecutar `scripts/check-graphify.sh` antes de entregar.
-8. Revisar `GRAPH_REPORT.md` y `graph.json` antes de entregar.
-9. Si cambia el roadmap, actualizar también `docs/11-development-plan.md`; el
-   grafo muestra evidencia o plan, no debe inventar implementación.
+1. Ejecutar `student-groups-navigator` y clasificar el cambio y sus callers.
+2. Preparar el entorno una vez con `scripts/setup-graphify.sh`.
+3. Usar `scripts/graphify.sh update .` para cambios estructurales ordinarios.
+4. Usar `scripts/graphify.sh extract . --out .` cuando cambien exclusiones,
+   corpus, manifiesto, versión de Graphify o existan entradas obsoletas.
+5. Consultar `query`, `path`, `affected`, `explain` o `god-nodes` y comprobar en
+   código cualquier resultado inferido o ambiguo.
+6. Ejecutar `scripts/check-graphify.sh`; debe validar artefactos, hashes
+   estructurales, consulta y ausencia de archivos ignorados/sensibles.
+7. Revisar `GRAPH_REPORT.md`, comunidades, god nodes y conexiones sorprendentes.
+   Eliminar ruido o relaciones locales antes de publicar.
+8. Revisar diff de `graphify-out/` y actualizar roadmap/documentación solo cuando
+   cambie conocimiento real, no por inferencia automática.
 
 ## Invariantes
 
-- El runtime es `blazor/` .NET 10; React/API separada es histórico.
-- Dependencias deben derivar de código, configuración, workflow o contrato real.
-- Auth, datos, despliegue y límites de capas requieren `security-review` y
-  `documentation-maintainer`.
-- No publicar Graphify outputs que contengan secretos, PII o rutas sensibles.
+- Runtime: `blazor/` .NET 10; React/API separada solo puede aparecer rotulada como
+  arquitectura histórica.
+- El grafo puede haberse generado sobre el commit base mientras incluye cambios
+  del working tree; la frescura se decide por el manifiesto/hashes, no solo por el
+  hash informativo del reporte.
+- Auth, datos, despliegue y límites de capas activan `security-review` y
+  `documentation-maintainer` cuando corresponda.
+- No entregar outputs con secretos, rutas locales sensibles, tooling personal o
+  archivos que Git considera ignorados.

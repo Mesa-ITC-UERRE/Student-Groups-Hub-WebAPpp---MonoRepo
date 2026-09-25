@@ -1,7 +1,7 @@
 interface:
   display_name: "Issue to Change"
-  short_description: "Convierte issues en cambios completos y verificables"
-  default_prompt: "Usa $issue-to-change para convertir este issue en plan, implementación, pruebas y evidencia."
+  short_description: "Convierte issues en cambios proporcionales y verificables"
+  default_prompt: "Usa $issue-to-change para convertir este issue en un cambio proporcional con comprobaciones y evidencia."
 
 policy:
   allow_implicit_invocation: true

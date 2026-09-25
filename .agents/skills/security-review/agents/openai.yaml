@@ -1,6 +1,6 @@
 interface:
   display_name: "Security Review"
-  short_description: "Revisa autorización, privacidad y validación"
+  short_description: "Revisa límites de confianza y datos sensibles"
   default_prompt: "Usa $security-review para revisar este flujo y entregar hallazgos verificables por severidad."
 
 policy:

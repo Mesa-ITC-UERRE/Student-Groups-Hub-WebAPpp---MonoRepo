@@ -1,67 +1,66 @@
 ---
 name: student-groups-navigator
-description: 'Navegar el dominio y la arquitectura reales de Student Groups Hub antes de diseñar o implementar cambios. Use when: entender una feature, localizar código o documentación canónica, resolver contradicciones entre docs y runtime, revisar roles, grupos, membresías, eventos, notificaciones, temporadas, publicaciones, auth Entra, Supabase o despliegue. Triggers: student groups, grupo, membresía, líder, evento, RSVP, dashboard, admin, arquitectura, dominio, roadmap, Supabase, Entra.'
+description: 'Navegar el dominio, arquitectura implementada, documentación y grafo de Student Groups Hub antes de diseñar o modificar una feature. Use when: localizar UI, casos de uso, modelos, DTOs, persistencia, estado, integraciones, callers o invariantes; resolver contradicciones entre código y docs; revisar grupos, membresías, liderazgo, eventos, RSVP, publicaciones, temporadas, notificaciones, admin, Entra, Supabase Storage/PostgreSQL o despliegue. Triggers: student groups, grupo, membresía, líder, evento, RSVP, dashboard, admin, arquitectura, dominio, flujo, caller, Supabase, Entra, Storage.'
 ---
 
 # Student Groups Navigator
 
-## Propósito
+Ubicar la tarea dentro del producto real y devolver estado, archivos, callers,
+invariantes, checks y documentos afectados antes de proponer una solución.
 
-Ubicar una tarea dentro del producto real, separar estado implementado,
-planificado y documentación desactualizada, y devolver los invariantes que el
-cambio no puede romper. Es el equivalente de `aria-spec-navigator`.
+## Jerarquía de evidencia
 
-## Fuentes de verdad
+1. Código compilable, migraciones y configuración ejecutable: implementación.
+2. Tests y observación reproducible: comportamiento comprobado.
+3. Documentos de negocio: intención y reglas; contrastarlos con el runtime.
+4. Roadmap y contrato previsto: plan, no evidencia de implementación.
+5. Graphify: índice de navegación; confirmar inferencias en código.
 
-1. Código compilable y configuración ejecutable: runtime actual.
-2. `docs/01-project-overview.md`, `03-data-model.md`, `05-user-roles.md`,
-   `08-workflows.md` y `11-development-plan.md`: negocio y plan.
-3. `DESIGN.md`: identidad visual.
-4. `docs/04-api-contract.md`: contrato previsto; compararlo con controllers y
-   DTOs antes de tratarlo como vigente.
-
-El runtime actual es `blazor/`, .NET 10, Interactive Server, EF Core/Npgsql,
-Microsoft Entra ID, Supabase PostgreSQL/Storage, Resend y el workflow de
-`.github/workflows/deploy-main.yml`. No inventar una tercera arquitectura ante
-la transición histórica React/API separada → Blazor.
+Leer el mapa detallado de
+[`repo-standards/references/current-architecture.md`](../repo-standards/references/current-architecture.md)
+para cambios estructurales. La arquitectura React/API separada en documentos es
+histórica; el runtime es Blazor Interactive Server .NET 10.
 
 ## Mapa rápido
 
-| Concepto | Código | Documentación |
+| Concepto | Implementación principal | Contrato/contexto |
 |---|---|---|
-| Arranque, auth, DI, middleware | `blazor/Program.cs` | `docs/02-architecture.md` |
-| Entidades y estados | `blazor/Models/Entities.cs` | `docs/03-data-model.md` |
-| Persistencia y migraciones | `blazor/Data/` | `docs/03-data-model.md` |
-| Reglas de negocio | `blazor/Services/` | `docs/01-project-overview.md`, `08-workflows.md` |
-| API HTTP | `blazor/Controllers/`, `blazor/DTOs/` | `docs/04-api-contract.md` |
-| UI | `blazor/Components/` | `docs/06-modules.md`, `07-ui-design.md`, `DESIGN.md` |
-| Roles y alcance de líder | `blazor/Extensions/`, `blazor/Services/` | `docs/05-user-roles.md` |
-| Skills | `.agents/skills/` | `docs/13-collaboration-skills.md` |
-| Grafo | `graphify-out/` | `docs/13-collaboration-skills.md` |
+| Arranque, DI, auth y middleware | `blazor/Program.cs` | workflow y appsettings vigentes |
+| UI y estado local | `blazor/Components/` | `DESIGN.md`, módulos y casos |
+| Orquestación Blazor y mappers UI | `Services/ApiServices.cs`, `CurrentUserService` | `Models/AppModels.cs` |
+| Estado compartido de circuito | `Services/UserStateService.cs` | consumidores en Components |
+| Reglas, consultas y transiciones | servicios de feature | overview, roles y workflows |
+| API HTTP | `Controllers/` | `DTOs/`, contrato API |
+| Entidades y persistencia | `Models/Entities.cs`, `Data/`, migraciones | modelo de datos |
+| Archivos e integraciones | `StorageService`, configuración, workflow | seguridad y operación |
+| Arquitectura y callers | código + `graphify-out/` | confirmar nodos inferidos |
 
-## Invariantes
+## Invariantes del producto
 
-- Solo cuentas `@uerre.mx` autenticadas por Entra usan operaciones protegidas.
-- `student`, `group_leader` y `admin` tienen alcances distintos.
-- La UI nunca es frontera de seguridad; el servidor vuelve a comprobar el grupo.
-- No hay solicitudes activas de membresía duplicadas.
-- Eventos cancelados o llenos no aceptan RSVP.
-- Notificaciones, correos y enlaces no filtran PII a destinatarios incorrectos.
-- Credenciales de Entra, Supabase y Resend solo viven en configuración de
-  servidor.
-- Si se toca Supabase, aplicar también las dos skills Supabase instaladas.
+- Operaciones protegidas requieren identidad Entra institucional y usuario activo.
+- `student`, `group_leader` y `admin` tienen alcances distintos; un líder solo
+  administra grupos con `RoleAssignment` activa.
+- La UI y el estado del circuito nunca son frontera de autorización.
+- No crear solicitudes activas duplicadas ni transiciones inválidas.
+- Eventos cancelados, finalizados o llenos respetan reglas de RSVP y evidencia.
+- Notificaciones, participantes, reportes, correos y enlaces minimizan PII.
+- Credenciales de Entra, PostgreSQL, Supabase Storage y Resend permanecen en
+  servidor. Supabase Auth no pertenece al runtime actual.
 
 ## Procedimiento
 
-1. Clasificar la tarea: auth, usuarios, grupos, membresías, eventos/RSVP,
-   notificaciones, dashboards, admin, archivos, datos, UI, despliegue o docs.
-2. Leer el documento primario y la implementación correspondiente.
-3. Buscar callers, estados, roles y contratos afectados.
-4. Marcar qué está implementado, planificado o desactualizado.
-5. Entregar archivos, invariantes, pruebas, documentación y grafo afectados.
-6. Registrar contradicciones; no ocultarlas ni cambiar la arquitectura sin issue.
+1. Clasificar feature y tipo de cambio: UI, aplicación, negocio, HTTP, datos,
+   estado, integración, seguridad, despliegue o documentación.
+2. Consultar Graphify para candidatos y confirmar archivos/callers en código.
+3. Seguir el flujo entrada → orquestación → regla → persistencia/integración →
+   salida, incluyendo rutas Blazor y REST cuando ambas existan.
+4. Localizar actor, recurso, rol, estados, DTO/modelo, mapper, migración y manejo
+   de error involucrados.
+5. Separar `implementado`, `observado`, `documentado`, `planificado` y
+   `contradictorio`; no completar huecos por suposición.
+6. Entregar un mapa breve con archivos, invariantes, riesgos, pruebas, documentos
+   y necesidad de actualizar el grafo.
 
-## Skills relacionadas
-
-`repo-standards`, `issue-to-change`, `security-review`,
-`documentation-maintainer`, `graphify-maintainer`.
+No cambiar arquitectura ni convertir roadmap en comportamiento sin un issue que
+lo autorice. Aplicar `repo-standards`, y activar las skills especializadas según
+el mapa de impacto.

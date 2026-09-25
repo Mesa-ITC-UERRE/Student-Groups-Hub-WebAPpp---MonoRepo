@@ -1,6 +1,6 @@
 interface:
   display_name: "Repository Standards"
-  short_description: "Aplica calidad y seguridad del repositorio"
+  short_description: "Preserva arquitectura y calidad del repositorio"
   default_prompt: "Usa $repo-standards para implementar o revisar este cambio con los estándares del repositorio."
 
 policy:

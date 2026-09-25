@@ -1,36 +1,48 @@
 ---
 name: documentation-maintainer
-description: 'Mantener sincronizada la documentación de Student Groups Hub con cada cambio de código, contrato, seguridad, UI, datos, despliegue o roadmap. Use when: actualizar README, arquitectura, modelo de datos, API, roles, workflows, casos de prueba, diseño, changelog o planes. Triggers: documentación, docs, README, contrato, API, arquitectura, modelo de datos, workflow, changelog, roadmap, ADR.'
+description: 'Mantener documentación útil y verificable de Student Groups Hub cuando cambia comportamiento, arquitectura, contratos, seguridad, UI, datos, operación, despliegue, roadmap o skills. Use when: actualizar README, docs, DESIGN, API, modelo de datos, roles, workflows, casos de prueba, changelog, planes o ADR; reconciliar documentación histórica React/API con el runtime Blazor. Triggers: documentación, docs, README, contrato, API, arquitectura, modelo de datos, workflow, changelog, roadmap, ADR, desactualizado.'
 ---
 
 # Documentation Maintainer
 
-La documentación explica el comportamiento vigente. Si código y documento
-contradicen, verificar el runtime, actualizar lo incluido en alcance y registrar
-el desfase restante.
+Documentar conocimiento durable y comportamiento comprobado. No modificar todos
+los documentos de una categoría si el cambio no afecta su contrato.
 
-## Matriz de impacto
+## Tipos de evidencia
 
-| Cambio | Documentos mínimos |
+- **Vigente:** código/configuración ejecutable, migraciones y checks observados.
+- **Normativo:** reglas de negocio, seguridad, diseño y estándares acordados.
+- **Planificado:** roadmap o contrato futuro; rotularlo sin afirmar implementación.
+- **Histórico:** React/API separada u otra decisión reemplazada; mantenerla solo
+  cuando explique una transición y marcarla como histórica.
+
+Ante contradicción, comprobar runtime y alcance. Corregir el documento afectado o
+registrar explícitamente la deuda; no propagar información vieja a otros archivos.
+
+## Matriz de impacto selectiva
+
+| Cambio observable | Revisar y actualizar si aplica |
 |---|---|
-| Auth, roles, alcance por grupo | `01`, `02`, `05`, `08`, `09` |
-| Entidades, estados, migraciones | `03`, `04`, workflows y casos |
-| Endpoint, DTO o error | `04`, `08`, `09` |
-| UI, navegación o estilos | `DESIGN.md`, `06`, `07`, workflows/casos |
-| Notificaciones, correo o archivos | `03`, `04`, `05`, seguridad y casos |
-| Roadmap o Definition of Done | `11`, `10` si cambia medición |
-| CI/CD, release o commits | `12`, README, workflow y CHANGELOG |
-| Skills/proceso | `docs/13-collaboration-skills.md`, `docs/README.md`, `.agents/skills/README.md` |
-| Arquitectura/dependencias | `graphify-out/`, `docs/13-collaboration-skills.md` |
+| Auth, roles, autorización por grupo | overview, arquitectura, roles, workflows, casos |
+| Entidad, estado, constraint o migración | modelo de datos, API, workflows, rollback |
+| Endpoint, DTO o formato de error | contrato API, consumidores, casos |
+| Componente, navegación o interacción | `DESIGN.md`, módulos, UI, casos accesibles |
+| Fachada, servicio, estado o integración | arquitectura y mapa de colaboración |
+| Notificaciones, correo o archivos | datos, API, privacidad, workflows y operación |
+| CI/CD, configuración o release | README, versionado, workflow, changelog/runbook |
+| Skills o proceso | docs de colaboración e índice de skills |
+| Arquitectura/dependencias | referencia vigente, ADR si hay decisión y Graphify |
 
 ## Procedimiento
 
-1. Revisar diff y clasificar impacto.
-2. Leer documentos antes de editar y conservar numeración/tono.
-3. Actualizar rutas, estados, permisos, ejemplos y criterios que cambiaron.
-4. Mantener prosa en español e identificadores técnicos en inglés.
-5. Verificar enlaces y ejemplos contra el código.
-6. Registrar la transición histórica React/API separada → Blazor sin ocultarla.
-7. Pasar cambios estructurales a `graphify-maintainer`.
+1. Revisar diff/issue y clasificar qué conocimiento cambió y quién lo consume.
+2. Leer la sección antes de editar; conservar idioma, numeración y enlaces útiles.
+3. Verificar rutas, estados, permisos, ejemplos y comandos contra el repositorio.
+4. Actualizar el conjunto mínimo coherente y distinguir vigente, histórico y plan.
+5. Crear ADR solo para una decisión arquitectónica con alternativas y consecuencias,
+   no para cada refactor o bug.
+6. Mantener prosa en español e identificadores técnicos en inglés.
+7. Verificar enlaces locales y pasar cambios estructurales a Graphify.
 
-No afirmar “implementado” sin evidencia ni inventar endpoints, tablas o fases.
+No declarar “implementado”, “probado”, “seguro” o “desplegado” sin evidencia. No
+copiar secretos, PII, tokens ni configuración local a ejemplos o artefactos.
