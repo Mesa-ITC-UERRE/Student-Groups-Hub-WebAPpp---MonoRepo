@@ -693,6 +693,33 @@ a:hover .hero-float-card {
     color: var(--uerre-muted); margin-top: .375rem;
 }
 
+/* ─── Home quick links (desktop equivalent of the mobile tab bar) ─── */
+.home-quicklink {
+    width: 56px; height: 56px;
+    margin: 0 auto .5rem;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(0,0,0,.12);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+a:hover .home-quicklink {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.18);
+}
+
+.home-quicklink-label {
+    font-size: .8rem; font-weight: 600;
+    color: var(--uerre-heading);
+}
+
+.home-quicklink--slate  { background: linear-gradient(135deg, #64748b, #475569); }
+.home-quicklink--blue   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.home-quicklink--teal   { background: linear-gradient(135deg, #14b8a6, #0f766e); }
+.home-quicklink--amber  { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.home-quicklink--violet { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+
 /* ─── Admin KPI Grid ─────────────────────────────────────────── */
 .admin-kpi-section { margin-bottom: 2rem; }
 
@@ -802,6 +829,82 @@ a:hover .hero-float-card {
 
 .event-edit-actions { display: flex; justify-content: flex-end; gap: .625rem; }
 
+/* ─── Event date badge (Event Detail hero + Home calendar teaser) ─── */
+.event-date-badge {
+    width: 56px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: .5rem .25rem;
+    text-align: center;
+}
+
+.event-date-month {
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.event-date-day {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+/* ─── Mobile bottom tab bar (<768px, authenticated only) ─────── */
+.mobile-tab-bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 1035;
+    /* Solid (not translucent+blurred) background on purpose: backdrop-filter
+       on a fixed element forces the browser to resample what's behind it on
+       every scroll frame, which lags and reads as the bar "dragging"/
+       detaching during scroll. A solid background has zero per-frame cost. */
+    background: #fff;
+    border-top: 1px solid var(--uerre-border);
+    box-shadow: 0 -2px 12px rgba(15,23,42,.06);
+    padding: .375rem .25rem calc(.375rem + env(safe-area-inset-bottom, 0px));
+    /* Promote to its own compositor layer so scrolling repaints the page,
+       not this bar — without this, some mobile browsers redraw fixed
+       elements on every scroll frame, which reads as the bar "scrolling".
+       -webkit-* duplicates cover older iOS Safari, which needs the
+       vendor-prefixed form plus backface-visibility to fully stop the
+       bar detaching/re-snapping during momentum/bounce scrolling. */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
+}
+
+.mobile-tab-item {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .2rem;
+    padding: .25rem .125rem;
+    border-radius: 10px;
+    color: var(--uerre-muted);
+    font-size: .62rem;
+    font-weight: 600;
+    text-decoration: none;
+    min-height: 44px;
+    justify-content: center;
+}
+
+.mobile-tab-item.active {
+    color: var(--uerre-purple);
+    background: var(--uerre-tag-bg);
+}
+
 /* ─── Footer ─────────────────────────────────────────────────── */
 .site-footer {
     background: linear-gradient(135deg, var(--uerre-navy) 0%, var(--uerre-navy-deep) 100%);
@@ -879,7 +982,14 @@ a:hover .hero-float-card {
     .stat-value { font-size: 1.75rem; }
     .hero-float-card { display: none; }
 
+    /* Tab bar is fixed and sits outside layout-wrapper's flow, so the
+       clearance must go on the footer (the true last content block),
+       not on .main-content — otherwise the footer's bottom row still
+       renders underneath the fixed bar. */
+    .site-footer { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
+
     .container-uerre { padding: 0 1rem; }
+
 
     .navbar-brand-name { font-size: .72rem; }
     .navbar-brand-sub { font-size: .52rem; }
@@ -1045,6 +1155,13 @@ a:hover .hero-float-card {
     gap: 6px;
 }
 
+.calendar-cell-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+
 .calendar-legend-card {
     padding: .7rem .95rem;
     background: rgba(255,255,255,.96);
@@ -1181,6 +1298,31 @@ a:hover .hero-float-card {
     background: var(--uerre-gold);
 }
 
+/* ─── Calendar: mobile grid sizing (<768px, Home mini-calendar widget) ───
+   Calendario.razor hides .calendar-grid below 768px in favor of the agenda
+   list below, so this only affects the Home widget — the desktop 82px
+   min-height reads as tall pills at ~44px column width. Placed after the
+   base rules above (not in the top responsive block) because same-
+   specificity selectors resolve by source order, and the unconditional
+   base .calendar-cell/.calendar-grid rules above would otherwise win. */
+@media (max-width: 768px) {
+    .calendar-grid { gap: 4px; }
+    .calendar-cell {
+        min-height: 44px;
+        padding: .3rem;
+        border-radius: 8px;
+    }
+    .calendar-day-number { font-size: .7rem; margin-bottom: 0; }
+    .calendar-indicators { gap: 3px; }
+    .calendar-indicator {
+        min-height: 16px;
+        padding: 0 .3rem;
+        font-size: .58rem;
+        gap: 3px;
+    }
+    .calendar-indicator-dot { width: 5px; height: 5px; }
+}
+
 /* ─── Calendar: mobile agenda (<768px replacement for the grid) ─── */
 .calendar-agenda { display: flex; flex-direction: column; gap: 1rem; }
 
@@ -1242,7 +1384,6 @@ a:hover .hero-float-card {
     .event-edit-actions { flex-wrap: wrap; }
     .event-edit-actions .btn { flex: 1 1 auto; }
 
-    .site-footer .row > div { text-align: left; }
     .footer-bottom { text-align: center; }
 
     .calendar-legend-card { width: 100%; }
