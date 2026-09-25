@@ -1,7 +1,6 @@
 ---
 name: repo-standards
 description: 'Aplicar los estándares técnicos de Student Groups Hub: estructura, estilo C# y Razor, separación de capas, seguridad, documentación, configuración, pruebas y convenciones. Use when: escribir, revisar o refactorizar código; crear endpoints, servicios, componentes, migraciones, workflows o documentación. Triggers: estándares, convenciones, estructura, estilo, calidad, review, C#, Razor, Blazor, EF Core, configuración, seguridad, pruebas.'
-argument-hint: 'Archivo, módulo o tipo de cambio a validar contra los estándares'
 ---
 
 # Repository Standards

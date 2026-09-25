@@ -11,8 +11,9 @@ servicio en runtime ni un reemplazo de CI, tests o revisión humana.
 
 Cada skill del proyecto vive en `.agents/skills/<nombre>/` y contiene:
 
-1. frontmatter con `name`, `description` y, cuando ayuda, `argument-hint`;
-2. propósito, reglas duras, procedimiento y verificación.
+1. `SKILL.md` con frontmatter `name` y `description`;
+2. `agents/openai.yaml` con nombre, descripción y prompt de interfaz;
+3. propósito, reglas duras, procedimiento y verificación.
 
 El índice operativo está en [`.agents/skills/README.md`](../.agents/skills/README.md).
 Las skills externas de Supabase permanecen en el mismo directorio.
@@ -33,7 +34,7 @@ issue-to-change
   ↓
 pruebas + smoke + build
   ↓
-release-readiness → main
+release-readiness → versión candidata validada
 ```
 
 ## Catálogo
@@ -46,7 +47,7 @@ release-readiness → main
 | `security-review` | Hallazgos con severidad y evidencia | Cambios sensibles |
 | `documentation-maintainer` | Documentos y contratos sincronizados | Cambios observables |
 | `graphify-maintainer` + `graphify` | Knowledge graph de arquitectura, dependencias y roadmap | Cambios estructurales |
-| `release-readiness` | Veredicto GO/NO-GO | Promoción a `main` |
+| `release-readiness` | Veredicto GO/NO-GO | Despliegue de una versión candidata |
 
 ## Contexto del producto
 

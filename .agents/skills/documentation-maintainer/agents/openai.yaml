@@ -1,0 +1,7 @@
+interface:
+  display_name: "Documentation Maintainer"
+  short_description: "Sincroniza documentación y comportamiento vigente"
+  default_prompt: "Usa $documentation-maintainer para actualizar la documentación afectada por este cambio."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,7 +1,6 @@
 ---
 name: documentation-maintainer
 description: 'Mantener sincronizada la documentación de Student Groups Hub con cada cambio de código, contrato, seguridad, UI, datos, despliegue o roadmap. Use when: actualizar README, arquitectura, modelo de datos, API, roles, workflows, casos de prueba, diseño, changelog o planes. Triggers: documentación, docs, README, contrato, API, arquitectura, modelo de datos, workflow, changelog, roadmap, ADR.'
-argument-hint: 'Cambio realizado y documentos potencialmente afectados'
 ---
 
 # Documentation Maintainer

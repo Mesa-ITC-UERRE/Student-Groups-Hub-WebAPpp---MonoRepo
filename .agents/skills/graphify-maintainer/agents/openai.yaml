@@ -1,0 +1,7 @@
+interface:
+  display_name: "Graphify Maintainer"
+  short_description: "Mantiene actualizado el grafo del proyecto"
+  default_prompt: "Usa $graphify-maintainer para actualizar y verificar el grafo después de este cambio estructural."
+
+policy:
+  allow_implicit_invocation: true

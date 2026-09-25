@@ -1,7 +1,6 @@
 ---
 name: security-review
 description: 'Revisar autorización, privacidad, validación, autenticación, archivos, Supabase y datos sensibles de Student Groups Hub. Use when: tocar Entra ID, JWT, cookies, roles, líderes, membresías, grupos, eventos, Storage, PostgreSQL, DTOs, búsqueda, formularios, logs, errores o despliegue. Triggers: security, seguridad, auth, autorización, privacidad, PII, secreto, validación, IDOR, BOLA, upload, Storage, RLS.'
-argument-hint: 'Cambio, endpoint, flujo o archivo que requiere revisión de seguridad'
 ---
 
 # Security Review

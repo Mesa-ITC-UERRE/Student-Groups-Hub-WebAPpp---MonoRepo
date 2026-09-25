@@ -1,0 +1,7 @@
+interface:
+  display_name: "Graphify"
+  short_description: "Consulta y actualiza el grafo de conocimiento"
+  default_prompt: "Usa $graphify para consultar el grafo antes de explorar directamente el repositorio."
+
+policy:
+  allow_implicit_invocation: true

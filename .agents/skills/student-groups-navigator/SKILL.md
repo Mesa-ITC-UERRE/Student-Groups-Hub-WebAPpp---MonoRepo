@@ -1,7 +1,6 @@
 ---
 name: student-groups-navigator
 description: 'Navegar el dominio y la arquitectura reales de Student Groups Hub antes de diseñar o implementar cambios. Use when: entender una feature, localizar código o documentación canónica, resolver contradicciones entre docs y runtime, revisar roles, grupos, membresías, eventos, notificaciones, temporadas, publicaciones, auth Entra, Supabase o despliegue. Triggers: student groups, grupo, membresía, líder, evento, RSVP, dashboard, admin, arquitectura, dominio, roadmap, Supabase, Entra.'
-argument-hint: 'Concepto o cambio a ubicar en Student Groups Hub'
 ---
 
 # Student Groups Navigator

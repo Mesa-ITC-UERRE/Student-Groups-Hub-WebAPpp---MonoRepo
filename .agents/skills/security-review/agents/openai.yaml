@@ -1,0 +1,7 @@
+interface:
+  display_name: "Security Review"
+  short_description: "Revisa autorización, privacidad y validación"
+  default_prompt: "Usa $security-review para revisar este flujo y entregar hallazgos verificables por severidad."
+
+policy:
+  allow_implicit_invocation: true

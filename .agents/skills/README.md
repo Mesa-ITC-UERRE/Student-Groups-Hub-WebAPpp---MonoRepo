@@ -14,8 +14,8 @@ instalado por el gestor de skills.
 | [`security-review`](./security-review/SKILL.md) | Autorización, privacidad, validación y secretos | En cambios de acceso, datos o entradas externas |
 | [`documentation-maintainer`](./documentation-maintainer/SKILL.md) | Sincronización de documentación afectada | Cuando cambia comportamiento, arquitectura o contrato |
 | [`graphify-maintainer`](./graphify-maintainer/SKILL.md) | Mantener el grafo mediante Graphify | Cuando cambia arquitectura, dependencias o roadmap |
-| [`release-readiness`](./release-readiness/SKILL.md) | Gate de una rama release antes de `main` | Antes de promover código a producción |
-| [`graphify`](./graphify/skill.md) | Motor de knowledge graph, consultas y visualización | Para construir o consultar el grafo del repositorio |
+| [`release-readiness`](./release-readiness/SKILL.md) | Gate de preparación de una versión candidata | Antes de desplegar una versión |
+| [`graphify`](./graphify/SKILL.md) | Motor de knowledge graph, consultas y visualización | Para construir o consultar el grafo del repositorio |
 
 Las skills externas de Supabase permanecen junto a estas en `supabase/` y
 `supabase-postgres-best-practices/`.
@@ -28,7 +28,7 @@ Las skills externas de Supabase permanecen junto a estas en `supabase/` y
 4. `security-review` para cambios sensibles
 5. `documentation-maintainer`
 6. `graphify-maintainer` + `graphify` si cambia la estructura
-7. `release-readiness` antes de `main`
+7. `release-readiness` antes de un despliegue solicitado
 
 Las skills son contratos de trabajo para agentes; no sustituyen CI, pruebas ni
 revisión humana.

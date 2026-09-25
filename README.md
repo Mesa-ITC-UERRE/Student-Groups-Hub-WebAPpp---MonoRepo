@@ -59,7 +59,7 @@ Copy `blazor/appsettings.Development.json.template` to `blazor/appsettings.Devel
 - `security-review`: authorization, privacy, validation and sensitive data.
 - `documentation-maintainer`: keeps affected documents and contracts aligned.
 - `graphify-maintainer`: updates architecture, dependencies and roadmap graph.
-- `release-readiness`: release-branch gate before `main`.
+- `release-readiness`: readiness gate for a candidate version.
 
 See the [operational guide](./docs/13-collaboration-skills.md) and the
 [skills index](./.agents/skills/README.md) and the [Graphify output](./graphify-out/GRAPH_REPORT.md).

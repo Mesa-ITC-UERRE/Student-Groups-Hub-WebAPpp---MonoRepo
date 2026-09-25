@@ -1,0 +1,7 @@
+interface:
+  display_name: "Release Readiness"
+  short_description: "Evalúa evidencia y riesgos antes de una versión"
+  default_prompt: "Usa $release-readiness para emitir un veredicto de preparación con evidencia y riesgos."
+
+policy:
+  allow_implicit_invocation: true

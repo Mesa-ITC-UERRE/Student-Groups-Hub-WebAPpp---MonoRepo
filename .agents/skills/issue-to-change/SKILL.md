@@ -1,7 +1,6 @@
 ---
 name: issue-to-change
 description: 'Convertir un issue de Student Groups Hub en un plan trazable, implementación completa, pruebas, documentación y evidencia. Use when: iniciar una feature, bug, mejora de seguridad, cambio de contrato, migración, tarea de UI o trabajo de roadmap desde un issue. Triggers: issue, ticket, bug, feature, plan, implementación, acceptance criteria, criterios de aceptación, PR.'
-argument-hint: 'Issue, identificador y criterios de aceptación a convertir en cambio'
 ---
 
 # Issue to Change
