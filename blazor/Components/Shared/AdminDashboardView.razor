@@ -2,49 +2,7 @@
 
 @if (Data is not null)
 {
-    <!-- KPI stat cards -->
-    <div class="row g-4 mb-5">
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="stat-card text-center">
-                <div class="stat-number">@Data.TotalUsers</div>
-                <div class="stat-name">Usuarios</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="stat-card text-center">
-                <div class="stat-number">@Data.ActiveGroups</div>
-                <div class="stat-name">Grupos Activos</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="stat-card text-center"
-                 style="@(PendingRequests > 0 ? "border-color:var(--uerre-gold);" : "")">
-                <div class="stat-number"
-                     style="color:@(PendingRequests > 0 ? "var(--uerre-gold)" : "var(--uerre-purple)");">
-                    @PendingRequests
-                </div>
-                <div class="stat-name">Solicitudes</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="stat-card text-center">
-                <div class="stat-number">@Data.TotalEvents</div>
-                <div class="stat-name">Eventos</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="stat-card text-center">
-                <div class="stat-number">@Data.TotalMemberships</div>
-                <div class="stat-name">Membresías</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="stat-card text-center">
-                <div class="stat-number">@Data.TotalGroups</div>
-                <div class="stat-name">Total Grupos</div>
-            </div>
-        </div>
-    </div>
+    <AdminKpiGrid Data="Data" />
 }
 
 <!-- Module navigation cards -->
@@ -151,5 +109,5 @@
 @code {
     [Parameter] public DashboardAdminModel? Data { get; set; }
 
-    private int PendingRequests => (Data?.PendingGroupRequests ?? 0) + (Data?.PendingLeadershipRequests ?? 0);
+    private int PendingRequests => Data?.PendingRequests ?? 0;
 }

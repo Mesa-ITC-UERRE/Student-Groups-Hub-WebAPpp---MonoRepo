@@ -210,6 +210,17 @@ public record BlazorCreateEventRequest(
     string Visibility = "public"
 );
 
+public record BlazorUpdateEventRequest(
+    string Title,
+    string? Description,
+    string? Location,
+    DateTime StartAt,
+    DateTime EndAt,
+    int? Capacity,
+    string Status,
+    string Visibility
+);
+
 // ─── Dashboards ───────────────────────────────────────────────────────────────
 
 public record DashboardStudentModel(
@@ -227,14 +238,26 @@ public record DashboardLeaderModel(
 
 public record DashboardAdminModel(
     int TotalUsers,
+    int ActiveStudents,
+    int StudentsThisMonth,
     int TotalGroups,
     int ActiveGroups,
     int PendingGroupRequests,
     int PendingLeadershipRequests,
     int TotalEvents,
+    int EventsThisMonth,
+    int EventsPreviousMonth,
+    int ProcessedMemberships,
+    double MembershipApprovalRate,
+    double AverageMembershipResponseHours,
     int TotalMemberships,
-    int TotalParticipations
-);
+    int TotalParticipations,
+    double AverageParticipationsPerEvent
+)
+{
+    public int EventsMonthDelta => EventsThisMonth - EventsPreviousMonth;
+    public int PendingRequests => PendingGroupRequests + PendingLeadershipRequests;
+}
 
 // ─── Notifications ────────────────────────────────────────────────────────────
 

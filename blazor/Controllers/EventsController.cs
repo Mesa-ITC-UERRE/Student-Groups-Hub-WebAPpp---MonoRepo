@@ -78,7 +78,7 @@ public class EventsController(
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
         if (!isAdmin && !isLeader) return Forbid();
 
-        var ev = await eventService.UpdateAsync(eventId, request);
+        var ev = await eventService.UpdateAsync(groupId, eventId, request);
         if (ev is null) return NotFound();
         return Ok(await eventService.ToResponseAsync(ev));
     }
@@ -97,7 +97,7 @@ public class EventsController(
         var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
         if (!isAdmin && !isLeader) return Forbid();
 
-        var ok = await eventService.CancelAsync(eventId);
+        var ok = await eventService.CancelAsync(groupId, eventId);
         return ok ? NoContent() : NotFound();
     }
 

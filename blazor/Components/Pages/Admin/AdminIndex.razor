@@ -22,60 +22,16 @@
 
         @if (_loading)
         {
-            <div class="row g-4 mb-5">
+            <div class="admin-kpi-grid mb-5" aria-label="Cargando indicadores">
                 @for (int i = 0; i < 6; i++)
                 {
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <div class="stat-card"><div class="skeleton" style="height:60px;"></div></div>
-                    </div>
+                    <div class="admin-kpi-card"><div class="skeleton" style="height:88px;"></div></div>
                 }
             </div>
         }
         else if (_stats is not null)
         {
-            <!-- KPI cards -->
-            <div class="row g-4 mb-5">
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-card text-center">
-                        <div class="stat-number">@_stats.TotalUsers</div>
-                        <div class="stat-name">Usuarios</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-card text-center">
-                        <div class="stat-number">@_stats.ActiveGroups</div>
-                        <div class="stat-name">Grupos Activos</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-card text-center"
-                         style="@(PendingRequests > 0 ? "border-color:var(--uerre-gold);" : "")">
-                        <div class="stat-number"
-                             style="color:@(PendingRequests > 0 ? "var(--uerre-gold)" : "var(--uerre-purple)");">
-                            @PendingRequests
-                        </div>
-                        <div class="stat-name">Solicitudes</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-card text-center">
-                        <div class="stat-number">@_stats.TotalEvents</div>
-                        <div class="stat-name">Eventos</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-card text-center">
-                        <div class="stat-number">@_stats.TotalMemberships</div>
-                        <div class="stat-name">Membresías</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-card text-center">
-                        <div class="stat-number">@_stats.TotalGroups</div>
-                        <div class="stat-name">Total Grupos</div>
-                    </div>
-                </div>
-            </div>
+            <AdminKpiGrid Data="_stats" />
         }
 
         <!-- Navigation cards -->
@@ -184,7 +140,7 @@
 @code {
     private DashboardAdminModel? _stats;
     private bool _loading = true;
-    private int PendingRequests => (_stats?.PendingGroupRequests ?? 0) + (_stats?.PendingLeadershipRequests ?? 0);
+    private int PendingRequests => _stats?.PendingRequests ?? 0;
 
     protected override async Task OnInitializedAsync()
     {

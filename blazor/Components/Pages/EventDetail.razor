@@ -49,12 +49,25 @@ else
                         <p style="color:rgba(255,255,255,.75);max-width:560px;">@_event.Description</p>
                     }
                 </div>
-                <div class="flex-shrink-0">
+                <div class="flex-shrink-0 d-flex flex-column gap-2 event-hero-actions">
+                    @if (_canManage)
+                    {
+                        <button type="button" class="btn btn-hero" @onclick="OpenEditEvent">
+                            Editar evento
+                        </button>
+                    }
                     <RsvpButton EventId="_event.Id" IsCanceled="_event.IsCanceled" HasCapacity="_event.HasCapacity" />
                 </div>
             </div>
         </div>
     </section>
+
+    @if (_editSuccess is not null)
+    {
+        <div class="container-uerre pt-3">
+            <div class="alert alert-success rounded-3 mb-0" role="status">@_editSuccess</div>
+        </div>
+    }
 
     <section class="py-4 py-md-5" style="background:var(--uerre-surface);">
         <div class="container-uerre">
@@ -205,6 +218,93 @@ else
         </div>
     </section>
 
+    @if (_showEditEvent)
+    {
+        <div class="modal-backdrop fade show" style="z-index:1040;" @onclick="CloseEditEvent"></div>
+        <div class="modal fade show d-block event-edit-modal" tabindex="-1" style="z-index:1050;"
+             role="dialog" aria-modal="true" aria-labelledby="event-edit-title">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+                    <div class="modal-header border-0 pb-0">
+                        <div>
+                            <p class="section-label mb-2">Gestión de evento</p>
+                            <h2 id="event-edit-title" class="modal-title h5 mb-0">Editar evento</h2>
+                        </div>
+                        <button type="button" class="btn-close" aria-label="Cerrar edición"
+                                @onclick="CloseEditEvent" disabled="@_savingEdit"></button>
+                    </div>
+                    <div class="modal-body px-4">
+                        @if (_editError is not null)
+                        {
+                            <div class="alert alert-danger rounded-3 small" role="alert">@_editError</div>
+                        }
+
+                        <div class="mb-3">
+                            <label for="editEventTitle" class="form-label">Título</label>
+                            <input id="editEventTitle" class="form-control" maxlength="200" @bind="_editTitle" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEventDescription" class="form-label">Descripción</label>
+                            <textarea id="editEventDescription" class="form-control" rows="3" @bind="_editDescription"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEventLocation" class="form-label">Lugar</label>
+                            <input id="editEventLocation" class="form-control" maxlength="300" @bind="_editLocation" />
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-sm-6">
+                                <label for="editEventStart" class="form-label">Inicio</label>
+                                <input id="editEventStart" type="datetime-local" class="form-control" @bind="_editStart" />
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label for="editEventEnd" class="form-label">Fin</label>
+                                <input id="editEventEnd" type="datetime-local" class="form-control" @bind="_editEnd" />
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-12 col-sm-4">
+                                <label for="editEventCapacity" class="form-label">Capacidad</label>
+                                <input id="editEventCapacity" type="number" class="form-control" min="1"
+                                       placeholder="Sin límite" @bind="_editCapacity" />
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <label for="editEventVisibility" class="form-label">Visibilidad</label>
+                                <select id="editEventVisibility" class="form-select" @bind="_editVisibility">
+                                    <option value="public">Público</option>
+                                    <option value="members">Solo miembros</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <label for="editEventStatus" class="form-label">Estado</label>
+                                <select id="editEventStatus" class="form-select" @bind="_editStatus">
+                                    <option value="draft">Borrador</option>
+                                    <option value="published">Publicado</option>
+                                    <option value="canceled">Cancelado</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-4 pb-4 event-edit-actions">
+                        <button type="button" class="btn btn-uerre-outline" @onclick="CloseEditEvent" disabled="@_savingEdit">
+                            Cancelar
+                        </button>
+                        <button type="button" class="btn btn-uerre-primary" @onclick="SaveEventEdit" disabled="@_savingEdit">
+                            @if (_savingEdit)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                                <span>Guardando...</span>
+                            }
+                            else
+                            {
+                                <span>Guardar cambios</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
     @if (_selectedGalleryImage is not null)
     {
         <div class="modal-backdrop fade show" style="z-index:1040;" @onclick="CloseGalleryImage"></div>
@@ -232,6 +332,7 @@ else
     private bool _canPostEvidence;
     private bool _evidenceUnlocked;
     private bool _isAdmin;
+    private bool _canManage;
     private Guid _currentUserId;
     private List<string> _galleryImages = [];
     private string? _selectedGalleryImage;
@@ -243,6 +344,19 @@ else
     private string? _postImagePreview;
     private bool _submittingPost;
     private string? _postError;
+
+    private bool _showEditEvent;
+    private string _editTitle = "";
+    private string? _editDescription;
+    private string? _editLocation;
+    private DateTime _editStart;
+    private DateTime _editEnd;
+    private int? _editCapacity;
+    private string _editStatus = "published";
+    private string _editVisibility = "public";
+    private bool _savingEdit;
+    private string? _editError;
+    private string? _editSuccess;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -261,6 +375,7 @@ else
                 var currentUser = await CurrentUser.GetUserAsync();
                 _currentUserId = currentUser?.Id ?? Guid.Empty;
                 _isAdmin = currentUser?.Role == "admin";
+                _canManage = await EventService.CanManageAsync(_event.GroupId);
                 _evidenceUnlocked = _event.EndAt < DateTime.UtcNow || _event.IsCanceled;
             }
         }
@@ -272,6 +387,7 @@ else
             _canPostEvidence = false;
             _evidenceUnlocked = false;
             _isAdmin = false;
+            _canManage = false;
             _currentUserId = Guid.Empty;
         }
         finally
@@ -374,4 +490,89 @@ else
     private void OpenGalleryImage(string imageUrl) => _selectedGalleryImage = imageUrl;
 
     private void CloseGalleryImage() => _selectedGalleryImage = null;
+
+    private void OpenEditEvent()
+    {
+        if (_event is null || !_canManage) return;
+
+        _editTitle = _event.Title;
+        _editDescription = _event.Description;
+        _editLocation = _event.Location;
+        _editStart = _event.StartAt.ToLocalTime();
+        _editEnd = _event.EndAt.ToLocalTime();
+        _editCapacity = _event.Capacity;
+        _editStatus = _event.Status;
+        _editVisibility = _event.Visibility;
+        _editError = null;
+        _editSuccess = null;
+        _showEditEvent = true;
+    }
+
+    private void CloseEditEvent()
+    {
+        if (_savingEdit) return;
+        _showEditEvent = false;
+        _editError = null;
+    }
+
+    private async Task SaveEventEdit()
+    {
+        if (_event is null || !_canManage) return;
+        if (string.IsNullOrWhiteSpace(_editTitle))
+        {
+            _editError = "El título es requerido.";
+            return;
+        }
+        if (_editEnd <= _editStart)
+        {
+            _editError = "La fecha de fin debe ser posterior a la de inicio.";
+            return;
+        }
+        if (_editCapacity is <= 0)
+        {
+            _editError = "La capacidad debe ser mayor que cero.";
+            return;
+        }
+
+        _savingEdit = true;
+        _editError = null;
+        try
+        {
+            var updated = await EventService.UpdateEventAsync(
+                _event.GroupId,
+                _event.Id,
+                new BlazorUpdateEventRequest(
+                    _editTitle.Trim(),
+                    string.IsNullOrWhiteSpace(_editDescription) ? null : _editDescription.Trim(),
+                    string.IsNullOrWhiteSpace(_editLocation) ? null : _editLocation.Trim(),
+                    _editStart.ToUniversalTime(),
+                    _editEnd.ToUniversalTime(),
+                    _editCapacity,
+                    _editStatus,
+                    _editVisibility));
+
+            if (updated is null)
+            {
+                _editError = "No se encontró el evento para actualizarlo.";
+                return;
+            }
+
+            _event = updated;
+            _evidenceUnlocked = updated.EndAt < DateTime.UtcNow || updated.IsCanceled;
+            _showEditEvent = false;
+            _editSuccess = "Los cambios del evento se guardaron correctamente.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _editError = ex.Message;
+        }
+        catch
+        {
+            _editError = "No se pudieron guardar los cambios. Inténtalo de nuevo.";
+        }
+        finally
+        {
+            _savingEdit = false;
+        }
+    }
 }

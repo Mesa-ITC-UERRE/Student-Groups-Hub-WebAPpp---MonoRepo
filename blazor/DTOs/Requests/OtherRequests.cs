@@ -24,7 +24,8 @@ public record UpdateEventRequest(
     DateTime? EndAt,
     int? Capacity,
     string? Status,
-    string? Visibility
+    string? Visibility,
+    bool ClearCapacity = false
 );
 
 public record UpsertRsvpRequest([Required] string Status);

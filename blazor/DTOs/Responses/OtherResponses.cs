@@ -54,13 +54,21 @@ public record DashboardLeaderResponse(
 
 public record DashboardAdminResponse(
     int TotalUsers,
+    int ActiveStudents,
+    int StudentsThisMonth,
     int TotalGroups,
     int ActiveGroups,
     int PendingGroupRequests,
     int PendingLeadershipRequests,
     int TotalEvents,
+    int EventsThisMonth,
+    int EventsPreviousMonth,
+    int ProcessedMemberships,
+    double MembershipApprovalRate,
+    double AverageMembershipResponseHours,
     int TotalMemberships,
-    int TotalParticipations
+    int TotalParticipations,
+    double AverageParticipationsPerEvent
 );
 
 public record NotificationResponse(

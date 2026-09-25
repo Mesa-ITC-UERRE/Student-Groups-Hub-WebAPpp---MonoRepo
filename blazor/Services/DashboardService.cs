@@ -100,17 +100,46 @@ public class DashboardService(IDbContextFactory<AppDbContext> dbFactory, GroupSe
     public async Task<DashboardAdminResponse> GetAdminDashboardAsync()
     {
         using var db = dbFactory.CreateDbContext();
+        var now = DateTime.UtcNow;
+        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var previousMonthStart = monthStart.AddMonths(-1);
+
         var totalUsers          = await db.Users.CountAsync();
+        var activeStudents      = await db.Users.CountAsync(u => u.Role == "student" && u.Status == "active");
+        var studentsThisMonth   = await db.Users.CountAsync(u =>
+            u.Role == "student" && u.Status == "active" && u.CreatedAt >= monthStart);
         var totalGroups         = await db.Groups.CountAsync();
         var activeGroups        = await db.Groups.CountAsync(g => g.Status == "active");
         var pendingRequests     = await db.GroupRegistrationRequests.CountAsync(r => r.Status == "pending");
         var pendingLeadershipRequests = await db.LeadershipRequests.CountAsync(r => r.Status == "pending");
         var totalEvents         = await db.Events.CountAsync();
+        var eventsThisMonth     = await db.Events.CountAsync(e => e.CreatedAt >= monthStart);
+        var eventsPreviousMonth = await db.Events.CountAsync(e =>
+            e.CreatedAt >= previousMonthStart && e.CreatedAt < monthStart);
         var totalMemberships    = await db.Memberships.CountAsync();
-        var totalParticipations = await db.EventParticipations.CountAsync();
+        var acceptedMemberships = await db.Memberships.CountAsync(m => m.Status == "accepted");
+        var rejectedMemberships = await db.Memberships.CountAsync(m => m.Status == "rejected");
+        var processedMemberships = acceptedMemberships + rejectedMemberships;
+        var membershipApprovalRate = processedMemberships == 0
+            ? 0
+            : acceptedMemberships * 100d / processedMemberships;
+        var responseTimes = await db.Memberships
+            .Where(m => (m.Status == "accepted" || m.Status == "rejected") && m.RespondedAt.HasValue)
+            .Select(m => new { m.RequestedAt, RespondedAt = m.RespondedAt!.Value })
+            .ToListAsync();
+        var averageMembershipResponseHours = responseTimes.Count == 0
+            ? 0
+            : responseTimes.Average(m => (m.RespondedAt - m.RequestedAt).TotalHours);
+        var totalParticipations = await db.EventParticipations.CountAsync(p => p.Status == "going");
+        var averageParticipationsPerEvent = totalEvents == 0
+            ? 0
+            : totalParticipations / (double)totalEvents;
 
         return new DashboardAdminResponse(
-            totalUsers, totalGroups, activeGroups, pendingRequests, pendingLeadershipRequests,
-            totalEvents, totalMemberships, totalParticipations);
+            totalUsers, activeStudents, studentsThisMonth,
+            totalGroups, activeGroups, pendingRequests, pendingLeadershipRequests,
+            totalEvents, eventsThisMonth, eventsPreviousMonth,
+            processedMemberships, membershipApprovalRate, averageMembershipResponseHours,
+            totalMemberships, totalParticipations, averageParticipationsPerEvent);
     }
 }

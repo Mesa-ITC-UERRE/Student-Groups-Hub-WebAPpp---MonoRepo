@@ -316,11 +316,45 @@ public class EventApiService(
             if (imageUrl is null)
                 throw new InvalidOperationException("No se pudo subir la foto del evento.");
 
-            ev = await eventService.UpdateAsync(ev.Id, new DTOs.Requests.UpdateEventRequest(
+            ev = await eventService.UpdateAsync(groupId, ev.Id, new DTOs.Requests.UpdateEventRequest(
                 null, null, null, imageUrl, null, null, null, null, null)) ?? ev;
         }
 
         return MapEvent(ev, 0);
+    }
+
+    public async Task<bool> CanManageAsync(Guid groupId)
+    {
+        var user = await currentUser.GetUserAsync();
+        if (user is null || !UserService.IsActive(user)) return false;
+        return user.Role == "admin" || await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
+    }
+
+    public async Task<EventModel?> UpdateEventAsync(
+        Guid groupId,
+        Guid eventId,
+        BlazorUpdateEventRequest req)
+    {
+        var user = await currentUser.RequireActiveUserAsync();
+        var canManage = user.Role == "admin" || await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
+        if (!canManage)
+            throw new InvalidOperationException("No tienes permiso para editar este evento.");
+
+        var updated = await eventService.UpdateAsync(groupId, eventId, new DTOs.Requests.UpdateEventRequest(
+            req.Title,
+            req.Description ?? string.Empty,
+            req.Location ?? string.Empty,
+            null,
+            req.StartAt,
+            req.EndAt,
+            req.Capacity,
+            req.Status,
+            req.Visibility,
+            ClearCapacity: req.Capacity is null));
+
+        if (updated is null) return null;
+        var count = await eventService.GetRsvpCountAsync(updated.Id);
+        return MapEvent(updated, count);
     }
 
     public async Task UpsertRsvpAsync(Guid eventId, string status)
@@ -707,9 +741,13 @@ public class DashboardApiService(DashboardService dashboardService, CurrentUserS
         {
             var data = await dashboardService.GetAdminDashboardAsync();
             return new DashboardAdminModel(
-                data.TotalUsers, data.TotalGroups, data.ActiveGroups,
-                data.PendingGroupRequests, data.PendingLeadershipRequests, data.TotalEvents,
-                data.TotalMemberships, data.TotalParticipations);
+                data.TotalUsers, data.ActiveStudents, data.StudentsThisMonth,
+                data.TotalGroups, data.ActiveGroups,
+                data.PendingGroupRequests, data.PendingLeadershipRequests,
+                data.TotalEvents, data.EventsThisMonth, data.EventsPreviousMonth,
+                data.ProcessedMemberships, data.MembershipApprovalRate,
+                data.AverageMembershipResponseHours, data.TotalMemberships,
+                data.TotalParticipations, data.AverageParticipationsPerEvent);
         }, null);
 
     private static List<GroupModel> MapGroups(List<GroupResponse> groups)
@@ -775,10 +813,14 @@ public class AdminApiService(
     public async Task<DashboardAdminModel?> GetMetricsAsync()
     {
         var data = await dashboardService.GetAdminDashboardAsync();
-            return new DashboardAdminModel(
-                data.TotalUsers, data.TotalGroups, data.ActiveGroups,
-                data.PendingGroupRequests, data.PendingLeadershipRequests, data.TotalEvents,
-                data.TotalMemberships, data.TotalParticipations);
+        return new DashboardAdminModel(
+            data.TotalUsers, data.ActiveStudents, data.StudentsThisMonth,
+            data.TotalGroups, data.ActiveGroups,
+            data.PendingGroupRequests, data.PendingLeadershipRequests,
+            data.TotalEvents, data.EventsThisMonth, data.EventsPreviousMonth,
+            data.ProcessedMemberships, data.MembershipApprovalRate,
+            data.AverageMembershipResponseHours, data.TotalMemberships,
+            data.TotalParticipations, data.AverageParticipationsPerEvent);
     }
 
     public async Task<PaginatedResponse<GroupModel>?> GetAllGroupsAdminAsync(
