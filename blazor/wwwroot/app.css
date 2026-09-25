@@ -3,10 +3,12 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ─── Google Fonts ─────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;500;600&display=swap');
+/* Local/system fonts keep the app usable without a third-party font request. */
 
 /* ─── Design Tokens ─────────────────────────────────────────── */
 :root {
+    --uerre-font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --uerre-font-heading: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --uerre-purple:        #5b21b6;
     --uerre-purple-dark:   #4c1d95;
     --uerre-purple-light:  #7c3aed;
@@ -34,7 +36,7 @@
     /* Bootstrap overrides */
     --bs-primary:          var(--uerre-purple);
     --bs-primary-rgb:      91, 33, 182;
-    --bs-font-sans-serif:  'Open Sans', system-ui, sans-serif;
+    --bs-font-sans-serif: var(--uerre-font-body);
     --bs-border-radius:    0.625rem;
     --bs-border-radius-lg: 0.875rem;
     --bs-border-radius-xl: 1.125rem;
@@ -46,7 +48,7 @@
 html { scroll-behavior: smooth; font-size: 16px; }
 
 body {
-    font-family: 'Open Sans', system-ui, sans-serif;
+    font-family: var(--uerre-font-body);
     color: var(--uerre-text);
     background: #fff;
     -webkit-font-smoothing: antialiased;
@@ -54,7 +56,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6, .font-heading {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-weight: 700;
     color: var(--uerre-heading);
     line-height: 1.2;
@@ -86,14 +88,14 @@ a:hover { color: var(--uerre-purple-dark); }
     background: var(--uerre-purple);
     border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-weight: 800; font-size: .875rem; color: #fff;
     flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(91,33,182,.3);
 }
 
 .navbar-brand-name {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-weight: 700; font-size: .8rem;
     color: #111827; line-height: 1.2;
 }
@@ -182,7 +184,7 @@ a:hover { color: var(--uerre-purple-dark); }
     background: linear-gradient(135deg, var(--uerre-purple), var(--uerre-purple-vivid));
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-weight: 700; font-size: .75rem; color: #fff; flex-shrink: 0;
     box-shadow: 0 2px 6px rgba(91,33,182,.25);
 }
@@ -201,7 +203,7 @@ a:hover { color: var(--uerre-purple-dark); }
     background: linear-gradient(135deg, var(--uerre-purple), var(--uerre-purple-light));
     border: none;
     color: #fff;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-weight: 600;
     border-radius: 9px;
     box-shadow: 0 3px 12px rgba(91,33,182,.3);
@@ -224,7 +226,7 @@ a:hover { color: var(--uerre-purple-dark); }
     background: transparent;
     border: 1.5px solid var(--uerre-purple);
     color: var(--uerre-purple);
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-weight: 600; border-radius: 9px;
     transition: all .2s ease;
 }
@@ -244,7 +246,7 @@ a:hover { color: var(--uerre-purple-dark); }
     border: 1.5px solid rgba(255, 255, 255, .55) !important;
     backdrop-filter: blur(4px);
     border-radius: 9px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-weight: 600;
     font-size: .8125rem;
     box-shadow: none !important;
@@ -340,7 +342,7 @@ a:hover { color: var(--uerre-purple-dark); }
 }
 
 .stat-value {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-size: 2.25rem; font-weight: 800; color: #fff;
     line-height: 1;
 }
@@ -429,7 +431,7 @@ a:hover { color: var(--uerre-purple-dark); }
 }
 
 .event-date-day {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-size: 1.375rem; font-weight: 800;
     color: #fff; line-height: 1; margin-top: 1px;
 }
@@ -682,7 +684,7 @@ a:hover .hero-float-card {
 }
 
 .stat-card .stat-number {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-size: 2rem; font-weight: 800;
     color: var(--uerre-purple); line-height: 1;
 }
@@ -772,7 +774,7 @@ a:hover .home-quicklink {
 }
 
 .admin-kpi-value {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-size: 1.85rem; font-weight: 800;
     color: var(--uerre-heading); line-height: 1;
     margin-bottom: .375rem;
@@ -812,7 +814,7 @@ a:hover .home-quicklink {
 .admin-kpi-insights > div { display: flex; flex-direction: column; gap: .2rem; }
 
 .admin-kpi-insights strong {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-size: 1.05rem; color: var(--uerre-heading);
 }
 
@@ -852,7 +854,7 @@ a:hover .home-quicklink {
 }
 
 .event-date-day {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-size: 1.35rem;
     font-weight: 800;
     line-height: 1.15;
@@ -915,7 +917,7 @@ a:hover .home-quicklink {
     background: var(--uerre-purple-light);
     border-radius: 11px;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-weight: 800; font-size: 1rem; color: #fff; flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(124,58,237,.3);
 }
@@ -1134,7 +1136,7 @@ a:hover .home-quicklink {
     border-radius: 50%;
     background: linear-gradient(135deg, var(--uerre-purple), var(--uerre-purple-vivid));
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--uerre-font-heading);
     font-weight: 700; font-size: .75rem;
     color: #fff; flex-shrink: 0;
 }
