@@ -60,33 +60,16 @@ public class AdminController(
         var actingUser = await GetCurrentUserAsync();
         if (!UserService.IsActive(actingUser)) return Forbid();
 
-        User? user;
         try
         {
-            user = request.Role switch
-            {
-                "group_leader" when request.GroupId.HasValue => await userService.AssignLeaderAsync(id, request.GroupId.Value),
-                "group_leader" => throw new InvalidOperationException("Debes seleccionar un grupo para asignar liderazgo."),
-                "student" => await userService.DemoteToStudentAsync(id),
-                _ => null
-            };
+            var user = await userService.SetRoleAsync(
+                actingUser!.Id, id, request.Role, request.GroupId);
+            return user is null ? NotFound() : Ok(UserService.ToResponse(user));
         }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
         }
-
-        if (request.Role != "group_leader" && request.Role != "student")
-        {
-            using var db = dbFactory.CreateDbContext();
-            user = await db.Users.FindAsync(id);
-            if (user is null) return NotFound();
-            user.Role = request.Role;
-            user.UpdatedAt = DateTime.UtcNow;
-            await db.SaveChangesAsync();
-        }
-
-        return user is null ? NotFound() : Ok(UserService.ToResponse(user));
     }
 
     // PATCH /api/admin/users/{id}/status
@@ -96,12 +79,15 @@ public class AdminController(
         if (!await IsAdminAsync()) return Forbid();
         var actingUser = await GetCurrentUserAsync();
         if (!UserService.IsActive(actingUser)) return Forbid();
-        using var db = dbFactory.CreateDbContext();
-        var user = await db.Users.FindAsync(id);
-        if (user is null) return NotFound();
-        user.Status = request.Status; user.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync();
-        return Ok(UserService.ToResponse(user));
+        try
+        {
+            var user = await userService.SetStatusAsync(actingUser!.Id, id, request.Status);
+            return user is null ? NotFound() : Ok(UserService.ToResponse(user));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     // GET /api/admin/metrics

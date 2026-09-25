@@ -818,6 +818,7 @@ public class AdminApiService(
         string? search = null, string? role = null, string? status = null,
         int page = 1, int pageSize = 20)
     {
+        await RequireAdminAsync();
         using var db = dbFactory.CreateDbContext();
         var q = db.Users.AsQueryable();
         if (!string.IsNullOrWhiteSpace(search))
@@ -841,6 +842,7 @@ public class AdminApiService(
 
     public async Task<DashboardAdminModel?> GetMetricsAsync()
     {
+        await RequireAdminAsync();
         var data = await dashboardService.GetAdminDashboardAsync();
         return new DashboardAdminModel(
             data.TotalUsers, data.ActiveStudents, data.StudentsThisMonth,
@@ -855,6 +857,7 @@ public class AdminApiService(
     public async Task<PaginatedResponse<GroupModel>?> GetAllGroupsAdminAsync(
         string? search = null, string? status = null, int page = 1, int pageSize = 20)
     {
+        await RequireAdminAsync();
         return await DbSafe.TryAsync(async () =>
         {
             var (items, total) = await groupService.GetAllAdminAsync(search, status, page, pageSize);
@@ -871,6 +874,7 @@ public class AdminApiService(
 
     public async Task<List<GroupModel>> GetActiveGroupsForSeasonResetAsync()
     {
+        await RequireAdminAsync();
         using var db = dbFactory.CreateDbContext();
         var groups = await db.Groups
             .Where(g => g.Status == "active")
@@ -885,40 +889,29 @@ public class AdminApiService(
 
     public async Task<bool> SetGroupStatusAsync(Guid groupId, string status)
     {
-        await currentUser.RequireActiveUserAsync();
+        await RequireAdminAsync();
         return await DbSafe.TryAsync(
             () => groupService.SetStatusAsync(groupId, status), false);
     }
 
     public async Task<UserModel?> SetRoleAsync(Guid userId, string role, Guid? groupId = null)
     {
-        await currentUser.RequireActiveUserAsync();
-
-        User? user = role switch
-        {
-            "group_leader" when groupId.HasValue => await userService.AssignLeaderAsync(userId, groupId.Value),
-            "group_leader" => throw new InvalidOperationException("Debes seleccionar un grupo para asignar liderazgo."),
-            "student" => await userService.DemoteToStudentAsync(userId),
-            _ => await SetUserRoleAsync(userId, role)
-        };
+        var actor = await RequireAdminAsync();
+        var user = await userService.SetRoleAsync(actor.Id, userId, role, groupId);
 
         return user is null ? null : MapUser(user);
     }
 
     public async Task<UserModel?> SetStatusAsync(Guid userId, string status)
     {
-        await currentUser.RequireActiveUserAsync();
-        using var db = dbFactory.CreateDbContext();
-        var user = await db.Users.FindAsync(userId);
-        if (user is null) return null;
-        user.Status = status; user.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync();
-        return MapUser(user);
+        var actor = await RequireAdminAsync();
+        var user = await userService.SetStatusAsync(actor.Id, userId, status);
+        return user is null ? null : MapUser(user);
     }
 
     public async Task ResetSeasonAsync(IEnumerable<Guid> skipGroupIds)
     {
-        await currentUser.RequireActiveUserAsync();
+        await RequireAdminAsync();
         using var db = dbFactory.CreateDbContext();
         var skipIds = skipGroupIds.Distinct().ToHashSet();
         var targetGroups = await db.Groups
@@ -933,18 +926,15 @@ public class AdminApiService(
 
     public async Task ResetGroupSeasonAsync(Guid groupId)
     {
-        await currentUser.RequireActiveUserAsync();
+        await RequireAdminAsync();
         await NotifyAndResetAsync([groupId]);
     }
 
-    private async Task<User?> SetUserRoleAsync(Guid userId, string role)
+    private async Task<User> RequireAdminAsync()
     {
-        using var db = dbFactory.CreateDbContext();
-        var user = await db.Users.FindAsync(userId);
-        if (user is null) return null;
-        user.Role = role;
-        user.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync();
+        var user = await currentUser.RequireActiveUserAsync();
+        if (user.Role != "admin")
+            throw new InvalidOperationException("No tienes permiso para realizar esta acción.");
         return user;
     }
 

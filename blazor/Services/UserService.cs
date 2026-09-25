@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using StudentGroupsHub.Data;
 using StudentGroupsHub.DTOs.Responses;
@@ -7,6 +8,9 @@ namespace StudentGroupsHub.Services;
 
 public class UserService(IDbContextFactory<AppDbContext> dbFactory)
 {
+    private static readonly HashSet<string> AllowedRoles = ["student", "group_leader", "admin"];
+    private static readonly HashSet<string> AllowedStatuses = ["active", "inactive"];
+
     public const string InactiveActionMessage = "Tu cuenta está inactiva. Contacta a un administrador para recuperar el acceso.";
 
     public async Task<User> UpsertFromTokenAsync(string entraOid, string email, string? displayName)
@@ -66,19 +70,93 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
         return user;
     }
 
-    public async Task<User?> AssignLeaderAsync(Guid userId, Guid groupId)
+    public async Task<User?> SetRoleAsync(
+        Guid actingUserId,
+        Guid userId,
+        string role,
+        Guid? groupId = null)
     {
-        using var db = dbFactory.CreateDbContext();
+        if (!AllowedRoles.Contains(role))
+            throw new InvalidOperationException("El rol seleccionado no es válido.");
+        if (role == "group_leader" && !groupId.HasValue)
+            throw new InvalidOperationException("Debes seleccionar un grupo para asignar liderazgo.");
+
+        await using var db = await dbFactory.CreateDbContextAsync();
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+        await EnsureActiveAdminAsync(db, actingUserId);
 
         var user = await db.Users.FindAsync(userId);
         if (user is null) return null;
 
+        if (actingUserId == userId && role != "admin")
+            throw new InvalidOperationException("No puedes quitarte tu propio rol de administrador.");
+
+        if (user.Role == "admin" && role != "admin")
+            await EnsureAnotherActiveAdminAsync(db, userId);
+
+        switch (role)
+        {
+            case "group_leader":
+                await AssignLeaderAsync(db, user, groupId!.Value);
+                break;
+            case "student":
+                await DemoteToStudentAsync(db, user);
+                break;
+            case "admin":
+                user.Role = "admin";
+                user.UpdatedAt = DateTime.UtcNow;
+                break;
+        }
+
+        await db.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return user;
+    }
+
+    public async Task<User?> SetStatusAsync(Guid actingUserId, Guid userId, string status)
+    {
+        if (!AllowedStatuses.Contains(status))
+            throw new InvalidOperationException("El estado seleccionado no es válido.");
+
+        await using var db = await dbFactory.CreateDbContextAsync();
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+        await EnsureActiveAdminAsync(db, actingUserId);
+        var user = await db.Users.FindAsync(userId);
+        if (user is null) return null;
+
+        if (actingUserId == userId && status == "inactive")
+            throw new InvalidOperationException("No puedes desactivar tu propia cuenta.");
+
+        if (user.Role == "admin" && user.Status == "active" && status == "inactive")
+            await EnsureAnotherActiveAdminAsync(db, userId);
+
+        if (status == "inactive")
+        {
+            var leaderAssignments = await db.RoleAssignments
+                .Where(r => r.UserId == userId && r.PermissionRole == "leader")
+                .ToListAsync();
+            db.RoleAssignments.RemoveRange(leaderAssignments);
+            if (user.Role == "group_leader")
+                user.Role = "student";
+        }
+
+        user.Status = status;
+        user.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return user;
+    }
+
+    private static async Task AssignLeaderAsync(AppDbContext db, User user, Guid groupId)
+    {
         var group = await db.Groups.FindAsync(groupId);
         if (group is null || group.Status != "active")
             throw new InvalidOperationException("El grupo seleccionado no está disponible.");
 
         var alreadyLeaderOfGroup = await db.RoleAssignments.AnyAsync(r =>
-            r.GroupId == groupId && r.UserId == userId && r.PermissionRole == "leader");
+            r.GroupId == groupId && r.UserId == user.Id && r.PermissionRole == "leader");
         if (alreadyLeaderOfGroup)
             throw new InvalidOperationException("La persona seleccionada ya lidera ese grupo.");
 
@@ -91,21 +169,21 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
         {
             Id = Guid.NewGuid(),
             GroupId = groupId,
-            UserId = userId,
+            UserId = user.Id,
             PermissionRole = "leader",
             DisplayRole = "Líder",
             CreatedAt = DateTime.UtcNow,
         });
 
         var membership = await db.Memberships.FirstOrDefaultAsync(m =>
-            m.GroupId == groupId && m.UserId == userId);
+            m.GroupId == groupId && m.UserId == user.Id);
         if (membership is null)
         {
             db.Memberships.Add(new Membership
             {
                 Id = Guid.NewGuid(),
                 GroupId = groupId,
-                UserId = userId,
+                UserId = user.Id,
                 Status = "accepted",
                 RequestedAt = DateTime.UtcNow,
                 RespondedAt = DateTime.UtcNow,
@@ -122,19 +200,12 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
             user.Role = "group_leader";
 
         user.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync();
-        return user;
     }
 
-    public async Task<User?> DemoteToStudentAsync(Guid userId)
+    private static async Task DemoteToStudentAsync(AppDbContext db, User user)
     {
-        using var db = dbFactory.CreateDbContext();
-
-        var user = await db.Users.FindAsync(userId);
-        if (user is null) return null;
-
         var leaderAssignments = await db.RoleAssignments
-            .Where(r => r.UserId == userId && r.PermissionRole == "leader")
+            .Where(r => r.UserId == user.Id && r.PermissionRole == "leader")
             .ToListAsync();
 
         if (leaderAssignments.Count > 0)
@@ -142,8 +213,22 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
 
         user.Role = "student";
         user.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync();
-        return user;
+    }
+
+    private static async Task EnsureActiveAdminAsync(AppDbContext db, Guid userId)
+    {
+        var canAdminister = await db.Users.AnyAsync(u =>
+            u.Id == userId && u.Status == "active" && u.Role == "admin");
+        if (!canAdminister)
+            throw new InvalidOperationException("No tienes permiso para administrar usuarios.");
+    }
+
+    private static async Task EnsureAnotherActiveAdminAsync(AppDbContext db, Guid excludedUserId)
+    {
+        var anotherAdminExists = await db.Users.AnyAsync(u =>
+            u.Id != excludedUserId && u.Status == "active" && u.Role == "admin");
+        if (!anotherAdminExists)
+            throw new InvalidOperationException("Debe permanecer al menos un administrador activo.");
     }
 
     public static bool IsActive(User? user)
