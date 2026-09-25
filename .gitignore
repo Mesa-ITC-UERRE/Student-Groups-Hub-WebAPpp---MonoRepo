@@ -2,6 +2,7 @@
 blazor/bin/
 blazor/obj/
 blazor/*.user
+blazor/Properties/PublishProfiles/*.pubxml.user
 blazor/.vs/
 blazor/appsettings.Development.json
 

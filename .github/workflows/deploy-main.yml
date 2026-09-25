@@ -1,0 +1,94 @@
+name: Build and deploy to Azure Container Apps
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: 10.0.x
+  PROJECT_PATH: blazor/StudentGroupsHub.csproj
+  PUBLISH_PROFILE: studentgroupshub-app-20260623150
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Read deployment settings from publish profile
+        shell: bash
+        run: |
+          profile_json="$(dotnet msbuild "$PROJECT_PATH" \
+            -p:PublishProfile="$PUBLISH_PROFILE" \
+            -getProperty:ContainerResourceName,RegistryUrl,ContainerName,ResourceGroup,ResourceId,RuntimeIdentifier)"
+
+          resource_id="$(jq -r '.Properties.ResourceId' <<< "$profile_json")"
+          echo "ACR_NAME=$(jq -r '.Properties.ContainerResourceName' <<< "$profile_json")" >> "$GITHUB_ENV"
+          echo "REGISTRY_URL=$(jq -r '.Properties.RegistryUrl' <<< "$profile_json")" >> "$GITHUB_ENV"
+          echo "CONTAINER_NAME=$(jq -r '.Properties.ContainerName' <<< "$profile_json")" >> "$GITHUB_ENV"
+          echo "RESOURCE_GROUP=$(jq -r '.Properties.ResourceGroup' <<< "$profile_json")" >> "$GITHUB_ENV"
+          echo "CONTAINER_APP_NAME=${resource_id##*/}" >> "$GITHUB_ENV"
+          echo "RUNTIME_IDENTIFIER=$(jq -r '.Properties.RuntimeIdentifier' <<< "$profile_json")" >> "$GITHUB_ENV"
+
+      - name: Restore dependencies
+        run: dotnet restore "$PROJECT_PATH" --runtime "$RUNTIME_IDENTIFIER"
+
+      - name: Build
+        run: >-
+          dotnet build "$PROJECT_PATH"
+          --configuration Release
+          --no-restore
+          --runtime "$RUNTIME_IDENTIFIER"
+
+      - name: Log in to Azure
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name "$ACR_NAME"
+
+      - name: Build and push container image
+        run: >-
+          dotnet publish "$PROJECT_PATH"
+          --configuration Release
+          --no-restore
+          --runtime "$RUNTIME_IDENTIFIER"
+          /t:PublishContainer
+          -p:PublishProfile="$PUBLISH_PROFILE"
+          -p:ContainerRegistry="$REGISTRY_URL"
+          -p:ContainerRepository="$CONTAINER_NAME"
+          -p:ContainerImageTag="${GITHUB_SHA}"
+
+      - name: Deploy container image
+        shell: bash
+        run: |
+          az extension add --name containerapp --upgrade
+          az containerapp update \
+            --name "$CONTAINER_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$REGISTRY_URL/$CONTAINER_NAME:${GITHUB_SHA}"
+
+      - name: Log out of Azure
+        if: always()
+        run: az logout || true
