@@ -18,10 +18,10 @@
     "semantic_hash": "90f5e29cc6705d96760458e52bad2e2e"
   },
   "blazor/Components/Layout/NavMenu.razor": {
-    "mtime": 1790361937.31717,
-    "seen": 1790367652.8375819,
-    "ast_hash": "7b0cdda73418912008e1e68f965019d3",
-    "semantic_hash": "7b0cdda73418912008e1e68f965019d3"
+    "mtime": 1790375525.249512,
+    "seen": 1790380640.8303323,
+    "ast_hash": "4076af301f3e3d73bec811be56a123b9",
+    "semantic_hash": ""
   },
   "blazor/Components/Layout/ReconnectModal.razor": {
     "mtime": 1790125998.4215837,
@@ -36,112 +36,112 @@
     "semantic_hash": "bdc7a0873231c569cd31aa85311186a3"
   },
   "blazor/Components/Pages/Admin/AdminGroups.razor": {
-    "mtime": 1790361937.3175433,
-    "seen": 1790367652.8377576,
-    "ast_hash": "59e228c243fd79143f494d1fa7462482",
-    "semantic_hash": "59e228c243fd79143f494d1fa7462482"
+    "mtime": 1790376338.7470345,
+    "seen": 1790380640.8303447,
+    "ast_hash": "6e87c312d7d8e4523198133097863e82",
+    "semantic_hash": ""
   },
   "blazor/Components/Pages/Admin/AdminIndex.razor": {
-    "mtime": 1790361937.317818,
-    "seen": 1790367652.8377597,
+    "mtime": 1790375801.1754131,
+    "seen": 1790380640.830347,
     "ast_hash": "f143e0e1baa2b4100b7c78e560dd603e",
     "semantic_hash": "f143e0e1baa2b4100b7c78e560dd603e"
   },
   "blazor/Components/Pages/Admin/AdminRequests.razor": {
-    "mtime": 1790361937.3180785,
-    "seen": 1790367652.8377616,
+    "mtime": 1790375801.175808,
+    "seen": 1790380640.8303506,
     "ast_hash": "5a3a9a518ab44cee015ac3e57a6d1ce7",
     "semantic_hash": "5a3a9a518ab44cee015ac3e57a6d1ce7"
   },
   "blazor/Components/Pages/Admin/AdminUsers.razor": {
-    "mtime": 1790361937.3205965,
-    "seen": 1790367652.8377633,
-    "ast_hash": "ebf4cbf49190b8200b590f617e1e3815",
-    "semantic_hash": "ebf4cbf49190b8200b590f617e1e3815"
+    "mtime": 1790376346.0261273,
+    "seen": 1790380640.8303533,
+    "ast_hash": "9f4ea1b453aa34cc803adfb05def13bd",
+    "semantic_hash": ""
   },
   "blazor/Components/Pages/ApplyForLeadership.razor": {
-    "mtime": 1790361937.3208315,
-    "seen": 1790367652.8377652,
-    "ast_hash": "d5464920c7335b12b0567f93690550ad",
-    "semantic_hash": "d5464920c7335b12b0567f93690550ad"
+    "mtime": 1790375855.1182451,
+    "seen": 1790380640.8303556,
+    "ast_hash": "6f5310eeb3edb8377f9635b0a38d7eea",
+    "semantic_hash": ""
   },
   "blazor/Components/Pages/Calendario.razor": {
-    "mtime": 1790361937.3211331,
-    "seen": 1790367652.837767,
+    "mtime": 1790375801.1711285,
+    "seen": 1790380640.830358,
     "ast_hash": "3b30eaed0b9601ef13d7716ff11f5eec",
     "semantic_hash": "3b30eaed0b9601ef13d7716ff11f5eec"
   },
   "blazor/Components/Pages/Error.razor": {
-    "mtime": 1790125998.4224524,
-    "seen": 1790365228.558716,
+    "mtime": 1790375801.1712909,
+    "seen": 1790380640.8303604,
     "ast_hash": "895aa385b310af50d09fd583be83b251",
     "semantic_hash": "895aa385b310af50d09fd583be83b251"
   },
   "blazor/Components/Pages/EventDetail.razor": {
-    "mtime": 1790361937.3215497,
-    "seen": 1790367652.8378282,
-    "ast_hash": "61478253ff149cae8c271a48836603b1",
-    "semantic_hash": "61478253ff149cae8c271a48836603b1"
+    "mtime": 1790380596.39944,
+    "seen": 1790380640.8303626,
+    "ast_hash": "be538c4da8eee7f81a680c510674c32e",
+    "semantic_hash": ""
   },
   "blazor/Components/Pages/Events.razor": {
-    "mtime": 1790361937.3218262,
-    "seen": 1790367652.8378298,
+    "mtime": 1790375801.1719372,
+    "seen": 1790380640.8303652,
     "ast_hash": "0ea90a15bf79bcb9b295adeea5dc967f",
     "semantic_hash": "0ea90a15bf79bcb9b295adeea5dc967f"
   },
   "blazor/Components/Pages/Feur.razor": {
-    "mtime": 1790361937.3218262,
-    "seen": 1790367652.8378317,
-    "ast_hash": "1d441a4ef90d033cc1944af754dd37c7",
-    "semantic_hash": "1d441a4ef90d033cc1944af754dd37c7"
+    "mtime": 1790380596.398844,
+    "seen": 1790380640.8303678,
+    "ast_hash": "42a7526dff5b535a4888610ce3fa63da",
+    "semantic_hash": ""
   },
   "blazor/Components/Pages/GroupDetail.razor": {
-    "mtime": 1790361937.3226185,
-    "seen": 1790367652.8378334,
-    "ast_hash": "fbc482c2c0b6d15dfc44cf0b85b0ef0a",
-    "semantic_hash": "fbc482c2c0b6d15dfc44cf0b85b0ef0a"
+    "mtime": 1790380596.4007576,
+    "seen": 1790380640.8303702,
+    "ast_hash": "7c27374c186a164a62f172ef990a8096",
+    "semantic_hash": ""
   },
   "blazor/Components/Pages/Groups.razor": {
-    "mtime": 1790361937.3229053,
-    "seen": 1790367652.8378353,
-    "ast_hash": "ac953f81eb6792bd5d13102d537188d9",
-    "semantic_hash": "ac953f81eb6792bd5d13102d537188d9"
+    "mtime": 1790380596.3977525,
+    "seen": 1790380640.8303726,
+    "ast_hash": "1a8060471c505f151e16d1f4e48ded01",
+    "semantic_hash": ""
   },
   "blazor/Components/Pages/Home.razor": {
-    "mtime": 1790361937.3233683,
-    "seen": 1790367652.8378367,
-    "ast_hash": "91fdeb8a1d71234eff4092cf30be2370",
-    "semantic_hash": "91fdeb8a1d71234eff4092cf30be2370"
+    "mtime": 1790380596.3970714,
+    "seen": 1790380640.8303747,
+    "ast_hash": "b233c9a99d06d10abe4ce8d3736f8e69",
+    "semantic_hash": ""
   },
   "blazor/Components/Pages/MisGrupos.razor": {
-    "mtime": 1790361937.3235364,
-    "seen": 1790367652.8378384,
-    "ast_hash": "93bcf6f6e95c643193176de13ce2f20f",
-    "semantic_hash": "93bcf6f6e95c643193176de13ce2f20f"
+    "mtime": 1790380596.397346,
+    "seen": 1790380640.8303766,
+    "ast_hash": "42d727a604752d8c1450093dc8db3c43",
+    "semantic_hash": ""
   },
   "blazor/Components/Pages/NotFound.razor": {
-    "mtime": 1790125998.4239902,
-    "seen": 1790367652.8378398,
+    "mtime": 1790375801.1739347,
+    "seen": 1790380640.830379,
     "ast_hash": "effd9f93770e34c9805b2a2bfcf0fc0b",
     "semantic_hash": "effd9f93770e34c9805b2a2bfcf0fc0b"
   },
   "blazor/Components/Pages/Perfil.razor": {
-    "mtime": 1790125998.4239902,
-    "seen": 1790367652.8378415,
-    "ast_hash": "ee0621a5bfb1a29511a3236013cd59fd",
-    "semantic_hash": "ee0621a5bfb1a29511a3236013cd59fd"
+    "mtime": 1790380596.3965302,
+    "seen": 1790380640.8303814,
+    "ast_hash": "6f5d30df79b07a0c75d9a908811a893a",
+    "semantic_hash": ""
   },
   "blazor/Components/Pages/RegisterGroup.razor": {
-    "mtime": 1790361937.3237448,
-    "seen": 1790367652.837843,
-    "ast_hash": "65ce9a130105d359fc5c4e367d19c8e1",
-    "semantic_hash": "65ce9a130105d359fc5c4e367d19c8e1"
+    "mtime": 1790380596.3985784,
+    "seen": 1790380640.8303835,
+    "ast_hash": "4b3c4d5021a820cbd8da4de24b9521ac",
+    "semantic_hash": ""
   },
   "blazor/Components/Pages/Timeline.razor": {
-    "mtime": 1790361937.3240435,
-    "seen": 1790367652.8378444,
-    "ast_hash": "b69f06d62a123016ea016088764ae3ef",
-    "semantic_hash": "b69f06d62a123016ea016088764ae3ef"
+    "mtime": 1790380596.3982155,
+    "seen": 1790380640.8303857,
+    "ast_hash": "861d71b01cadbf17704445f23cd89da4",
+    "semantic_hash": ""
   },
   "blazor/Components/Routes.razor": {
     "mtime": 1790125998.4249902,
@@ -150,62 +150,62 @@
     "semantic_hash": "1381b777a75bae4f607a0e7857d21014"
   },
   "blazor/Components/Shared/AdminDashboardView.razor": {
-    "mtime": 1790361937.3242178,
-    "seen": 1790367652.8378472,
+    "mtime": 1790375801.1762955,
+    "seen": 1790380640.830392,
     "ast_hash": "e7d57498f441e5b1619daf6a6ee14d16",
     "semantic_hash": "e7d57498f441e5b1619daf6a6ee14d16"
   },
   "blazor/Components/Shared/AdminKpiGrid.razor": {
-    "mtime": 1790361937.3243098,
-    "seen": 1790367652.8378487,
+    "mtime": 1790375801.176449,
+    "seen": 1790380640.8303945,
     "ast_hash": "f84e38d62c9fd75876258a2c3939804c",
     "semantic_hash": "f84e38d62c9fd75876258a2c3939804c"
   },
   "blazor/Components/Shared/FluentIcon.razor": {
-    "mtime": 1790125998.4262185,
-    "seen": 1790367652.83785,
+    "mtime": 1790375801.1766133,
+    "seen": 1790380640.830397,
     "ast_hash": "aa0cc468214d23d43f72cbe0f6342f3e",
     "semantic_hash": "aa0cc468214d23d43f72cbe0f6342f3e"
   },
   "blazor/Components/Shared/GroupTermsTab.razor": {
-    "mtime": 1790125998.4262185,
-    "seen": 1790367652.8378522,
-    "ast_hash": "278df419593bcb34fc161ea14d8da9b4",
-    "semantic_hash": "278df419593bcb34fc161ea14d8da9b4"
+    "mtime": 1790376362.5823395,
+    "seen": 1790380640.8304,
+    "ast_hash": "d3b80118376df0d99c52877bc42e7f2a",
+    "semantic_hash": ""
   },
   "blazor/Components/Shared/JoinButton.razor": {
-    "mtime": 1790125998.4262185,
-    "seen": 1790367652.8378541,
-    "ast_hash": "dabe441db76d65ca4b3d295c1147b355",
-    "semantic_hash": "dabe441db76d65ca4b3d295c1147b355"
+    "mtime": 1790375854.612243,
+    "seen": 1790380640.8304029,
+    "ast_hash": "73e50ba7aec8d8b6c16e37d97cc4d3e8",
+    "semantic_hash": ""
   },
   "blazor/Components/Shared/LeaderDashboardView.razor": {
-    "mtime": 1790125998.4262185,
-    "seen": 1790367652.837856,
-    "ast_hash": "a1f9ffba7058c2ed6ab375adfe5ae5a7",
-    "semantic_hash": "a1f9ffba7058c2ed6ab375adfe5ae5a7"
+    "mtime": 1790376353.9202282,
+    "seen": 1790380640.8304052,
+    "ast_hash": "d186378287f82caa76a73bef2d21ef2c",
+    "semantic_hash": ""
   },
   "blazor/Components/Shared/NotificationsPanel.razor": {
-    "mtime": 1790125998.4262185,
-    "seen": 1790367652.837858,
+    "mtime": 1790375801.1775465,
+    "seen": 1790380640.8304133,
     "ast_hash": "ee2d77c4c7779898dde1923f3a85dc7d",
     "semantic_hash": "ee2d77c4c7779898dde1923f3a85dc7d"
   },
   "blazor/Components/Shared/RedirectToLogin.razor": {
-    "mtime": 1790125998.4262185,
-    "seen": 1790367652.8378596,
-    "ast_hash": "2d0094afe39217b8247c7ee9e163da27",
-    "semantic_hash": "2d0094afe39217b8247c7ee9e163da27"
+    "mtime": 1790375801.1776614,
+    "seen": 1790380640.8304162,
+    "ast_hash": "bc2f95bdedbe6f216059595f5f378654",
+    "semantic_hash": ""
   },
   "blazor/Components/Shared/RsvpButton.razor": {
-    "mtime": 1790125998.4262185,
-    "seen": 1790367652.837861,
-    "ast_hash": "e49de7f32e86155eff7efaa8b5952d28",
-    "semantic_hash": "e49de7f32e86155eff7efaa8b5952d28"
+    "mtime": 1790376362.853343,
+    "seen": 1790380640.8304183,
+    "ast_hash": "ff879767bd29170a05f8e2ec17cc2795",
+    "semantic_hash": ""
   },
   "blazor/Components/Shared/StudentDashboardView.razor": {
-    "mtime": 1790125998.4262185,
-    "seen": 1790367652.837863,
+    "mtime": 1790375801.1779475,
+    "seen": 1790380640.8304207,
     "ast_hash": "312a2603237e20798ffe0b059a0a7415",
     "semantic_hash": "312a2603237e20798ffe0b059a0a7415"
   },
@@ -216,10 +216,10 @@
     "semantic_hash": "d7ba215fe97f0117eb3fe4f4b463759b"
   },
   "blazor/Controllers/AdminController.cs": {
-    "mtime": 1790361937.3245058,
-    "seen": 1790367652.8378658,
-    "ast_hash": "b2d427ad04117498feee6c4868804ecb",
-    "semantic_hash": "b2d427ad04117498feee6c4868804ecb"
+    "mtime": 1790376150.4337654,
+    "seen": 1790380640.8304255,
+    "ast_hash": "1aa75eca0566b660a3f051b463b098ea",
+    "semantic_hash": ""
   },
   "blazor/Controllers/DashboardController.cs": {
     "mtime": 1790125998.4272883,
@@ -228,10 +228,10 @@
     "semantic_hash": "45e19a2224d6fd71bdc467ea53e56c0b"
   },
   "blazor/Controllers/EventsController.cs": {
-    "mtime": 1790361937.324634,
-    "seen": 1790367652.8378692,
-    "ast_hash": "af8f49349da6f8d4b5fb5a1016b67d24",
-    "semantic_hash": "af8f49349da6f8d4b5fb5a1016b67d24"
+    "mtime": 1790374078.1789618,
+    "seen": 1790380640.8304307,
+    "ast_hash": "cf799fc8904445b5df8308b87268dc30",
+    "semantic_hash": ""
   },
   "blazor/Controllers/GroupRegistrationRequestsController.cs": {
     "mtime": 1790361937.3247733,
@@ -258,10 +258,10 @@
     "semantic_hash": "5f9d066c94c1c2c22abcd98e60a9af0d"
   },
   "blazor/Controllers/MembershipsController.cs": {
-    "mtime": 1790361937.3251288,
-    "seen": 1790367652.8378768,
-    "ast_hash": "00117f4a6285f90f04d557b63ed8d57c",
-    "semantic_hash": "00117f4a6285f90f04d557b63ed8d57c"
+    "mtime": 1790373850.4102802,
+    "seen": 1790380640.8304443,
+    "ast_hash": "1bf2ac49e939fec3207907290f6b7689",
+    "semantic_hash": ""
   },
   "blazor/Controllers/NotificationsController.cs": {
     "mtime": 1790361937.3251288,
@@ -300,10 +300,10 @@
     "semantic_hash": "6a6694e7f1b534c04ff4510b8585ddb9"
   },
   "blazor/DTOs/Responses/OtherResponses.cs": {
-    "mtime": 1790361937.3254874,
-    "seen": 1790367652.8378894,
-    "ast_hash": "b6c819b9cd67bec5690155223870d48f",
-    "semantic_hash": "b6c819b9cd67bec5690155223870d48f"
+    "mtime": 1790373849.8302789,
+    "seen": 1790380640.830462,
+    "ast_hash": "24386b73711620822c47a747d7ceccdd",
+    "semantic_hash": ""
   },
   "blazor/DTOs/Responses/UserResponses.cs": {
     "mtime": 1790125998.4283655,
@@ -402,16 +402,16 @@
     "semantic_hash": "022ea0f28bc24a60b6930fbc290f2ed1"
   },
   "blazor/Middleware/GlobalExceptionHandler.cs": {
-    "mtime": 1790125998.4289901,
-    "seen": 1790367652.8379169,
-    "ast_hash": "edde09ff73517b4bf0dd6a55ae9929fe",
-    "semantic_hash": "edde09ff73517b4bf0dd6a55ae9929fe"
+    "mtime": 1790375780.6330116,
+    "seen": 1790380640.8305066,
+    "ast_hash": "96a5d3db0c0085d226522a07bdb923c3",
+    "semantic_hash": ""
   },
   "blazor/Models/AppModels.cs": {
-    "mtime": 1790361937.3257296,
-    "seen": 1790367652.8379185,
-    "ast_hash": "0c96dae67b56c980551a195e45815ff3",
-    "semantic_hash": "0c96dae67b56c980551a195e45815ff3"
+    "mtime": 1790373850.689281,
+    "seen": 1790380640.8305085,
+    "ast_hash": "36a1bb00333e64f518bc997c3e8f9ca7",
+    "semantic_hash": ""
   },
   "blazor/Models/Entities.cs": {
     "mtime": 1790125998.4301758,
@@ -420,10 +420,10 @@
     "semantic_hash": "7b8aef40ac933c5f2024824a020cf07b"
   },
   "blazor/Program.cs": {
-    "mtime": 1790125998.4301758,
-    "seen": 1790367652.837922,
-    "ast_hash": "a4d8eaaef98efa2797b7fdb89dee20c7",
-    "semantic_hash": "a4d8eaaef98efa2797b7fdb89dee20c7"
+    "mtime": 1790376324.4248526,
+    "seen": 1790380640.8305137,
+    "ast_hash": "1c07051b5df00bbf2d4775842c732116",
+    "semantic_hash": ""
   },
   "blazor/Properties/launchSettings.json": {
     "mtime": 1790125998.4301758,
@@ -432,22 +432,22 @@
     "semantic_hash": "8e1ccf9ee57319622402ceb89b384358"
   },
   "blazor/Services/AdminRoleHandler.cs": {
-    "mtime": 1790125998.4301758,
-    "seen": 1790367652.8379807,
-    "ast_hash": "4b8dbac2168a302b3a88ca55b182396e",
-    "semantic_hash": "4b8dbac2168a302b3a88ca55b182396e"
+    "mtime": 1790374822.3165038,
+    "seen": 1790380640.8305194,
+    "ast_hash": "f1a89b171404d98ea3bd699ed35143d2",
+    "semantic_hash": ""
   },
   "blazor/Services/ApiServices.cs": {
-    "mtime": 1790361937.326555,
-    "seen": 1790367652.837983,
-    "ast_hash": "d28ad474c2292d6b49079ed5fd033b7d",
-    "semantic_hash": "d28ad474c2292d6b49079ed5fd033b7d"
+    "mtime": 1790376150.6987684,
+    "seen": 1790380640.830522,
+    "ast_hash": "753849dd9622a05cd154862a265c0e5d",
+    "semantic_hash": ""
   },
   "blazor/Services/CurrentUserService.cs": {
-    "mtime": 1790361937.3267095,
-    "seen": 1790367652.8379848,
-    "ast_hash": "b93e33440825813954b5119eb597617c",
-    "semantic_hash": "b93e33440825813954b5119eb597617c"
+    "mtime": 1790374822.8245163,
+    "seen": 1790380640.8305273,
+    "ast_hash": "7dc3d0d99d8be631d39cfdc151aee278",
+    "semantic_hash": ""
   },
   "blazor/Services/DashboardService.cs": {
     "mtime": 1790361937.3268735,
@@ -462,10 +462,10 @@
     "semantic_hash": "3842783c3f9f0b4b745fcec06fbebf21"
   },
   "blazor/Services/EventService.cs": {
-    "mtime": 1790361937.327049,
-    "seen": 1790367652.8379896,
-    "ast_hash": "f6282b15b70da316dfc08d911b7d1ddf",
-    "semantic_hash": "f6282b15b70da316dfc08d911b7d1ddf"
+    "mtime": 1790375791.0585928,
+    "seen": 1790380640.8305352,
+    "ast_hash": "614f9c272457c2df713dc67d2a7b6bc5",
+    "semantic_hash": ""
   },
   "blazor/Services/GroupPostService.cs": {
     "mtime": 1790125998.4306388,
@@ -480,16 +480,16 @@
     "semantic_hash": "994efd6e3c2d50145b09720e38bd09f9"
   },
   "blazor/Services/GroupSeasonService.cs": {
-    "mtime": 1790125998.4306388,
-    "seen": 1790367652.8379948,
-    "ast_hash": "b4276d8461e85d8297108ca84aa9122a",
-    "semantic_hash": "b4276d8461e85d8297108ca84aa9122a"
+    "mtime": 1790376150.198763,
+    "seen": 1790380640.8305442,
+    "ast_hash": "f3ea80e7f7575ea0e9d38663430a763f",
+    "semantic_hash": ""
   },
   "blazor/Services/GroupService.cs": {
-    "mtime": 1790125998.4309902,
-    "seen": 1790367652.8379965,
-    "ast_hash": "63b24d9e55e4a029a6322b3eb99eaf66",
-    "semantic_hash": "63b24d9e55e4a029a6322b3eb99eaf66"
+    "mtime": 1790375791.0607774,
+    "seen": 1790380640.8305466,
+    "ast_hash": "71ca32c0f2ac7c2996d48b49e11e722a",
+    "semantic_hash": ""
   },
   "blazor/Services/GroupTermService.cs": {
     "mtime": 1790125998.4309902,
@@ -498,16 +498,16 @@
     "semantic_hash": "73c9e10e5346f362bb60af9cb80611c5"
   },
   "blazor/Services/LeadershipRequestService.cs": {
-    "mtime": 1790125998.4309902,
-    "seen": 1790367652.838,
-    "ast_hash": "c79c26845f3aff0888bd8da496fc7845",
-    "semantic_hash": "c79c26845f3aff0888bd8da496fc7845"
+    "mtime": 1790375791.061773,
+    "seen": 1790380640.8305516,
+    "ast_hash": "10e7ccad73af5f2f7338c38d799dc109",
+    "semantic_hash": ""
   },
   "blazor/Services/MembershipService.cs": {
-    "mtime": 1790125998.4309902,
-    "seen": 1790367652.8380017,
-    "ast_hash": "c6c54936b73d6c8c3099761007274b38",
-    "semantic_hash": "c6c54936b73d6c8c3099761007274b38"
+    "mtime": 1790375791.061229,
+    "seen": 1790380640.830554,
+    "ast_hash": "74c71f365d091d8493bfb034f08d6cc7",
+    "semantic_hash": ""
   },
   "blazor/Services/NotificationService.cs": {
     "mtime": 1790125998.4309902,
@@ -522,10 +522,10 @@
     "semantic_hash": "c80c419c432f08ac48f54f58d49292b9"
   },
   "blazor/Services/UserService.cs": {
-    "mtime": 1790361937.3271646,
-    "seen": 1790367652.8380063,
-    "ast_hash": "e7fffa6fc3c7649540a8a4ee66577ecb",
-    "semantic_hash": "e7fffa6fc3c7649540a8a4ee66577ecb"
+    "mtime": 1790375791.0577517,
+    "seen": 1790380640.8305678,
+    "ast_hash": "1dc3cc0ee1e7ed96545aa8330c6b0678",
+    "semantic_hash": ""
   },
   "blazor/Services/UserStateService.cs": {
     "mtime": 1790125998.4309902,
@@ -540,10 +540,10 @@
     "semantic_hash": "ba9d1296743ce804686792e033cb7969"
   },
   "blazor/StudentGroupsHub.slnx": {
-    "mtime": 1790125998.4309902,
-    "seen": 1790367652.8380585,
-    "ast_hash": "8956da2afaabf8e9efaf0de5833c5705",
-    "semantic_hash": "8956da2afaabf8e9efaf0de5833c5705"
+    "mtime": 1790373104.1489458,
+    "seen": 1790380640.8305788,
+    "ast_hash": "8cb3ef259c0d36f4fea9c26c5bb4a4c6",
+    "semantic_hash": ""
   },
   "blazor/appsettings.json": {
     "mtime": 1790125998.4309902,
@@ -600,9 +600,9 @@
     "semantic_hash": ""
   },
   "docs/04-api-contract.md": {
-    "mtime": 1790125998.4655275,
-    "seen": 1790365228.5591457,
-    "ast_hash": "85b63cac3df114bca7a03b6b3ae903ef",
+    "mtime": 1790380622.327832,
+    "seen": 1790380640.8306668,
+    "ast_hash": "1141f9976444d85ccfd52dbccfb15031",
     "semantic_hash": ""
   },
   "docs/05-user-roles.md": {
@@ -657,6 +657,138 @@
     "mtime": 1790125998.4333174,
     "seen": 1790365228.559184,
     "ast_hash": "eab4f24ab5ff80be586dcdab8e87dc9c",
+    "semantic_hash": ""
+  },
+  "blazor/Components/Shared/LoginLink.razor": {
+    "mtime": 1790375801.17741,
+    "seen": 1790380640.830409,
+    "ast_hash": "c2954bdf6edcfb8ad8d37bf71bbb1fc8",
+    "semantic_hash": ""
+  },
+  "blazor/Services/AuthenticationNavigation.cs": {
+    "mtime": 1790375524.4804993,
+    "seen": 1790380640.8305247,
+    "ast_hash": "be25d20aaafe062417432565eae5e100",
+    "semantic_hash": ""
+  },
+  "blazor/Services/UserConfirmationService.cs": {
+    "mtime": 1790376324.1808496,
+    "seen": 1790380640.8305619,
+    "ast_hash": "9f66ddca8c1fcf63a25ea2b840703e48",
+    "semantic_hash": ""
+  },
+  "blazor/Services/UserErrorService.cs": {
+    "mtime": 1790376021.765443,
+    "seen": 1790380640.8305652,
+    "ast_hash": "6ed190102134943b04092c6ebfee0e3b",
+    "semantic_hash": ""
+  },
+  "blazor/Services/UserVisibleException.cs": {
+    "mtime": 1790376021.4954407,
+    "seen": 1790380640.8305728,
+    "ast_hash": "1fe859e8216944192846ea576749321e",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/AssemblyInfo.cs": {
+    "mtime": 1790373323.8900266,
+    "seen": 1790380640.8305886,
+    "ast_hash": "312068e2bd97799bb5d90526200f0b6f",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/GlobalUsings.cs": {
+    "mtime": 1790373382.5579145,
+    "seen": 1790380640.8305912,
+    "ast_hash": "c3e519221de089efbc6b81008eceeb7c",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Infrastructure/PostgreSqlCollection.cs": {
+    "mtime": 1790373324.165026,
+    "seen": 1790380640.8305936,
+    "ast_hash": "4f01355491f5aa1ab86dda65d6add6a0",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Infrastructure/PostgreSqlFixture.cs": {
+    "mtime": 1790373462.302833,
+    "seen": 1790380640.8305957,
+    "ast_hash": "fa4082dc1328efbaa84c3b3ce7db4a08",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Infrastructure/TestData.cs": {
+    "mtime": 1790373105.683936,
+    "seen": 1790380640.8305979,
+    "ast_hash": "06e424aeffd58d0b72c5a6dfed28bd34",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Privacy/EventAccessTests.cs": {
+    "mtime": 1790375953.7578652,
+    "seen": 1790380640.8306007,
+    "ast_hash": "25da915d15a40e29ac3aeb14cd54c09e",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Privacy/PublicMemberContractTests.cs": {
+    "mtime": 1790373852.5132854,
+    "seen": 1790380640.8306034,
+    "ast_hash": "499b01ce5648968798fe300005ab56a0",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Safety/GroupSeasonResetTests.cs": {
+    "mtime": 1790376151.4037764,
+    "seen": 1790380640.8306055,
+    "ast_hash": "137963d6ba77efd1a324daacdd2b5384",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Safety/UserConfirmationServiceTests.cs": {
+    "mtime": 1790376324.6718557,
+    "seen": 1790380640.830608,
+    "ast_hash": "e0898a395637fd26e1ce1e29332d7ec7",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Security/ActiveUserAuthorizationTests.cs": {
+    "mtime": 1790375954.5528715,
+    "seen": 1790380640.8306105,
+    "ast_hash": "7081418e36f0103a54cd80e28e186b8b",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Security/AuthenticationNavigationTests.cs": {
+    "mtime": 1790375526.2585287,
+    "seen": 1790380640.8306124,
+    "ast_hash": "2aef9f3a0e56d25f2378ce23d6a6bb91",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Security/ErrorContractTests.cs": {
+    "mtime": 1790375781.1690123,
+    "seen": 1790380640.8306146,
+    "ast_hash": "8006d0bd43f1cb3a99df29931c303ec2",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Security/EventResourceAuthorizationTests.cs": {
+    "mtime": 1790373324.4470253,
+    "seen": 1790380640.830617,
+    "ast_hash": "62f98f41d870d25131c724e46fcbcbf9",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Security/MembershipResourceAuthorizationTests.cs": {
+    "mtime": 1790373639.4378915,
+    "seen": 1790380640.8306189,
+    "ast_hash": "d5332a91e8fb7a2f448083c15592e98c",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Security/UserAdministrationTests.cs": {
+    "mtime": 1790375954.2918694,
+    "seen": 1790380640.830621,
+    "ast_hash": "6230cef40cc888fc9fd1b2b8265ad700",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/Security/ValidationBoundaryTests.cs": {
+    "mtime": 1790375954.0298674,
+    "seen": 1790380640.830623,
+    "ast_hash": "c04307303ca6a0a9f4dd881d6d3e23a1",
+    "semantic_hash": ""
+  },
+  "tests/StudentGroupsHub.Tests/StudentGroupsHub.Tests.csproj": {
+    "mtime": 1790373323.6180272,
+    "seen": 1790380640.8306253,
+    "ast_hash": "cc30fb83932b145e0b78721481785ac1",
     "semantic_hash": ""
   }
 }
