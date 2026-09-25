@@ -1,8 +1,10 @@
-# Security foundation issue plan
+# Security foundation issue record
+
+Status: implemented on `release` through small, independently revertible commits.
 
 ## Scope
 
-This plan covers `SEC-001..003`, `PRIV-001..003`, `SAFE-001..002`,
+This record covers `SEC-001..003`, `PRIV-001..003`, `SAFE-001..002`,
 `AUTHZ-001`, `ADMIN-001`, `AUTH-001..002`, `VALID-001`, `ERR-002` and
 `EXT-001`. Work is delivered as small green commits directly on `release`.
 
@@ -20,14 +22,24 @@ This plan covers `SEC-001..003`, `PRIV-001..003`, `SAFE-001..002`,
 
 ## Verification strategy
 
-1. Add a .NET test project using xUnit, `WebApplicationFactory` and a PostgreSQL
-   Testcontainer pinned by digest.
+1. The .NET test project uses xUnit and a PostgreSQL Testcontainer pinned by
+   digest; service and HTTP-facing contracts are tested with synthetic data.
 2. Reproduce each issue with a negative test before or alongside the fix.
 3. Cover student, leader A, leader B, admin, inactive user, missing resource,
    manipulated ID and repeated transition where applicable.
 4. Run the affected tests, the complete test project and a Release build for each
    coherent commit.
 5. Finish with an isolated HTTP smoke run against synthetic data.
+
+The repeatable local verification is:
+
+```text
+dotnet test tests/StudentGroupsHub.Tests/StudentGroupsHub.Tests.csproj
+dotnet build blazor/StudentGroupsHub.csproj --configuration Release
+```
+
+The test database is disposable and does not use developer settings or
+institutional credentials.
 
 ## Delivery and rollback
 

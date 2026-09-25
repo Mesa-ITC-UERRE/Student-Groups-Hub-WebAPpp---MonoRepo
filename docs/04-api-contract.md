@@ -118,6 +118,10 @@ List active groups. Supports search and filtering.
 
 **Auth:** Public
 
+The public response is intentionally minimized to `displayName`, `avatarUrl`,
+and `joinedAt`; it does not expose email addresses or internal user/membership
+identifiers. Management views use a separate protected contract.
+
 **Query:** `?search=robotica&category=Tecnología&page=1&pageSize=20`
 
 **Response 200:**
@@ -162,12 +166,8 @@ List accepted members of a group.
 ```json
 [
   {
-    "membershipId": "uuid",
-    "userId": "uuid",
     "displayName": "Juan Torres",
-    "email": "j.torres@uerre.mx",
     "avatarUrl": "https://...",
-    "status": "accepted",
     "joinedAt": "2026-02-10T00:00:00Z"
   }
 ]
@@ -330,7 +330,9 @@ Reject a group request.
 ### `GET /api/groups/{id}/events`
 List events for a group.
 
-**Auth:** Public
+**Auth:** Public for published public events. Authenticated members may also
+read published `members_only` events from their groups; leaders and admins may
+read all events in their managed groups.
 
 **Query:** `?status=published&from=2026-06-01&to=2026-07-01`
 
@@ -339,7 +341,8 @@ List events for a group.
 ### `GET /api/events`
 List all upcoming published events (cross-group).
 
-**Auth:** Public
+**Auth:** Public for published public events; protected visibility is enforced
+by group membership or management scope.
 
 **Query:** `?search=hackathon&groupId=uuid&from=2026-06-01&page=1`
 
@@ -400,6 +403,9 @@ List all RSVPs for an event.
 Register for an event (or update registration status).
 
 **Auth:** Required
+
+Only the allow-listed status `going` is accepted. A user must be allowed to
+see the event before registering; canceled or inaccessible events are rejected.
 
 **Body:**
 ```json
