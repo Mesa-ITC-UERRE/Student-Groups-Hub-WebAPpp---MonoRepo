@@ -191,3 +191,6 @@ app.MapRazorComponents<App>()
 app.MapHealthChecks("/health");
 
 app.Run();
+
+// Expose the minimal-host entry point to the integration test host.
+public partial class Program;
