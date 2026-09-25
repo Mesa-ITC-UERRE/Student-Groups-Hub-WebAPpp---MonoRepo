@@ -1,8 +1,6 @@
 @page "/groups/{Slug}"
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
-@using System.Security.Claims
 @using System.IO
 
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
@@ -12,7 +10,6 @@
 @inject GroupPostApiService PostService
 @inject LeadershipRequestApiService LeadershipService
 @inject CurrentUserService CurrentUser
-@inject AuthenticationStateProvider AuthState
 @inject IJSRuntime JS
 @attribute [Authorize]
 
@@ -922,19 +919,13 @@ else
 
     private async Task LoadUserPermissionsAsync(Guid groupId)
     {
-        var authState = await AuthState.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated != true)
+        var user = await CurrentUser.GetUserAsync();
+        if (!UserService.IsActive(user))
         {
             _membershipStatus = null;
             _canManage = false;
             return;
         }
-
-        var role = user.FindFirst("extension_Role")?.Value
-                ?? user.FindFirst("roles")?.Value
-                ?? "";
 
         var statusTask = GroupService.GetMyMembershipStatusAsync(groupId);
         var leaderTask = GroupService.IsLeaderAsync(groupId);
@@ -943,13 +934,12 @@ else
         await Task.WhenAll(statusTask, leaderTask, canPostTask);
 
         _membershipStatus = statusTask.Result;
-        _canManage = role.Equals("admin", StringComparison.OrdinalIgnoreCase) || leaderTask.Result;
+        _canManage = user!.Role == "admin" || leaderTask.Result;
         _canPost   = _canManage || canPostTask.Result;
         _canRequestLeadership = !_canManage && await LeadershipService.CanRequestAsync(groupId);
 
         // Load current user ID for post delete permission
-        var me = await CurrentUser.GetUserAsync();
-        _currentUserId = me?.Id ?? Guid.Empty;
+        _currentUserId = user.Id;
 
         // Load post management data for leaders
         if (_canManage)

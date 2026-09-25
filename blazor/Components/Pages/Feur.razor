@@ -2,7 +2,7 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject GroupApiService GroupService
 @inject GroupTermApiService TermService
-@inject AuthenticationStateProvider AuthState
+@inject CurrentUserService CurrentUser
 @attribute [Authorize]
 
 <PageTitle>FEUR — Federación de Estudiantes U-ERRE</PageTitle>
@@ -166,15 +166,10 @@
                 _currentTerm = _terms.FirstOrDefault(t => t.IsCurrent) ?? _terms.FirstOrDefault();
                 _currentMembers = await GroupService.GetPublicMembersAsync(_feurGroup.Id);
 
-                // Check if current user can manage
-                var authState = await AuthState.GetAuthenticationStateAsync();
-                var user = authState.User;
-                if (user.Identity?.IsAuthenticated == true)
-                {
-                    var role = user.FindFirst("extension_Role")?.Value
-                            ?? user.FindFirst("roles")?.Value ?? "";
-                    _canManage = role == "admin";
-                }
+                var user = await CurrentUser.GetUserAsync();
+                _canManage = UserService.IsActive(user)
+                    && (user!.Role == "admin"
+                        || await GroupService.IsLeaderAsync(_feurGroup.Id));
             }
         }
         catch { _feurGroup = null; }
