@@ -1,6 +1,8 @@
 @page "/"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject DashboardService DashboardService
+@inject MisGruposApiService MisGruposService
+@inject CalendarApiService CalendarSvc
 
 <PageTitle>Grupos Estudiantiles Hub — U-ERRE</PageTitle>
 
@@ -66,6 +68,183 @@
                 </div>
             </div>
         </section>
+
+        <!-- Desktop quick links: mirrors the mobile tab bar's 5 destinations
+             for wide screens, where there's no fixed bottom bar. -->
+        <section class="bg-white pb-4 d-none d-md-block">
+            <div class="container-uerre">
+                <div class="row row-cols-5 g-3 text-center">
+                    <div class="col">
+                        <a href="/" class="text-decoration-none">
+                            <div class="home-quicklink home-quicklink--slate">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.223 2.293a1 1 0 0 1 1.554 0l8.5 9A1 1 0 0 1 20.5 13H19v7a1.5 1.5 0 0 1-1.5 1.5H15a1 1 0 0 1-1-1v-4.5a1.5 1.5 0 0 0-1.5-1.5h-1a1.5 1.5 0 0 0-1.5 1.5V20.5a1 1 0 0 1-1 1H6.5A1.5 1.5 0 0 1 5 20V13H3.5a1 1 0 0 1-.723-1.707z"/></svg>
+                            </div>
+                            <div class="home-quicklink-label">Inicio</div>
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a href="/groups" class="text-decoration-none">
+                            <div class="home-quicklink home-quicklink--blue">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8m-8 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8m7 2c2.67 0 8 1.34 8 4v1H1v-1c0-2.66 5.33-4 8-4 .93 0 2.09.16 3.27.46a7.7 7.7 0 0 0-2.27 1.1A16 16 0 0 0 9 14c-2.42 0-5.5.89-6.49 2.5h12A7.74 7.74 0 0 0 15 14c1.18-.3 2.34-.46 3.27-.46z"/></svg>
+                            </div>
+                            <div class="home-quicklink-label">Grupos</div>
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a href="/calendario" class="text-decoration-none">
+                            <div class="home-quicklink home-quicklink--teal">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg>
+                            </div>
+                            <div class="home-quicklink-label">Calendario</div>
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a href="/events" class="text-decoration-none">
+                            <div class="home-quicklink home-quicklink--amber">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg>
+                            </div>
+                            <div class="home-quicklink-label">Eventos</div>
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a href="/perfil" class="text-decoration-none">
+                            <div class="home-quicklink home-quicklink--violet">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2m0 1.5a8.5 8.5 0 0 1 6.83 13.56A8.48 8.48 0 0 0 12 14a8.48 8.48 0 0 0-6.83 3.06A8.5 8.5 0 0 1 12 3.5m0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6"/></svg>
+                            </div>
+                            <div class="home-quicklink-label">Perfil</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tus grupos -->
+        <section class="py-4 py-md-5" style="background:var(--uerre-surface);">
+            <div class="container-uerre">
+                <div class="d-flex align-items-center justify-content-between gap-3 mb-3 flex-wrap">
+                    <h2 class="h5 fw-bold mb-0">Tus grupos</h2>
+                    <a href="/mis-grupos" class="small fw-semibold text-decoration-none">Ver todos →</a>
+                </div>
+
+                @if (_myGroupsCount == 0)
+                {
+                    <div class="card-uerre no-hover p-4 text-center">
+                        <p class="text-muted small mb-3">Aún no perteneces a ningún grupo.</p>
+                        <a href="/groups" class="btn btn-uerre-primary btn-sm px-4">Explorar grupos</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-3">
+                        @foreach (var g in _homeGroups)
+                        {
+                            <div class="col-6 col-md-4 col-lg-2">
+                                <a href="/groups/@g.Group.Slug" class="text-decoration-none d-block h-100">
+                                    <div class="card-uerre p-3 text-center h-100">
+                                        @if (!string.IsNullOrEmpty(g.Group.LogoUrl))
+                                        {
+                                            <img src="@g.Group.LogoUrl" alt="@g.Group.Name"
+                                                 class="rounded-3 mx-auto mb-2"
+                                                 style="width:44px;height:44px;object-fit:cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold text-white mx-auto mb-2"
+                                                 style="width:44px;height:44px;background:var(--uerre-purple);font-family:'Montserrat',sans-serif;">
+                                                @g.Group.Name.Substring(0, 1)
+                                            </div>
+                                        }
+                                        <div class="fw-semibold small text-dark line-clamp-1">@g.Group.Name</div>
+                                        @if (g.IsLeader)
+                                        {
+                                            <span class="rounded-pill px-2 mt-1 d-inline-block"
+                                                  style="font-size:.62rem;font-weight:600;background:var(--uerre-tag-bg);color:var(--uerre-purple);">
+                                                Líder
+                                            </span>
+                                        }
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
+
+        <!-- Calendario -->
+        <section class="py-4 py-md-5 bg-white">
+            <div class="container-uerre">
+                <div class="d-flex align-items-end justify-content-between gap-3 mb-3 flex-wrap">
+                    <div>
+                        <h2 class="h5 fw-bold mb-1 text-capitalize">Calendario — @_currentMonthLabel</h2>
+                        <div class="d-flex gap-3 flex-wrap" style="font-size:.75rem;">
+                            <span class="d-inline-flex align-items-center gap-2">
+                                <span class="calendar-legend-dot calendar-legend-dot--mine"></span>Mis grupos
+                            </span>
+                            <span class="d-inline-flex align-items-center gap-2">
+                                <span class="calendar-legend-dot calendar-legend-dot--other"></span>Otros eventos
+                            </span>
+                        </div>
+                    </div>
+                    <a href="/calendario" class="small fw-semibold text-decoration-none">Ver calendario completo →</a>
+                </div>
+
+                @{
+                    var homeYear        = DateTime.Today.Year;
+                    var homeMonth       = DateTime.Today.Month;
+                    var homeFirstDay    = new DateTime(homeYear, homeMonth, 1);
+                    var homeDaysInMonth = DateTime.DaysInMonth(homeYear, homeMonth);
+                    var homeStartDow    = ((int)homeFirstDay.DayOfWeek + 6) % 7;
+                    var homeDayEvents   = (_currentMonth?.Days ?? []).ToDictionary(d => d.Date);
+                    var homeToday       = DateOnly.FromDateTime(DateTime.Today);
+                }
+
+                <div class="calendar-grid mb-1">
+                    @foreach (var d in new[]{"Lun","Mar","Mié","Jue","Vie","Sáb","Dom"})
+                    {
+                        <div class="calendar-day-header">@d</div>
+                    }
+                </div>
+                <div class="calendar-grid">
+                    @for (int i = 0; i < homeStartDow; i++)
+                    {
+                        <div class="calendar-cell calendar-cell--empty"></div>
+                    }
+                    @for (int day = 1; day <= homeDaysInMonth; day++)
+                    {
+                        var date = new DateOnly(homeYear, homeMonth, day);
+                        var isToday = date == homeToday;
+                        homeDayEvents.TryGetValue(date, out var dayData);
+                        var myCount  = dayData?.MyGroupEvents.Count ?? 0;
+                        var allCount = dayData?.AllEvents.Count    ?? 0;
+                        var hasAny   = myCount + allCount > 0;
+
+                        <a href="/calendario" class="calendar-cell-link">
+                            <div class="calendar-cell @(isToday ? "calendar-cell--today" : "") @(hasAny ? "calendar-cell--has-events" : "")">
+                                <span class="calendar-day-number">@day</span>
+                                @if (hasAny)
+                                {
+                                    <div class="calendar-indicators">
+                                        @if (myCount > 0)
+                                        {
+                                            <span class="calendar-indicator calendar-indicator--mine" title="@myCount evento(s) de mis grupos">
+                                                <span class="calendar-indicator-dot"></span>@myCount
+                                            </span>
+                                        }
+                                        @if (allCount > 0)
+                                        {
+                                            <span class="calendar-indicator calendar-indicator--other" title="@allCount otro(s) evento(s)">
+                                                <span class="calendar-indicator-dot"></span>@allCount
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+        </section>
     </Authorized>
 
     <NotAuthorized>
@@ -126,6 +305,12 @@
 
 @code {
     private int _totalUsers;
+    private int _myGroupsCount;
+    private List<HomeGroupItem> _homeGroups = [];
+    private CalendarMonthModel? _currentMonth;
+    private string _currentMonthLabel = DateTime.Today.ToString("MMMM", System.Globalization.CultureInfo.GetCultureInfo("es-MX"));
+
+    private record HomeGroupItem(GroupModel Group, bool IsLeader);
 
     protected override async Task OnInitializedAsync()
     {
@@ -137,6 +322,39 @@
         catch
         {
             _totalUsers = 0;
+        }
+
+        try
+        {
+            var myGroupsTask = MisGruposService.GetMyGroupsAsync();
+
+            // CalendarSvc already layers "my groups" (purple) over "all other
+            // platform events" (gold) for the month, so this renders correctly
+            // even for people who don't belong to any group yet.
+            var today        = DateTime.Today;
+            var calendarTask = CalendarSvc.GetCalendarAsync(today.Year, today.Month);
+
+            await Task.WhenAll(myGroupsTask, calendarTask);
+
+            if (myGroupsTask.Result is { } myGroups)
+            {
+                var items = myGroups.LeaderGroups.Select(g => new HomeGroupItem(g, true))
+                    .Concat(myGroups.MemberGroups
+                        .Where(g => myGroups.LeaderGroups.All(lg => lg.Id != g.Id))
+                        .Select(g => new HomeGroupItem(g, false)))
+                    .ToList();
+                _myGroupsCount = items.Count;
+                _homeGroups = items.Take(6).ToList();
+            }
+
+            _currentMonth = calendarTask.Result
+                .FirstOrDefault(m => m.Year == today.Year && m.Month == today.Month);
+        }
+        catch
+        {
+            _homeGroups = [];
+            _myGroupsCount = 0;
+            _currentMonth = null;
         }
     }
 

@@ -693,6 +693,218 @@ a:hover .hero-float-card {
     color: var(--uerre-muted); margin-top: .375rem;
 }
 
+/* ─── Home quick links (desktop equivalent of the mobile tab bar) ─── */
+.home-quicklink {
+    width: 56px; height: 56px;
+    margin: 0 auto .5rem;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(0,0,0,.12);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+a:hover .home-quicklink {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.18);
+}
+
+.home-quicklink-label {
+    font-size: .8rem; font-weight: 600;
+    color: var(--uerre-heading);
+}
+
+.home-quicklink--slate  { background: linear-gradient(135deg, #64748b, #475569); }
+.home-quicklink--blue   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.home-quicklink--teal   { background: linear-gradient(135deg, #14b8a6, #0f766e); }
+.home-quicklink--amber  { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.home-quicklink--violet { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+
+/* ─── Admin KPI Grid ─────────────────────────────────────────── */
+.admin-kpi-section { margin-bottom: 2rem; }
+
+.admin-kpi-heading {
+    display: flex; flex-wrap: wrap; align-items: flex-end;
+    justify-content: space-between; gap: .75rem;
+    margin-bottom: 1.25rem;
+}
+
+.admin-kpi-eyebrow {
+    font-size: .68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .1em;
+    color: var(--uerre-muted); margin-bottom: .25rem;
+}
+
+.admin-kpi-period { font-size: .8rem; color: var(--uerre-muted); margin-bottom: .1rem; }
+
+.admin-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+}
+
+.admin-kpi-card {
+    background: #fff;
+    border: 1px solid var(--uerre-border);
+    border-left: 4px solid var(--uerre-purple);
+    border-radius: var(--bs-border-radius-xl);
+    padding: 1.25rem 1.375rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,.04);
+    transition: transform .2s, box-shadow .2s;
+}
+
+.admin-kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(91,33,182,.1);
+}
+
+.admin-kpi-card--purple { border-left-color: var(--uerre-purple); }
+.admin-kpi-card--blue   { border-left-color: #2563eb; }
+.admin-kpi-card--amber  { border-left-color: var(--uerre-gold); }
+.admin-kpi-card--teal   { border-left-color: #0d9488; }
+.admin-kpi-card--rose   { border-left-color: #e11d48; }
+.admin-kpi-card--violet { border-left-color: var(--uerre-purple-vivid); }
+
+.admin-kpi-label {
+    font-size: .72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .06em;
+    color: var(--uerre-muted); margin-bottom: .375rem;
+}
+
+.admin-kpi-value {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.85rem; font-weight: 800;
+    color: var(--uerre-heading); line-height: 1;
+    margin-bottom: .375rem;
+}
+
+.admin-kpi-context {
+    font-size: .78rem; color: var(--uerre-muted); margin: 0;
+}
+
+.admin-kpi-context--positive { color: #0d9488; font-weight: 600; }
+.admin-kpi-context--negative { color: #e11d48; font-weight: 600; }
+
+.admin-kpi-progress {
+    background: var(--uerre-surface-alt);
+    border-radius: 999px;
+    height: 6px;
+    margin: .5rem 0 .5rem;
+    overflow: hidden;
+}
+
+.admin-kpi-progress span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--uerre-purple), var(--uerre-purple-vivid));
+    border-radius: 999px;
+    transition: width .3s ease;
+}
+
+.admin-kpi-insights {
+    display: flex; flex-wrap: wrap; gap: 1.5rem;
+    margin-top: 1.25rem;
+    padding: 1rem 1.25rem;
+    background: var(--uerre-surface);
+    border: 1px solid var(--uerre-border);
+    border-radius: var(--bs-border-radius-xl);
+}
+
+.admin-kpi-insights > div { display: flex; flex-direction: column; gap: .2rem; }
+
+.admin-kpi-insights strong {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.05rem; color: var(--uerre-heading);
+}
+
+.admin-kpi-insight-label {
+    font-size: .68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .07em;
+    color: var(--uerre-muted);
+}
+
+/* ─── Event Detail: hero actions & edit modal ───────────────── */
+.event-hero-actions { min-width: 200px; }
+
+.event-edit-modal .modal-dialog { max-width: 640px; }
+
+.event-edit-actions { display: flex; justify-content: flex-end; gap: .625rem; }
+
+/* ─── Event date badge (Event Detail hero + Home calendar teaser) ─── */
+.event-date-badge {
+    width: 56px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: .5rem .25rem;
+    text-align: center;
+}
+
+.event-date-month {
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.event-date-day {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+/* ─── Mobile bottom tab bar (<768px, authenticated only) ─────── */
+.mobile-tab-bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 1035;
+    /* Solid (not translucent+blurred) background on purpose: backdrop-filter
+       on a fixed element forces the browser to resample what's behind it on
+       every scroll frame, which lags and reads as the bar "dragging"/
+       detaching during scroll. A solid background has zero per-frame cost. */
+    background: #fff;
+    border-top: 1px solid var(--uerre-border);
+    box-shadow: 0 -2px 12px rgba(15,23,42,.06);
+    padding: .375rem .25rem calc(.375rem + env(safe-area-inset-bottom, 0px));
+    /* Promote to its own compositor layer so scrolling repaints the page,
+       not this bar — without this, some mobile browsers redraw fixed
+       elements on every scroll frame, which reads as the bar "scrolling".
+       -webkit-* duplicates cover older iOS Safari, which needs the
+       vendor-prefixed form plus backface-visibility to fully stop the
+       bar detaching/re-snapping during momentum/bounce scrolling. */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
+}
+
+.mobile-tab-item {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .2rem;
+    padding: .25rem .125rem;
+    border-radius: 10px;
+    color: var(--uerre-muted);
+    font-size: .62rem;
+    font-weight: 600;
+    text-decoration: none;
+    min-height: 44px;
+    justify-content: center;
+}
+
+.mobile-tab-item.active {
+    color: var(--uerre-purple);
+    background: var(--uerre-tag-bg);
+}
+
 /* ─── Footer ─────────────────────────────────────────────────── */
 .site-footer {
     background: linear-gradient(135deg, var(--uerre-navy) 0%, var(--uerre-navy-deep) 100%);
@@ -770,7 +982,14 @@ a:hover .hero-float-card {
     .stat-value { font-size: 1.75rem; }
     .hero-float-card { display: none; }
 
+    /* Tab bar is fixed and sits outside layout-wrapper's flow, so the
+       clearance must go on the footer (the true last content block),
+       not on .main-content — otherwise the footer's bottom row still
+       renders underneath the fixed bar. */
+    .site-footer { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
+
     .container-uerre { padding: 0 1rem; }
+
 
     .navbar-brand-name { font-size: .72rem; }
     .navbar-brand-sub { font-size: .52rem; }
@@ -936,6 +1155,13 @@ a:hover .hero-float-card {
     gap: 6px;
 }
 
+.calendar-cell-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+
 .calendar-legend-card {
     padding: .7rem .95rem;
     background: rgba(255,255,255,.96);
@@ -1070,4 +1296,95 @@ a:hover .hero-float-card {
 
 .calendar-indicator--other .calendar-indicator-dot {
     background: var(--uerre-gold);
+}
+
+/* ─── Calendar: mobile grid sizing (<768px, Home mini-calendar widget) ───
+   Calendario.razor hides .calendar-grid below 768px in favor of the agenda
+   list below, so this only affects the Home widget — the desktop 82px
+   min-height reads as tall pills at ~44px column width. Placed after the
+   base rules above (not in the top responsive block) because same-
+   specificity selectors resolve by source order, and the unconditional
+   base .calendar-cell/.calendar-grid rules above would otherwise win. */
+@media (max-width: 768px) {
+    .calendar-grid { gap: 4px; }
+    .calendar-cell {
+        min-height: 44px;
+        padding: .3rem;
+        border-radius: 8px;
+    }
+    .calendar-day-number { font-size: .7rem; margin-bottom: 0; }
+    .calendar-indicators { gap: 3px; }
+    .calendar-indicator {
+        min-height: 16px;
+        padding: 0 .3rem;
+        font-size: .58rem;
+        gap: 3px;
+    }
+    .calendar-indicator-dot { width: 5px; height: 5px; }
+}
+
+/* ─── Calendar: mobile agenda (<768px replacement for the grid) ─── */
+.calendar-agenda { display: flex; flex-direction: column; gap: 1rem; }
+
+.calendar-agenda-day {
+    background: #fff;
+    border: 1px solid var(--uerre-border);
+    border-radius: var(--bs-border-radius-xl);
+    padding: 1rem 1.125rem;
+}
+
+.calendar-agenda-date {
+    font-size: .78rem; font-weight: 700;
+    text-transform: capitalize;
+    color: var(--uerre-muted);
+    margin-bottom: .75rem;
+}
+
+.calendar-agenda-date--today { color: var(--uerre-purple); }
+
+.calendar-agenda-event {
+    display: block;
+    padding: .625rem .75rem;
+    border-radius: 10px;
+    border-left: 3px solid var(--uerre-gold);
+    background: #fffbeb;
+}
+
+.calendar-agenda-event + .calendar-agenda-event { margin-top: .1rem; }
+
+.calendar-agenda-event--mine {
+    border-left-color: var(--uerre-purple);
+    background: var(--uerre-tag-bg);
+}
+
+/* ─── Mobile hardening (<=390px) ─────────────────────────────── */
+@media (max-width: 390px) {
+    .container-uerre { padding: 0 .75rem; }
+
+    .card-uerre,
+    .stat-card,
+    .admin-kpi-card,
+    .calendar-agenda-day,
+    .term-card,
+    .timeline-content {
+        padding: 1rem;
+    }
+
+    .admin-kpi-grid { grid-template-columns: 1fr; }
+
+    .event-hero-actions { min-width: 0; width: 100%; }
+    .event-hero-actions .btn { width: 100%; }
+
+    .event-edit-modal .modal-dialog,
+    .modal-dialog {
+        margin-left: .5rem;
+        margin-right: .5rem;
+    }
+
+    .event-edit-actions { flex-wrap: wrap; }
+    .event-edit-actions .btn { flex: 1 1 auto; }
+
+    .footer-bottom { text-align: center; }
+
+    .calendar-legend-card { width: 100%; }
 }

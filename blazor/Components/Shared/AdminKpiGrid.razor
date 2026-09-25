@@ -1,0 +1,101 @@
+@if (Data is not null)
+{
+    <section class="admin-kpi-section" aria-labelledby="admin-kpi-title">
+        <div class="admin-kpi-heading">
+            <div>
+                <p class="admin-kpi-eyebrow">Pulso de la plataforma</p>
+                <h2 id="admin-kpi-title">Indicadores clave</h2>
+            </div>
+            <p class="admin-kpi-period">Datos acumulados y actividad del mes actual</p>
+        </div>
+
+        <div class="admin-kpi-grid">
+            <article class="admin-kpi-card admin-kpi-card--purple">
+                <p class="admin-kpi-label">Estudiantes activos</p>
+                <p class="admin-kpi-value">@Data.ActiveStudents.ToString("N0")</p>
+                <p class="admin-kpi-context">+@Data.StudentsThisMonth.ToString("N0") este mes · @Data.TotalUsers.ToString("N0") usuarios totales</p>
+            </article>
+
+            <article class="admin-kpi-card admin-kpi-card--blue">
+                <p class="admin-kpi-label">Grupos activos</p>
+                <p class="admin-kpi-value">@Data.ActiveGroups.ToString("N0")</p>
+                <p class="admin-kpi-context">de @Data.TotalGroups.ToString("N0") grupos registrados</p>
+            </article>
+
+            <article class="admin-kpi-card admin-kpi-card--amber">
+                <p class="admin-kpi-label">Eventos creados este mes</p>
+                <p class="admin-kpi-value">@Data.EventsThisMonth.ToString("N0")</p>
+                <p class="admin-kpi-context @EventsDeltaClass">@EventsDeltaText</p>
+            </article>
+
+            <article class="admin-kpi-card admin-kpi-card--teal">
+                <p class="admin-kpi-label">Solicitudes procesadas</p>
+                <p class="admin-kpi-value">@Data.ProcessedMemberships.ToString("N0")</p>
+                <p class="admin-kpi-context">@Data.PendingRequests.ToString("N0") decisiones administrativas pendientes</p>
+            </article>
+
+            <article class="admin-kpi-card admin-kpi-card--rose">
+                <p class="admin-kpi-label">Tasa de aprobación</p>
+                <p class="admin-kpi-value">@Data.MembershipApprovalRate.ToString("0.#")%</p>
+                <div class="admin-kpi-progress" role="progressbar"
+                     aria-label="Tasa de aprobación de membresías"
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="@ApprovalProgress">
+                    <span style="width:@ApprovalProgress.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></span>
+                </div>
+                <p class="admin-kpi-context">Meta institucional: más de 70%</p>
+            </article>
+
+            <article class="admin-kpi-card admin-kpi-card--violet">
+                <p class="admin-kpi-label">Participaciones confirmadas</p>
+                <p class="admin-kpi-value">@Data.TotalParticipations.ToString("N0")</p>
+                <p class="admin-kpi-context">@Data.AverageParticipationsPerEvent.ToString("0.#") por evento en promedio</p>
+            </article>
+        </div>
+
+        <div class="admin-kpi-insights">
+            <div>
+                <span class="admin-kpi-insight-label">Tiempo promedio de respuesta</span>
+                <strong>@ResponseTimeLabel</strong>
+            </div>
+            <div>
+                <span class="admin-kpi-insight-label">Membresías registradas</span>
+                <strong>@Data.TotalMemberships.ToString("N0")</strong>
+            </div>
+            <div>
+                <span class="admin-kpi-insight-label">Eventos históricos</span>
+                <strong>@Data.TotalEvents.ToString("N0")</strong>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public DashboardAdminModel? Data { get; set; }
+
+    private double ApprovalProgress => Math.Clamp(Data?.MembershipApprovalRate ?? 0, 0, 100);
+
+    private string EventsDeltaClass => (Data?.EventsMonthDelta ?? 0) switch
+    {
+        > 0 => "admin-kpi-context--positive",
+        < 0 => "admin-kpi-context--negative",
+        _ => ""
+    };
+
+    private string EventsDeltaText => (Data?.EventsMonthDelta ?? 0) switch
+    {
+        > 0 => $"+{Data!.EventsMonthDelta} respecto al mes anterior",
+        < 0 => $"{Data!.EventsMonthDelta} respecto al mes anterior",
+        _ => "Sin cambio respecto al mes anterior"
+    };
+
+    private string ResponseTimeLabel
+    {
+        get
+        {
+            var hours = Data?.AverageMembershipResponseHours ?? 0;
+            if (hours <= 0) return "Sin datos";
+            return hours < 24 ? $"{hours:0.#} h" : $"{hours / 24:0.#} días";
+        }
+    }
+}

@@ -8,6 +8,9 @@ namespace StudentGroupsHub.Services;
 
 public class EventService(IDbContextFactory<AppDbContext> dbFactory)
 {
+    private static readonly HashSet<string> AllowedStatuses = ["draft", "published", "canceled"];
+    private static readonly HashSet<string> AllowedVisibilities = ["public", "members"];
+
     public async Task<List<Event>> GetUpcomingAsync(
         string? search = null,
         Guid? groupId = null,
@@ -54,12 +57,11 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
     public async Task<Event> CreateAsync(Guid groupId, Guid createdByUserId, CreateEventRequest req)
     {
         using var db = dbFactory.CreateDbContext();
-        if (req.EndAt <= req.StartAt)
-            throw new InvalidOperationException("La fecha de fin debe ser posterior a la de inicio.");
+        ValidateEvent(req.Title, req.Location, req.StartAt, req.EndAt, req.Capacity, req.Status, req.Visibility);
         var ev = new Event
         {
             Id = Guid.NewGuid(), GroupId = groupId, CreatedByUserId = createdByUserId,
-            Title = req.Title, Description = req.Description, Location = req.Location,
+            Title = req.Title.Trim(), Description = NormalizeOptional(req.Description), Location = NormalizeOptional(req.Location),
             StartAt = req.StartAt.ToUniversalTime(), EndAt = req.EndAt.ToUniversalTime(),
             Capacity = req.Capacity, Status = req.Status, Visibility = req.Visibility,
             CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow,
@@ -69,29 +71,41 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         return ev;
     }
 
-    public async Task<Event?> UpdateAsync(Guid eventId, UpdateEventRequest req)
+    public async Task<Event?> UpdateAsync(Guid groupId, Guid eventId, UpdateEventRequest req)
     {
         using var db = dbFactory.CreateDbContext();
-        var ev = await db.Events.FindAsync(eventId);
+        var ev = await db.Events.FirstOrDefaultAsync(e => e.Id == eventId && e.GroupId == groupId);
         if (ev is null) return null;
-        if (req.Title      is not null) ev.Title      = req.Title;
-        if (req.Description is not null) ev.Description = req.Description;
-        if (req.Location   is not null) ev.Location   = req.Location;
+
+        var title = req.Title?.Trim() ?? ev.Title;
+        var description = req.Description is null ? ev.Description : NormalizeOptional(req.Description);
+        var location = req.Location is null ? ev.Location : NormalizeOptional(req.Location);
+        var startAt = req.StartAt?.ToUniversalTime() ?? ev.StartAt;
+        var endAt = req.EndAt?.ToUniversalTime() ?? ev.EndAt;
+        var capacity = req.ClearCapacity ? null : req.Capacity ?? ev.Capacity;
+        var status = req.Status ?? ev.Status;
+        var visibility = req.Visibility ?? ev.Visibility;
+
+        ValidateEvent(title, location, startAt, endAt, capacity, status, visibility);
+
+        ev.Title = title;
+        ev.Description = description;
+        ev.Location = location;
         if (req.BannerUrl  is not null) ev.BannerUrl  = req.BannerUrl;
-        if (req.StartAt    is not null) ev.StartAt    = req.StartAt.Value.ToUniversalTime();
-        if (req.EndAt      is not null) ev.EndAt      = req.EndAt.Value.ToUniversalTime();
-        if (req.Capacity   is not null) ev.Capacity   = req.Capacity;
-        if (req.Status     is not null) ev.Status     = req.Status;
-        if (req.Visibility is not null) ev.Visibility = req.Visibility;
+        ev.StartAt = startAt;
+        ev.EndAt = endAt;
+        ev.Capacity = capacity;
+        ev.Status = status;
+        ev.Visibility = visibility;
         ev.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
         return ev;
     }
 
-    public async Task<bool> CancelAsync(Guid eventId)
+    public async Task<bool> CancelAsync(Guid groupId, Guid eventId)
     {
         using var db = dbFactory.CreateDbContext();
-        var ev = await db.Events.FindAsync(eventId);
+        var ev = await db.Events.FirstOrDefaultAsync(e => e.Id == eventId && e.GroupId == groupId);
         if (ev is null) return false;
         ev.Status = "canceled"; ev.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
@@ -194,4 +208,32 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         e.Title, e.Description, e.Location, e.BannerUrl,
         e.StartAt, e.EndAt, e.Timezone,
         e.Capacity, rsvpCount, e.Status, e.Visibility, e.CreatedAt);
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static void ValidateEvent(
+        string title,
+        string? location,
+        DateTime startAt,
+        DateTime endAt,
+        int? capacity,
+        string status,
+        string visibility)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new InvalidOperationException("El título es requerido.");
+        if (title.Trim().Length > 200)
+            throw new InvalidOperationException("El título no puede exceder 200 caracteres.");
+        if (location?.Trim().Length > 300)
+            throw new InvalidOperationException("El lugar no puede exceder 300 caracteres.");
+        if (endAt <= startAt)
+            throw new InvalidOperationException("La fecha de fin debe ser posterior a la de inicio.");
+        if (capacity is <= 0)
+            throw new InvalidOperationException("La capacidad debe ser mayor que cero.");
+        if (!AllowedStatuses.Contains(status))
+            throw new InvalidOperationException("El estado del evento no es válido.");
+        if (!AllowedVisibilities.Contains(visibility))
+            throw new InvalidOperationException("La visibilidad del evento no es válida.");
+    }
 }
