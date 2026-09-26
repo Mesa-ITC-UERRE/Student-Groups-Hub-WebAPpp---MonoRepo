@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudentGroupsHub.DTOs.Requests;
 using StudentGroupsHub.Extensions;
+using StudentGroupsHub.Models;
 using StudentGroupsHub.Services;
 
 namespace StudentGroupsHub.Controllers;
@@ -28,7 +29,7 @@ public class EventsController(
     [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var ev = await eventService.GetPublicByIdAsync(id);
+        var ev = await GetAccessibleOrPublicAsync(id);
         if (ev is null) return NotFound();
         return Ok(await eventService.ToResponseAsync(ev));
     }
@@ -38,9 +39,28 @@ public class EventsController(
     [AllowAnonymous]
     public async Task<IActionResult> GetForGroup(Guid groupId)
     {
-        var events = await eventService.GetPublicForGroupAsync(groupId);
+        var user = await GetActiveLocalUserAsync();
+        var events = user is null
+            ? await eventService.GetPublicForGroupAsync(groupId)
+            : await eventService.GetAccessibleForGroupAsync(groupId, user.Id);
         var responses = await Task.WhenAll(events.Select(e => eventService.ToResponseAsync(e)));
         return Ok(responses);
+    }
+
+    private async Task<Event?> GetAccessibleOrPublicAsync(Guid eventId)
+    {
+        var user = await GetActiveLocalUserAsync();
+        return user is null
+            ? await eventService.GetPublicByIdAsync(eventId)
+            : await eventService.GetAccessibleByIdAsync(eventId, user.Id);
+    }
+
+    private async Task<User?> GetActiveLocalUserAsync()
+    {
+        if (!(User.Identity?.IsAuthenticated ?? false)) return null;
+        var oid = User.GetEntraOid();
+        var user = await userService.GetByEntraOidAsync(oid);
+        return user is not null && UserService.IsActive(user) ? user : null;
     }
 
     // POST /api/groups/{groupId}/events
