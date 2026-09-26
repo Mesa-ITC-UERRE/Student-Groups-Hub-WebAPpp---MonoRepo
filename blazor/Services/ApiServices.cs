@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using StudentGroupsHub.DTOs.Requests;
 using StudentGroupsHub.DTOs.Responses;
 using StudentGroupsHub.Models;
-using StudentGroupsHub.Services;
 
 namespace StudentGroupsHub.Services;
 
@@ -368,15 +366,7 @@ public class EventApiService(
         if (!isAdmin && !isLeader)
             throw new InvalidOperationException("No tienes permiso para crear eventos en este grupo.");
 
-        var ev = await eventService.CreateAsync(groupId, userId, new DTOs.Requests.CreateEventRequest(
-            req.Title,
-            req.Description,
-            req.Location,
-            req.StartAt,
-            req.EndAt,
-            req.Capacity,
-            req.Status,
-            req.Visibility));
+        string? imageUrl = null;
 
         if (imageBytes is not null && imageContentType is not null && imageExt is not null)
         {
@@ -387,17 +377,32 @@ public class EventApiService(
 
             var fileName = $"{Guid.NewGuid():N}.{imageExt}";
             using var stream = new MemoryStream(imageBytes);
-            var imageUrl = await storageService.UploadAsync(
+            imageUrl = await storageService.UploadAsync(
                 $"event-banners/{groupId}", fileName, stream, imageContentType);
 
             if (imageUrl is null)
                 throw new InvalidOperationException("No se pudo subir la foto del evento.");
-
-            ev = await eventService.UpdateAsync(groupId, ev.Id, new DTOs.Requests.UpdateEventRequest(
-                null, null, null, imageUrl, null, null, null, null, null)) ?? ev;
         }
 
-        return MapEvent(ev, 0);
+        try
+        {
+            var ev = await eventService.CreateAsync(groupId, userId, new DTOs.Requests.CreateEventRequest(
+                req.Title,
+                req.Description,
+                req.Location,
+                req.StartAt,
+                req.EndAt,
+                req.Capacity,
+                req.Status,
+                req.Visibility), imageUrl);
+
+            return MapEvent(ev, 0);
+        }
+        catch
+        {
+            await storageService.DeleteByUrlAsync(imageUrl);
+            throw;
+        }
     }
 
     public async Task<bool> CanManageAsync(Guid groupId)
@@ -410,26 +415,64 @@ public class EventApiService(
     public async Task<EventModel?> UpdateEventAsync(
         Guid groupId,
         Guid eventId,
-        BlazorUpdateEventRequest req)
+        BlazorUpdateEventRequest req,
+        byte[]? imageBytes = null,
+        string? imageContentType = null,
+        string? imageExt = null,
+        bool removeBanner = false)
     {
         var user = await currentUser.RequireActiveUserAsync();
         var canManage = user.Role == "admin" || await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
         if (!canManage)
             throw new InvalidOperationException("No tienes permiso para editar este evento.");
 
+        var existing = await eventService.GetByIdAsync(eventId);
+        if (existing is null || existing.GroupId != groupId) return null;
+
+        string? bannerUrl = removeBanner ? string.Empty : null;
+        string? uploadedUrl = null;
+
+        if (imageBytes is not null)
+        {
+            if (imageContentType is null || imageExt is null
+                || !StorageService.AllowedMimeTypes.Contains(imageContentType))
+                throw new InvalidOperationException("Formato de imagen no permitido.");
+            if (imageBytes.Length > StorageService.MaxBytes)
+                throw new InvalidOperationException("La imagen supera el límite de 5 MB.");
+
+            var fileName = $"{Guid.NewGuid():N}.{imageExt}";
+            using var stream = new MemoryStream(imageBytes);
+            uploadedUrl = await storageService.UploadAsync(
+                $"event-banners/{groupId}", fileName, stream, imageContentType);
+
+            if (uploadedUrl is null)
+                throw new InvalidOperationException("No se pudo subir la foto del evento.");
+
+            bannerUrl = uploadedUrl;
+        }
+
         var updated = await eventService.UpdateAsync(groupId, eventId, new DTOs.Requests.UpdateEventRequest(
             req.Title,
             req.Description ?? string.Empty,
             req.Location ?? string.Empty,
-            null,
+            bannerUrl,
             req.StartAt,
             req.EndAt,
             req.Capacity,
             req.Status,
             req.Visibility,
-            ClearCapacity: req.Capacity is null));
+            ClearCapacity: req.Capacity is null,
+            ClearBanner: removeBanner));
 
-        if (updated is null) return null;
+        if (updated is null)
+        {
+            await storageService.DeleteByUrlAsync(uploadedUrl);
+            return null;
+        }
+
+        if (bannerUrl is not null && !string.IsNullOrEmpty(existing.BannerUrl))
+            await storageService.DeleteByUrlAsync(existing.BannerUrl);
+
         var count = await eventService.GetRsvpCountAsync(updated.Id);
         return MapEvent(updated, count);
     }

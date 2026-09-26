@@ -1,0 +1,55 @@
+@using System.Globalization
+
+<div class="event-datetime-control">
+    <label for="@DateInputId" class="form-label fw-semibold small">@Label</label>
+    <div class="event-datetime-fields">
+        <input id="@DateInputId"
+               type="text"
+               class="form-control"
+               inputmode="numeric"
+               autocomplete="off"
+               maxlength="10"
+               pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}"
+               placeholder="DD/MM/YYYY"
+               value="@DateText"
+               @oninput="HandleDateInput" />
+        <input id="@TimeInputId"
+               type="time"
+               class="form-control"
+               aria-label="@($"{Label}, hora")"
+               value="@TimeText"
+               @onchange="HandleTimeInput" />
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Id { get; set; } = "eventDateTime";
+    [Parameter, EditorRequired] public string Label { get; set; } = "Fecha";
+    [Parameter] public string DateText { get; set; } = "";
+    [Parameter] public EventCallback<string> DateTextChanged { get; set; }
+    [Parameter] public string TimeText { get; set; } = "";
+    [Parameter] public EventCallback<string> TimeTextChanged { get; set; }
+
+    private string DateInputId => $"{Id}Date";
+    private string TimeInputId => $"{Id}Time";
+
+    private Task HandleDateInput(ChangeEventArgs e)
+        => DateTextChanged.InvokeAsync(e.Value?.ToString() ?? "");
+
+    private Task HandleTimeInput(ChangeEventArgs e)
+        => TimeTextChanged.InvokeAsync(e.Value?.ToString() ?? "");
+
+    public static bool TryParse(string dateText, string timeText, out DateTime value)
+        => DateTime.TryParseExact(
+            $"{dateText.Trim()} {timeText.Trim()}",
+            "dd/MM/yyyy HH:mm",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out value);
+
+    public static string FormatDate(DateTime value)
+        => value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+    public static string FormatTime(DateTime value)
+        => value.ToString("HH:mm", CultureInfo.InvariantCulture);
+}

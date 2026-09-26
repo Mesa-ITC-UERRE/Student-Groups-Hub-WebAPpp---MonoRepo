@@ -58,27 +58,7 @@
                 @foreach (var evt in _events)
                 {
                     <div class="col-12 col-md-6">
-                        <a href="/events/@evt.Id" class="text-decoration-none">
-                            <div class="card-event">
-                                <div class="event-date-badge">
-                                    <span class="event-date-month">@evt.MonthLabel</span>
-                                    <span class="event-date-day">@evt.DayLabel</span>
-                                </div>
-                                <div class="flex-grow-1 min-w-0">
-                                    <h6 class="fw-bold mb-1 text-dark line-clamp-1">@evt.Title</h6>
-                                    <p class="fw-600 mb-2 text-purple" style="font-size:.78rem;">@evt.GroupName</p>
-                                    <div class="d-flex flex-wrap gap-3 text-muted-sm">
-                                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2m0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17M12 7a.75.75 0 0 1 .75.75v4.69l2.28 2.28a.75.75 0 1 1-1.06 1.06l-2.5-2.5a.75.75 0 0 1-.22-.53V7.75A.75.75 0 0 1 12 7"/></svg> @evt.StartLocal</span>
-                                        @if (evt.Location is not null) { <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7.5 7.5 0 0 1 7.5 7.5c0 3.5-2.404 7.268-7.066 11.35a.75.75 0 0 1-.968 0C6.904 16.768 4.5 13 4.5 9.5A7.5 7.5 0 0 1 12 2m0 1.5a6 6 0 0 0-6 6c0 2.885 2.066 6.276 6 10.066 3.934-3.79 6-7.181 6-10.066a6 6 0 0 0-6-6m0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 1.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/></svg> @evt.Location</span> }
-                                        @if (evt.SpotsLeft.HasValue) { <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg> @evt.SpotsLeft lugares</span> }
-                                    </div>
-                                </div>
-                                @if (evt.IsCanceled)
-                                {
-                                    <span class="badge badge-inactive flex-shrink-0 align-self-center">Cancelado</span>
-                                }
-                            </div>
-                        </a>
+                        <EventCard Event="@evt" />
                     </div>
                 }
             </div>

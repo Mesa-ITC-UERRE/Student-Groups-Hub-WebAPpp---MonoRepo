@@ -25,7 +25,8 @@ public record UpdateEventRequest(
     int? Capacity,
     string? Status,
     string? Visibility,
-    bool ClearCapacity = false
+    bool ClearCapacity = false,
+    bool ClearBanner = false
 );
 
 public record UpsertRsvpRequest([Required] string Status);

@@ -54,7 +54,11 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
             .ToListAsync();
     }
 
-    public async Task<Event> CreateAsync(Guid groupId, Guid createdByUserId, CreateEventRequest req)
+    public async Task<Event> CreateAsync(
+        Guid groupId,
+        Guid createdByUserId,
+        CreateEventRequest req,
+        string? bannerUrl = null)
     {
         using var db = dbFactory.CreateDbContext();
         ValidateEvent(req.Title, req.Location, req.StartAt, req.EndAt, req.Capacity, req.Status, req.Visibility);
@@ -62,6 +66,7 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         {
             Id = Guid.NewGuid(), GroupId = groupId, CreatedByUserId = createdByUserId,
             Title = req.Title.Trim(), Description = NormalizeOptional(req.Description), Location = NormalizeOptional(req.Location),
+            BannerUrl = NormalizeOptional(bannerUrl),
             StartAt = req.StartAt.ToUniversalTime(), EndAt = req.EndAt.ToUniversalTime(),
             Capacity = req.Capacity, Status = req.Status, Visibility = req.Visibility,
             CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow,
@@ -91,7 +96,8 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         ev.Title = title;
         ev.Description = description;
         ev.Location = location;
-        if (req.BannerUrl  is not null) ev.BannerUrl  = req.BannerUrl;
+        if (req.ClearBanner) ev.BannerUrl = null;
+        else if (req.BannerUrl is not null) ev.BannerUrl = req.BannerUrl;
         ev.StartAt = startAt;
         ev.EndAt = endAt;
         ev.Capacity = capacity;
