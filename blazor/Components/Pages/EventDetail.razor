@@ -522,6 +522,10 @@ else
     private async Task SaveEventEdit()
     {
         if (_event is null || !_canManage) return;
+        var isCancelling = _event.Status != "canceled" && _editStatus == "canceled";
+        if (isCancelling && !await Confirmations.ConfirmAsync(
+            $"¿Cancelar el evento '{_event.Title}'? Dejará de estar operativo y no aceptará nuevas inscripciones."))
+            return;
         if (string.IsNullOrWhiteSpace(_editTitle))
         {
             _editError = "El título es requerido.";
