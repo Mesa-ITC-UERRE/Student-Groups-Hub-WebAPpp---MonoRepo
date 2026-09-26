@@ -73,15 +73,92 @@ public class GroupApiService(
     public async Task<List<GroupMemberModel>> GetMembersAsync(Guid groupId)
         => await DbSafe.TryAsync(async () =>
         {
-            var members = await membershipService.GetAcceptedAsync(groupId);
-            return members.Select(m => new GroupMemberModel(
-                m.Id, m.UserId,
-                m.User?.Email ?? "",
-                m.User?.DisplayName,
-                m.User?.AvatarUrl,
-                m.Status,
-                m.RespondedAt)).ToList();
+            var membersTask = membershipService.GetAcceptedAsync(groupId);
+            var badgesTask   = groupService.GetMemberBadgesAsync(groupId);
+            await Task.WhenAll(membersTask, badgesTask);
+
+            var badges = badgesTask.Result;
+            return membersTask.Result.Select(m =>
+            {
+                var hasBadge = badges.TryGetValue(m.UserId, out var badge);
+                return new GroupMemberModel(
+                    m.Id, m.UserId,
+                    m.User?.Email ?? "",
+                    m.User?.DisplayName,
+                    m.User?.AvatarUrl,
+                    m.Status,
+                    m.RespondedAt,
+                    hasBadge && badge.IsLeader,
+                    hasBadge ? (badge.DisplayRole ?? LeaderBadgeOptions.DefaultTitle) : null,
+                    hasBadge ? (badge.BadgeColor ?? LeaderBadgeOptions.DefaultColor) : null);
+            }).ToList();
         }, []);
+
+    /// <summary>The current leader's saved badge title/color for a group, or the defaults if never set.</summary>
+    public async Task<(string Title, string Color)> GetMyLeaderBadgeAsync(Guid groupId)
+        => await DbSafe.TryAsync(async () =>
+        {
+            var userId = await currentUser.GetUserIdAsync();
+            if (userId == Guid.Empty)
+                return (LeaderBadgeOptions.DefaultTitle, LeaderBadgeOptions.DefaultColor);
+
+            var badges = await groupService.GetMemberBadgesAsync(groupId);
+            if (badges.TryGetValue(userId, out var badge))
+                return (badge.DisplayRole ?? LeaderBadgeOptions.DefaultTitle,
+                        badge.BadgeColor ?? LeaderBadgeOptions.DefaultColor);
+
+            return (LeaderBadgeOptions.DefaultTitle, LeaderBadgeOptions.DefaultColor);
+        }, (LeaderBadgeOptions.DefaultTitle, LeaderBadgeOptions.DefaultColor));
+
+    /// <summary>Lets a group leader customize their own member-card badge title and border color.</summary>
+    public async Task UpdateMyLeaderBadgeAsync(Guid groupId, string badgeColor, string displayTitle)
+    {
+        if (!LeaderBadgeOptions.Colors.Any(c => c.Hex == badgeColor))
+            throw new InvalidOperationException("Color no válido.");
+        if (!LeaderBadgeOptions.Titles.Contains(displayTitle))
+            throw new InvalidOperationException("Título no válido.");
+
+        var user = await currentUser.RequireActiveUserAsync();
+        var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
+        if (!isLeader)
+            throw new InvalidOperationException("No tienes permiso para personalizar este grupo.");
+
+        await groupService.UpdateLeaderBadgeAsync(groupId, user.Id, badgeColor, displayTitle);
+    }
+
+    /// <summary>
+    /// Lets a group leader assign a cosmetic role title + border color to another member.
+    /// Requires caller leadership; the title is free text (member roles vary), the color is
+    /// restricted to the shared palette.
+    /// </summary>
+    public async Task AssignMemberBadgeAsync(Guid groupId, Guid targetUserId, string badgeColor, string displayTitle)
+    {
+        displayTitle = displayTitle.Trim();
+        if (!LeaderBadgeOptions.Colors.Any(c => c.Hex == badgeColor))
+            throw new InvalidOperationException("Color no válido.");
+        if (string.IsNullOrWhiteSpace(displayTitle))
+            throw new InvalidOperationException("El rol no puede estar vacío.");
+        if (displayTitle.Length > LeaderBadgeOptions.MaxAssignedTitleLength)
+            throw new InvalidOperationException($"El rol no puede exceder {LeaderBadgeOptions.MaxAssignedTitleLength} caracteres.");
+
+        var user = await currentUser.RequireActiveUserAsync();
+        var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
+        if (!isLeader)
+            throw new InvalidOperationException("No tienes permiso para asignar roles en este grupo.");
+
+        await groupService.SetMemberBadgeAsync(groupId, targetUserId, badgeColor, displayTitle);
+    }
+
+    /// <summary>Removes a member's assigned officer badge. Requires caller leadership.</summary>
+    public async Task RemoveMemberBadgeAsync(Guid groupId, Guid targetUserId)
+    {
+        var user = await currentUser.RequireActiveUserAsync();
+        var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
+        if (!isLeader)
+            throw new InvalidOperationException("No tienes permiso para modificar roles en este grupo.");
+
+        await groupService.RemoveMemberBadgeAsync(groupId, targetUserId);
+    }
 
     public async Task<string?> GetMyMembershipStatusAsync(Guid groupId)
         => await DbSafe.TryAsync(async () =>
@@ -969,7 +1046,7 @@ public class AdminApiService(
 
 // ─── Group Term API Service ───────────────────────────────────────────────────
 
-public class GroupTermApiService(GroupTermService termService, CurrentUserService currentUser)
+public class GroupTermApiService(GroupTermService termService, GroupService groupService, CurrentUserService currentUser)
 {
     public async Task<List<GroupTermModel>> GetTermsAsync(Guid groupId)
         => await DbSafe.TryAsync(async () =>
@@ -990,29 +1067,51 @@ public class GroupTermApiService(GroupTermService termService, CurrentUserServic
         Guid groupId, string label, DateOnly startDate,
         DateOnly? endDate, string? notes)
     {
-        await currentUser.RequireActiveUserAsync();
+        await RequireLeaderOrAdminAsync(groupId);
         var term = await termService.CreateTermAsync(groupId, label, startDate, endDate, notes);
         return MapTerm(term);
     }
 
     public async Task<TermMemberModel?> AddMemberAsync(
-        Guid termId, string displayName, string roleLabel, int sortOrder = 0)
+        Guid termId, string displayName, string roleLabel,
+        int sortOrder = 0, Guid? userId = null, string? avatarUrl = null)
     {
-        await currentUser.RequireActiveUserAsync();
-        var m = await termService.AddMemberAsync(termId, displayName, roleLabel, sortOrder);
+        var groupId = await termService.GetGroupIdForTermAsync(termId)
+            ?? throw new InvalidOperationException("Administración no encontrada.");
+        await RequireLeaderOrAdminAsync(groupId);
+
+        var m = await termService.AddMemberAsync(termId, displayName, roleLabel, sortOrder, userId, avatarUrl);
         return MapMember(m);
     }
 
     public async Task<bool> RemoveMemberAsync(Guid memberId)
     {
-        await currentUser.RequireActiveUserAsync();
+        var groupId = await termService.GetGroupIdForMemberAsync(memberId);
+        if (groupId is null) return false;
+        await RequireLeaderOrAdminAsync(groupId.Value);
         return await termService.RemoveMemberAsync(memberId);
     }
 
     public async Task<bool> DeleteTermAsync(Guid termId)
     {
-        await currentUser.RequireActiveUserAsync();
+        var groupId = await termService.GetGroupIdForTermAsync(termId);
+        if (groupId is null) return false;
+        await RequireLeaderOrAdminAsync(groupId.Value);
         return await termService.DeleteTermAsync(termId);
+    }
+
+    /// <summary>
+    /// Administration management (create/delete terms, add/remove members) was previously
+    /// only gated by "is an active user" with no group-specific check — any signed-in user
+    /// could call these against any group. Requires leader-of-this-group or platform admin.
+    /// </summary>
+    private async Task RequireLeaderOrAdminAsync(Guid groupId)
+    {
+        var user = await currentUser.RequireActiveUserAsync();
+        var isAdmin = user.Role == "admin";
+        var isLeader = await groupService.IsLeaderOfGroupAsync(user.Id, groupId);
+        if (!isAdmin && !isLeader)
+            throw new InvalidOperationException("No tienes permiso para gestionar administraciones de este grupo.");
     }
 
     private static GroupTermModel MapTerm(GroupTerm t) => new(
@@ -1150,16 +1249,21 @@ public class MisGruposApiService(
 
             var memberTask = groupService.GetJoinedGroupsAsync(userId);
             var leaderTask = groupService.GetLedGroupsAsync(userId);
-            await Task.WhenAll(memberTask, leaderTask);
+            var titlesTask = groupService.GetMyLeaderTitlesAsync(userId);
+            await Task.WhenAll(memberTask, leaderTask, titlesTask);
 
             var counts = await groupService.GetMemberCountsAsync(
                 memberTask.Result.Select(g => g.Id)
                     .Union(leaderTask.Result.Select(g => g.Id)));
 
+            var titles = titlesTask.Result;
             var memberModels = memberTask.Result.Select(g =>
                 MapGroup(g, counts.GetValueOrDefault(g.Id))).ToList();
             var leaderModels = leaderTask.Result.Select(g =>
-                MapGroup(g, counts.GetValueOrDefault(g.Id))).ToList();
+                MapGroup(g, counts.GetValueOrDefault(g.Id)) with
+                {
+                    MyLeaderTitle = titles.GetValueOrDefault(g.Id) ?? LeaderBadgeOptions.DefaultTitle
+                }).ToList();
 
             return new MyGroupsModel(memberModels, leaderModels);
         }, null);

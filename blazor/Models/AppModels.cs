@@ -46,7 +46,8 @@ public record GroupModel(
     string Status,
     int MemberCount,
     DateTime CreatedAt,
-    DateTime UpdatedAt
+    DateTime UpdatedAt,
+    string? MyLeaderTitle = null
 );
 
 public record GroupMemberModel(
@@ -56,11 +57,38 @@ public record GroupMemberModel(
     string? DisplayName,
     string? AvatarUrl,
     string Status,
-    DateTime? JoinedAt
+    DateTime? JoinedAt,
+    bool IsLeader = false,
+    string? BadgeTitle = null,
+    string? BadgeColor = null
 )
 {
     public string DisplayLabel => DisplayName ?? Email.Split('@')[0];
     public string Initial => (DisplayName ?? Email).Substring(0, 1).ToUpper();
+}
+
+/// <summary>
+/// Canonical options for member-card badges: the leader's own title (restricted to
+/// Presidente/Presidenta) and the shared color palette. Officer badges assigned to other
+/// members reuse the same color palette but accept a free-text role (see MaxAssignedTitleLength).
+/// </summary>
+public static class LeaderBadgeOptions
+{
+    public const string DefaultTitle = "Presidente";
+    public const string DefaultColor = "#f59e0b";
+    public const int MaxAssignedTitleLength = 40;
+
+    public static readonly string[] Titles = ["Presidente", "Presidenta"];
+
+    public static readonly (string Hex, string Name)[] Colors =
+    [
+        ("#f59e0b", "Ámbar"),
+        ("#5b21b6", "Morado"),
+        ("#2563eb", "Azul"),
+        ("#0d9488", "Verde azulado"),
+        ("#e11d48", "Rosa"),
+        ("#059669", "Esmeralda"),
+    ];
 }
 
 public record JoinGroupResponse(Guid MembershipId, Guid GroupId, Guid UserId, string Status, DateTime RequestedAt);
@@ -305,7 +333,11 @@ public record GroupTermModel(
     string? GroupCategory = null
 )
 {
-    public bool IsCurrent => Status == "active" && EndDate is null;
+    // Date-driven, not Status-driven: a bounded term (e.g. Feb 2026 – Jan 2027)
+    // is still the current administration for as long as today falls within its
+    // range, even though it has a defined end date and was created with
+    // Status="past" under the old (incorrect) creation-time-only logic.
+    public bool IsCurrent => EndDate is null || EndDate >= DateOnly.FromDateTime(DateTime.UtcNow);
     public string DateRange => EndDate.HasValue
         ? $"{StartDate:MMM yyyy} — {EndDate:MMM yyyy}"
         : $"{StartDate:MMM yyyy} — Presente";

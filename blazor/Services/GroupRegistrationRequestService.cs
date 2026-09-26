@@ -101,7 +101,7 @@ public class GroupRegistrationRequestService(IDbContextFactory<AppDbContext> dbF
             GroupId = group.Id,
             UserId = req.RequestedByUserId,
             PermissionRole = "leader",
-            DisplayRole = "Líder",
+            DisplayRole = LeaderBadgeOptions.DefaultTitle,
             CreatedAt = DateTime.UtcNow,
         });
 

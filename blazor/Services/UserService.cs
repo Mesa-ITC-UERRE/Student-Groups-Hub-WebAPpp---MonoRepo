@@ -89,7 +89,7 @@ public class UserService(IDbContextFactory<AppDbContext> dbFactory)
             GroupId = groupId,
             UserId = userId,
             PermissionRole = "leader",
-            DisplayRole = "Líder",
+            DisplayRole = LeaderBadgeOptions.DefaultTitle,
             CreatedAt = DateTime.UtcNow,
         });
 

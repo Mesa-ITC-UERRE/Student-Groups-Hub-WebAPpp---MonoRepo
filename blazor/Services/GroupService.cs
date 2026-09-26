@@ -142,6 +142,78 @@ public class GroupService(IDbContextFactory<AppDbContext> dbFactory)
             .Select(r => r.UserId).ToListAsync();
     }
 
+    /// <summary>One user's chosen badge title (e.g. Presidente/Presidenta) per group they lead.</summary>
+    public async Task<Dictionary<Guid, string?>> GetMyLeaderTitlesAsync(Guid userId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        return await db.RoleAssignments
+            .Where(r => r.UserId == userId && r.PermissionRole == "leader")
+            .ToDictionaryAsync(r => r.GroupId, r => r.DisplayRole);
+    }
+
+    /// <summary>Member-card customization for anyone with a role assignment (leader OR assigned officer badge), keyed by user.</summary>
+    public async Task<Dictionary<Guid, (string? DisplayRole, string? BadgeColor, bool IsLeader)>> GetMemberBadgesAsync(Guid groupId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        var rows = await db.RoleAssignments
+            .Where(r => r.GroupId == groupId && (r.PermissionRole == "leader" || r.PermissionRole == "officer"))
+            .Select(r => new { r.UserId, r.DisplayRole, r.BadgeColor, r.PermissionRole })
+            .ToListAsync();
+        return rows.ToDictionary(r => r.UserId, r => (r.DisplayRole, r.BadgeColor, r.PermissionRole == "leader"));
+    }
+
+    public async Task UpdateLeaderBadgeAsync(Guid groupId, Guid userId, string? badgeColor, string? displayRole)
+    {
+        using var db = dbFactory.CreateDbContext();
+        var assignment = await db.RoleAssignments.FirstOrDefaultAsync(r =>
+            r.GroupId == groupId && r.UserId == userId && r.PermissionRole == "leader");
+        if (assignment is null)
+            throw new InvalidOperationException("No tienes un rol de liderazgo en este grupo.");
+        assignment.BadgeColor = badgeColor;
+        assignment.DisplayRole = displayRole;
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Assigns a cosmetic role title + border color to a group member. If the target already has a
+    /// role assignment (leader or a previously-assigned officer badge), updates it in place; otherwise
+    /// creates a new "officer" row. "officer" carries no authorization — only "leader" does — so this
+    /// can never grant management permissions to a regular member.
+    /// </summary>
+    public async Task SetMemberBadgeAsync(Guid groupId, Guid targetUserId, string badgeColor, string displayRole)
+    {
+        using var db = dbFactory.CreateDbContext();
+        var isMember = await db.Memberships.AnyAsync(m =>
+            m.GroupId == groupId && m.UserId == targetUserId && m.Status == "accepted");
+        if (!isMember)
+            throw new InvalidOperationException("Ese usuario no es miembro de este grupo.");
+
+        var assignment = await db.RoleAssignments.FirstOrDefaultAsync(r =>
+            r.GroupId == groupId && r.UserId == targetUserId);
+        if (assignment is null)
+        {
+            assignment = new RoleAssignment
+            {
+                GroupId = groupId, UserId = targetUserId, PermissionRole = "officer",
+            };
+            db.RoleAssignments.Add(assignment);
+        }
+        assignment.BadgeColor = badgeColor;
+        assignment.DisplayRole = displayRole;
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>Removes an assigned officer badge. Never touches actual "leader" role assignments.</summary>
+    public async Task RemoveMemberBadgeAsync(Guid groupId, Guid targetUserId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        var assignment = await db.RoleAssignments.FirstOrDefaultAsync(r =>
+            r.GroupId == groupId && r.UserId == targetUserId && r.PermissionRole == "officer");
+        if (assignment is null) return;
+        db.RoleAssignments.Remove(assignment);
+        await db.SaveChangesAsync();
+    }
+
     /// <summary>Groups where the user has an accepted membership.</summary>
     public async Task<List<Group>> GetJoinedGroupsAsync(Guid userId)
     {

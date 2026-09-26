@@ -56,8 +56,8 @@
         @foreach (var g in Data.ManagedGroups)
         {
             <div class="col-12 col-sm-6 col-md-4">
-                <a href="/groups/@g.Slug" class="text-decoration-none">
-                    <div class="card-uerre p-3 d-flex align-items-center gap-3">
+                <div class="card-uerre p-3">
+                    <a href="/groups/@g.Slug" class="text-decoration-none d-flex align-items-center gap-3 mb-3">
                         <div class="rounded-2 d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
                              style="width:40px;height:40px;background:var(--uerre-purple);">
                             @g.Name.Substring(0,1)
@@ -66,8 +66,52 @@
                             <div class="fw-bold small text-dark text-truncate">@g.Name</div>
                             <div class="text-muted" style="font-size:.7rem;">@g.MemberCount miembros</div>
                         </div>
+                    </a>
+
+                    <!-- Leader badge customization: border color + Presidente/Presidenta -->
+                    <div class="leader-badge-editor pt-3 border-top">
+                        <div class="text-muted small fw-semibold mb-2">Tu insignia en Miembros</div>
+
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+                            @foreach (var (hex, name) in LeaderBadgeOptions.Colors)
+                            {
+                                <button type="button"
+                                        class="leader-badge-swatch @(_badgeColor.GetValueOrDefault(g.Id) == hex ? "leader-badge-swatch--selected" : "")"
+                                        style="background:@hex;"
+                                        title="@name"
+                                        aria-label="@name"
+                                        @onclick="() => SelectBadgeColor(g.Id, hex)"></button>
+                            }
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+                            @foreach (var title in LeaderBadgeOptions.Titles)
+                            {
+                                <button type="button"
+                                        class="btn btn-sm rounded-pill px-3 @(_badgeTitle.GetValueOrDefault(g.Id) == title ? "btn-uerre-primary" : "btn-uerre-outline")"
+                                        @onclick="() => SelectBadgeTitle(g.Id, title)">
+                                    @title
+                                </button>
+                            }
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-uerre-primary px-3"
+                                    @onclick="() => SaveBadge(g.Id)"
+                                    disabled="@_savingBadge.Contains(g.Id)">
+                                @(_savingBadge.Contains(g.Id) ? "Guardando..." : "Guardar")
+                            </button>
+                            @if (_badgeSaved.Contains(g.Id))
+                            {
+                                <span class="text-success small">Guardado ✓</span>
+                            }
+                        </div>
+                        @if (_badgeError.TryGetValue(g.Id, out var badgeErr))
+                        {
+                            <div class="text-danger small mt-2">@badgeErr</div>
+                        }
                     </div>
-                </a>
+                </div>
             </div>
         }
     </div>
@@ -106,16 +150,78 @@
                         <div class="d-flex flex-column gap-2 mt-2">
                             @foreach (var member in members)
                             {
-                                <div class="d-flex align-items-center gap-3 border rounded-3 px-3 py-2 bg-white">
-                                    <div class="flex-grow-1 min-w-0">
-                                        <div class="fw-semibold small text-dark text-truncate">@member.DisplayLabel</div>
-                                        <div class="text-muted" style="font-size:.7rem;">@member.Email</div>
+                                <div class="border rounded-3 px-3 py-2 bg-white">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="flex-grow-1 min-w-0">
+                                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                <span class="fw-semibold small text-dark text-truncate">@member.DisplayLabel</span>
+                                                @if (member.BadgeTitle is not null)
+                                                {
+                                                    <span class="member-leader-tag" style="background:@member.BadgeColor;">@member.BadgeTitle</span>
+                                                }
+                                            </div>
+                                            <div class="text-muted" style="font-size:.7rem;">@member.Email</div>
+                                        </div>
+                                        <div class="d-flex gap-2 flex-shrink-0">
+                                            <button class="btn btn-sm btn-uerre-outline rounded-pill px-3"
+                                                    @onclick="() => ToggleMemberBadgeEditor(member)"
+                                                    disabled="@_acting">
+                                                @(_editingMemberId == member.UserId ? "Cerrar" : "Personalizar")
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                                    @onclick="() => RemoveMember(g.Id, member.UserId)"
+                                                    disabled="@_acting">
+                                                Eliminar
+                                            </button>
+                                        </div>
                                     </div>
-                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                            @onclick="() => RemoveMember(g.Id, member.UserId)"
-                                            disabled="@_acting">
-                                        Eliminar
-                                    </button>
+
+                                    @if (_editingMemberId == member.UserId)
+                                    {
+                                        <div class="leader-badge-editor mt-3 pt-3 border-top">
+                                            <div class="text-muted small fw-semibold mb-2">Asignar rol e insignia</div>
+
+                                            <div class="mb-2">
+                                                <input type="text" class="form-control form-control-sm"
+                                                       placeholder="Ej. Secretario, Tesorero, Vocal..."
+                                                       maxlength="@LeaderBadgeOptions.MaxAssignedTitleLength"
+                                                       value="@_memberBadgeTitle.GetValueOrDefault(member.UserId)"
+                                                       @oninput="e => SelectMemberBadgeTitle(member.UserId, AsString(e.Value))" />
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+                                                @foreach (var (hex, name) in LeaderBadgeOptions.Colors)
+                                                {
+                                                    <button type="button"
+                                                            class="leader-badge-swatch @(_memberBadgeColor.GetValueOrDefault(member.UserId) == hex ? "leader-badge-swatch--selected" : "")"
+                                                            style="background:@hex;"
+                                                            title="@name"
+                                                            aria-label="@name"
+                                                            @onclick="() => SelectMemberBadgeColor(member.UserId, hex)"></button>
+                                                }
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                <button type="button" class="btn btn-sm btn-uerre-primary px-3"
+                                                        @onclick="() => SaveMemberBadge(g.Id, member.UserId)"
+                                                        disabled="@_savingMemberBadge.Contains(member.UserId)">
+                                                    @(_savingMemberBadge.Contains(member.UserId) ? "Guardando..." : "Guardar")
+                                                </button>
+                                                @if (member.BadgeTitle is not null)
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-link text-danger px-2"
+                                                            @onclick="() => RemoveMemberBadge(g.Id, member.UserId)"
+                                                            disabled="@_savingMemberBadge.Contains(member.UserId)">
+                                                        Quitar insignia
+                                                    </button>
+                                                }
+                                            </div>
+                                            @if (_memberBadgeError.TryGetValue(member.UserId, out var memberBadgeErr))
+                                            {
+                                                <div class="text-danger small mt-2">@memberBadgeErr</div>
+                                            }
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
@@ -166,6 +272,150 @@
     private Guid? _expandedGroupId;
     private readonly Dictionary<Guid, List<GroupMemberModel>> _groupMembers = [];
     private readonly HashSet<Guid> _loadingGroups = [];
+
+    // Leader badge customization: per-group selected color/title, load-once guard,
+    // saving state, a persistent "Guardado" flag (cleared on further edits), and errors.
+    private readonly Dictionary<Guid, string> _badgeColor = [];
+    private readonly Dictionary<Guid, string> _badgeTitle = [];
+    private readonly HashSet<Guid> _badgeLoaded = [];
+    private readonly HashSet<Guid> _savingBadge = [];
+    private readonly HashSet<Guid> _badgeSaved = [];
+    private readonly Dictionary<Guid, string> _badgeError = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Data?.ManagedGroups is null) return;
+
+        // Sequential on purpose — a leader typically manages one or two groups,
+        // and this avoids sharing a single EF DbContext across concurrent calls.
+        foreach (var g in Data.ManagedGroups)
+        {
+            if (!_badgeLoaded.Add(g.Id)) continue;
+            var (title, color) = await GroupService.GetMyLeaderBadgeAsync(g.Id);
+            _badgeTitle[g.Id] = title;
+            _badgeColor[g.Id] = color;
+        }
+    }
+
+    private void SelectBadgeColor(Guid groupId, string color)
+    {
+        _badgeColor[groupId] = color;
+        _badgeSaved.Remove(groupId);
+    }
+
+    private void SelectBadgeTitle(Guid groupId, string title)
+    {
+        _badgeTitle[groupId] = title;
+        _badgeSaved.Remove(groupId);
+    }
+
+    private async Task SaveBadge(Guid groupId)
+    {
+        _savingBadge.Add(groupId);
+        _badgeError.Remove(groupId);
+        try
+        {
+            var color = _badgeColor.GetValueOrDefault(groupId, LeaderBadgeOptions.DefaultColor);
+            var title = _badgeTitle.GetValueOrDefault(groupId, LeaderBadgeOptions.DefaultTitle);
+            await GroupService.UpdateMyLeaderBadgeAsync(groupId, color, title);
+            _badgeSaved.Add(groupId);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _badgeError[groupId] = ex.Message;
+        }
+        catch
+        {
+            _badgeError[groupId] = "No se pudo guardar. Intenta de nuevo.";
+        }
+        finally
+        {
+            _savingBadge.Remove(groupId);
+            StateHasChanged();
+        }
+    }
+
+    // Per-member badge assignment (leader assigning a role/color to someone else in the
+    // expanded member list). Only one member's editor is open at a time.
+    private Guid? _editingMemberId;
+    private readonly Dictionary<Guid, string> _memberBadgeColor = [];
+    private readonly Dictionary<Guid, string> _memberBadgeTitle = [];
+    private readonly HashSet<Guid> _savingMemberBadge = [];
+    private readonly Dictionary<Guid, string> _memberBadgeError = [];
+
+    private void ToggleMemberBadgeEditor(GroupMemberModel member)
+    {
+        if (_editingMemberId == member.UserId)
+        {
+            _editingMemberId = null;
+            return;
+        }
+
+        _editingMemberId = member.UserId;
+        _memberBadgeColor[member.UserId] = member.BadgeColor ?? LeaderBadgeOptions.DefaultColor;
+        _memberBadgeTitle[member.UserId] = member.BadgeTitle ?? "";
+        _memberBadgeError.Remove(member.UserId);
+    }
+
+    private void SelectMemberBadgeColor(Guid userId, string color) => _memberBadgeColor[userId] = color;
+    private void SelectMemberBadgeTitle(Guid userId, string title) => _memberBadgeTitle[userId] = title;
+    private static string AsString(object? value) => value?.ToString() ?? string.Empty;
+
+    private async Task SaveMemberBadge(Guid groupId, Guid userId)
+    {
+        _savingMemberBadge.Add(userId);
+        _memberBadgeError.Remove(userId);
+        try
+        {
+            var color = _memberBadgeColor.GetValueOrDefault(userId, LeaderBadgeOptions.DefaultColor);
+            var title = _memberBadgeTitle.GetValueOrDefault(userId, "");
+            await GroupService.AssignMemberBadgeAsync(groupId, userId, color, title);
+            ReplaceMemberBadgeLocally(groupId, userId, title.Trim(), color);
+            _editingMemberId = null;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _memberBadgeError[userId] = ex.Message;
+        }
+        catch
+        {
+            _memberBadgeError[userId] = "No se pudo guardar. Intenta de nuevo.";
+        }
+        finally
+        {
+            _savingMemberBadge.Remove(userId);
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveMemberBadge(Guid groupId, Guid userId)
+    {
+        _savingMemberBadge.Add(userId);
+        _memberBadgeError.Remove(userId);
+        try
+        {
+            await GroupService.RemoveMemberBadgeAsync(groupId, userId);
+            ReplaceMemberBadgeLocally(groupId, userId, null, null);
+            _editingMemberId = null;
+        }
+        catch
+        {
+            _memberBadgeError[userId] = "No se pudo quitar la insignia. Intenta de nuevo.";
+        }
+        finally
+        {
+            _savingMemberBadge.Remove(userId);
+            StateHasChanged();
+        }
+    }
+
+    private void ReplaceMemberBadgeLocally(Guid groupId, Guid userId, string? title, string? color)
+    {
+        if (!_groupMembers.TryGetValue(groupId, out var members)) return;
+        var idx = members.FindIndex(m => m.UserId == userId);
+        if (idx >= 0)
+            members[idx] = members[idx] with { BadgeTitle = title, BadgeColor = color };
+    }
 
     private async Task Approve(MembershipModel req)
     {

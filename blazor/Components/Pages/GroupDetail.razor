@@ -373,7 +373,8 @@ else
                         @foreach (var member in _members)
                         {
                             <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                                <div class="card-uerre no-hover p-3 d-flex align-items-center gap-3">
+                                <div class="card-uerre no-hover p-3 d-flex align-items-center gap-3 @(member.BadgeTitle is not null ? "member-card--leader" : "")"
+                                     style="@(member.BadgeTitle is not null ? $"border-color:{member.BadgeColor} !important;box-shadow:0 0 0 2px {member.BadgeColor}2e;" : "")">
                                     @if (!string.IsNullOrEmpty(member.AvatarUrl))
                                     {
                                         <img src="@member.AvatarUrl" alt=""
@@ -389,8 +390,14 @@ else
                                     }
 
                                     <div class="min-w-0">
-                                        <div class="fw-600 text-dark line-clamp-1 small">
-                                            @member.DisplayLabel
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <span class="fw-600 text-dark line-clamp-1 small">
+                                                @member.DisplayLabel
+                                            </span>
+                                            @if (member.BadgeTitle is not null)
+                                            {
+                                                <span class="member-leader-tag" style="background:@member.BadgeColor;">@member.BadgeTitle</span>
+                                            }
                                         </div>
                                         <div class="text-muted line-clamp-1" style="font-size:.72rem;">
                                             @member.Email

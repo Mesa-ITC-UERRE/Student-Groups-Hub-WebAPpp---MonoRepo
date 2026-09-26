@@ -141,7 +141,7 @@ public class LeadershipRequestService(IDbContextFactory<AppDbContext> dbFactory)
                 GroupId = req.GroupId,
                 UserId = req.RequestedByUserId,
                 PermissionRole = "leader",
-                DisplayRole = "Líder",
+                DisplayRole = LeaderBadgeOptions.DefaultTitle,
                 CreatedAt = DateTime.UtcNow,
             });
         }
