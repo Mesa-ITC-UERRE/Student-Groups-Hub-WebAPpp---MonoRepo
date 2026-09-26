@@ -1,6 +1,7 @@
 @* Administration timeline tab — shown inside any group detail page *@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject GroupTermApiService TermService
+@inject GroupApiService GroupMembersService
 @inject AuthenticationStateProvider AuthState
 
 @if (_loading)
@@ -128,11 +129,33 @@ else
                     {
                         <div class="card-uerre no-hover p-3 mb-3">
                             <div class="row g-2 align-items-end">
-                                <div class="col-12 col-sm-4">
-                                    <label class="form-label small fw-600 mb-1">Nombre completo</label>
-                                    <input class="form-control form-control-sm" placeholder="Ana García López"
-                                           @bind="_newMemberName" />
-                                </div>
+                                @if (term.IsCurrent)
+                                {
+                                    <!-- Current administration: must pick an actual group member,
+                                         not a free-text name — see GroupTermService.AddMemberAsync. -->
+                                    <div class="col-12 col-sm-8">
+                                        <label class="form-label small fw-600 mb-1">Miembro del grupo</label>
+                                        <select class="form-select form-select-sm" @bind="_newMemberUserId">
+                                            <option value="">-- Selecciona un miembro --</option>
+                                            @foreach (var gm in _groupMembers)
+                                            {
+                                                <option value="@gm.UserId">@gm.DisplayLabel (@gm.Email)</option>
+                                            }
+                                        </select>
+                                        @if (_groupMembers.Count == 0)
+                                        {
+                                            <div class="form-text text-warning">Este grupo aún no tiene miembros aceptados.</div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-12 col-sm-4">
+                                        <label class="form-label small fw-600 mb-1">Nombre completo</label>
+                                        <input class="form-control form-control-sm" placeholder="Ana García López"
+                                               @bind="_newMemberName" />
+                                    </div>
+                                }
                                 <div class="col-12 col-sm-4">
                                     <label class="form-label small fw-600 mb-1">Cargo / Rol</label>
                                     <input class="form-control form-control-sm" placeholder="Presidenta, Tesorero..."
@@ -162,7 +185,7 @@ else
                                 </div>
                                 <div class="col-6 col-sm-2 d-flex gap-1">
                                     <button class="btn btn-uerre-primary btn-sm flex-grow-1"
-                                            type="button" @onclick="() => SaveMember(term.Id)"
+                                            type="button" @onclick="() => SaveMember(term)"
                                             disabled="@_saving">
                                         @if (_saving) { <span class="spinner-border spinner-border-sm"></span> }
                                         else { <span>OK</span> }
@@ -231,6 +254,7 @@ else
     [Parameter] public bool CanManage { get; set; }
 
     private List<GroupTermModel> _terms = [];
+    private List<GroupMemberModel> _groupMembers = [];
     private bool _loading = true;
 
     // Add term form
@@ -245,6 +269,7 @@ else
     private Guid? _addMemberTermId;
     private string _newMemberName  = "";
     private string _newMemberRole  = "";
+    private string _newMemberUserId = "";
     private int    _newMemberOrder = 0;
     private string? _memberError;
 
@@ -255,7 +280,11 @@ else
     private async Task LoadAsync()
     {
         _loading = true;
-        _terms = await TermService.GetTermsAsync(GroupId);
+        var termsTask   = TermService.GetTermsAsync(GroupId);
+        var membersTask = GroupMembersService.GetMembersAsync(GroupId);
+        await Task.WhenAll(termsTask, membersTask);
+        _terms = termsTask.Result;
+        _groupMembers = membersTask.Result;
         _loading = false;
     }
 
@@ -294,23 +323,56 @@ else
         _addMemberTermId = termId;
         _newMemberName   = "";
         _newMemberRole   = "";
+        _newMemberUserId = "";
         _memberError     = null;
         _newMemberOrder  = (_terms.FirstOrDefault(t => t.Id == termId)?.Members.Count ?? 0) + 1;
     }
 
-    private async Task SaveMember(Guid termId)
+    private async Task SaveMember(GroupTermModel term)
     {
-        if (string.IsNullOrWhiteSpace(_newMemberName) || string.IsNullOrWhiteSpace(_newMemberRole))
+        if (string.IsNullOrWhiteSpace(_newMemberRole))
         {
-            _memberError = "El nombre y el cargo son requeridos.";
+            _memberError = "El cargo es requerido.";
             return;
         }
+
+        string displayName;
+        Guid? userId = null;
+        string? avatarUrl = null;
+
+        if (term.IsCurrent)
+        {
+            if (!Guid.TryParse(_newMemberUserId, out var parsedUserId))
+            {
+                _memberError = "Selecciona un miembro del grupo.";
+                return;
+            }
+            var member = _groupMembers.FirstOrDefault(m => m.UserId == parsedUserId);
+            if (member is null)
+            {
+                _memberError = "Ese miembro ya no está disponible; vuelve a seleccionarlo.";
+                return;
+            }
+            userId = parsedUserId;
+            displayName = member.DisplayLabel;
+            avatarUrl = member.AvatarUrl;
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(_newMemberName))
+            {
+                _memberError = "El nombre es requerido.";
+                return;
+            }
+            displayName = _newMemberName.Trim();
+        }
+
         _saving = true; _memberError = null;
         try
         {
             await TermService.AddMemberAsync(
-                termId, _newMemberName.Trim(),
-                _newMemberRole.Trim(), _newMemberOrder);
+                term.Id, displayName, _newMemberRole.Trim(),
+                _newMemberOrder, userId, avatarUrl);
             CancelAddMember();
             await LoadAsync();
         }

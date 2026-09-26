@@ -73,118 +73,65 @@
                 var startDow  = ((int)firstDay.DayOfWeek + 6) % 7;
                 var dayEvents = CurrentMonthModel.Days.ToDictionary(d => d.Date);
 
-                <!-- Desktop/tablet grid (>=768px) -->
-                <div class="d-none d-md-block">
-                    <!-- Day headers -->
-                    <div class="calendar-grid mb-1">
-                        @foreach (var d in new[]{"Lun","Mar","Mié","Jue","Vie","Sáb","Dom"})
-                        {
-                            <div class="calendar-day-header">@d</div>
-                        }
-                    </div>
-
-                    <!-- Day cells -->
-                    <div class="calendar-grid">
-                        @* Leading empty cells *@
-                        @for (int i = 0; i < startDow; i++)
-                        {
-                            <div class="calendar-cell calendar-cell--empty"></div>
-                        }
-
-                        @* Day cells *@
-                        @for (int day = 1; day <= daysInMonth; day++)
-                        {
-                            var date   = new DateOnly(year, month, day);
-                            var isToday = date == DateOnly.FromDateTime(DateTime.Today);
-                            var hasSel = _selectedDay == date;
-                            dayEvents.TryGetValue(date, out var dayData);
-
-                            var myCount  = dayData?.MyGroupEvents.Count ?? 0;
-                            var allCount = dayData?.AllEvents.Count    ?? 0;
-                            var hasAny   = myCount + allCount > 0;
-
-                            <div class="calendar-cell @(isToday ? "calendar-cell--today" : "") @(hasSel ? "calendar-cell--selected" : "") @(hasAny ? "calendar-cell--has-events" : "")"
-                                 @onclick="() => SelectDay(date, dayData)">
-                                <span class="calendar-day-number">@day</span>
-
-                                @if (hasAny)
-                                {
-                                    <div class="calendar-indicators">
-                                        @if (myCount > 0)
-                                        {
-                                            <span class="calendar-indicator calendar-indicator--mine"
-                                                  title="@myCount evento(s) de mis grupos">
-                                                <span class="calendar-indicator-dot"></span>
-                                                @myCount
-                                            </span>
-                                        }
-                                        @if (allCount > 0)
-                                        {
-                                            <span class="calendar-indicator calendar-indicator--other"
-                                                  title="@allCount otro(s) evento(s)">
-                                                <span class="calendar-indicator-dot"></span>
-                                                @allCount
-                                            </span>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        }
-                    </div>
+                <!-- Day headers -->
+                <div class="calendar-grid mb-1">
+                    @foreach (var d in new[]{"Lun","Mar","Mié","Jue","Vie","Sáb","Dom"})
+                    {
+                        <div class="calendar-day-header">@d</div>
+                    }
                 </div>
 
-                <!-- Mobile agenda (<768px): date-grouped list instead of a 7-column grid -->
-                <div class="d-md-none calendar-agenda">
-                    @{
-                        var agendaDays = CurrentMonthModel.Days
-                            .Where(d => d.MyGroupEvents.Count + d.AllEvents.Count > 0)
-                            .OrderBy(d => d.Date)
-                            .ToList();
-                        var todayDate = DateOnly.FromDateTime(DateTime.Today);
-                    }
-                    @if (agendaDays.Count == 0)
+                <!-- Day cells (shown at every viewport size — the compact mobile sizing lives
+                     in app.css so this stays the actual complete month, not a filtered list) -->
+                <div class="calendar-grid">
+                    @* Leading empty cells *@
+                    @for (int i = 0; i < startDow; i++)
                     {
-                        <div class="card-uerre no-hover p-4 text-center text-muted small">
-                            No hay eventos este mes.
-                        </div>
+                        <div class="calendar-cell calendar-cell--empty"></div>
                     }
-                    else
-                    {
-                        @foreach (var dayData in agendaDays)
-                        {
-                            var agendaEvents = dayData.MyGroupEvents
-                                .Concat(dayData.AllEvents)
-                                .OrderBy(e => e.StartAt)
-                                .ToList();
-                            var isToday = dayData.Date == todayDate;
 
-                            <div class="calendar-agenda-day">
-                                <div class="calendar-agenda-date @(isToday ? "calendar-agenda-date--today" : "")">
-                                    @dayData.Date.ToString("dddd d 'de' MMMM", System.Globalization.CultureInfo.GetCultureInfo("es-MX"))
-                                </div>
-                                <div class="d-flex flex-column gap-2">
-                                    @foreach (var ev in agendaEvents)
+                    @* Day cells *@
+                    @for (int day = 1; day <= daysInMonth; day++)
+                    {
+                        var date   = new DateOnly(year, month, day);
+                        var isToday = date == DateOnly.FromDateTime(DateTime.Today);
+                        var hasSel = _selectedDay == date;
+                        dayEvents.TryGetValue(date, out var dayData);
+
+                        var myCount  = dayData?.MyGroupEvents.Count ?? 0;
+                        var allCount = dayData?.AllEvents.Count    ?? 0;
+                        var hasAny   = myCount + allCount > 0;
+
+                        <div class="calendar-cell @(isToday ? "calendar-cell--today" : "") @(hasSel ? "calendar-cell--selected" : "") @(hasAny ? "calendar-cell--has-events" : "")"
+                             @onclick="() => SelectDay(date, dayData)">
+                            <span class="calendar-day-number">@day</span>
+
+                            @if (hasAny)
+                            {
+                                <div class="calendar-indicators">
+                                    @if (myCount > 0)
                                     {
-                                        var isMine = dayData.MyGroupEvents.Any(e => e.Id == ev.Id);
-                                        <a href="/events/@ev.Id"
-                                           class="text-decoration-none calendar-agenda-event @(isMine ? "calendar-agenda-event--mine" : "calendar-agenda-event--other")">
-                                            <div class="fw-semibold small text-dark line-clamp-1">@ev.Title</div>
-                                            <div class="text-muted" style="font-size:.72rem;">
-                                                @ev.GroupName · @ev.StartAt.ToLocalTime().ToString("HH:mm")
-                                                @if (ev.Location is not null)
-                                                {
-                                                    <span> · @ev.Location</span>
-                                                }
-                                            </div>
-                                        </a>
+                                        <span class="calendar-indicator calendar-indicator--mine"
+                                              title="@myCount evento(s) de mis grupos">
+                                            <span class="calendar-indicator-dot"></span>
+                                            @myCount
+                                        </span>
+                                    }
+                                    @if (allCount > 0)
+                                    {
+                                        <span class="calendar-indicator calendar-indicator--other"
+                                              title="@allCount otro(s) evento(s)">
+                                            <span class="calendar-indicator-dot"></span>
+                                            @allCount
+                                        </span>
                                     }
                                 </div>
-                            </div>
-                        }
+                            }
+                        </div>
                     }
                 </div>
 
-                <!-- Selected day event list (desktop grid selection) -->
+                <!-- Selected day event list -->
                 @if (_selectedDay.HasValue && _selectedDayData is not null)
                 {
                     var allDayEvents = _selectedDayData.MyGroupEvents

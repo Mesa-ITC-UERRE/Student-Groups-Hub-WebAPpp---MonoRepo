@@ -388,6 +388,24 @@ a:hover { color: var(--uerre-purple-dark); }
     box-shadow: 0 3px 10px rgba(0,0,0,.15);
 }
 
+/* ─── Group member card: leader/president highlight ─────────── */
+.member-card--leader {
+    border-color: var(--uerre-gold) !important;
+    box-shadow: 0 0 0 2px rgba(245,158,11,.18);
+    background: linear-gradient(180deg, #fffbeb 0%, #fff 60%);
+}
+
+.member-leader-tag {
+    display: inline-flex; align-items: center;
+    background: var(--uerre-gold);
+    color: #fff;
+    border-radius: 999px;
+    padding: .1rem .55rem;
+    font-size: .6rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .04em;
+    white-space: nowrap;
+}
+
 /* ─── Category Tags ──────────────────────────────────────────── */
 .tag-uerre {
     display: inline-flex; align-items: center;
@@ -967,7 +985,28 @@ a:hover .home-quicklink {
 .bg-surface-alt{ background: var(--uerre-surface-alt) !important; }
 .border-purple { border-color: var(--uerre-border-purple) !important; }
 
-.line-clamp-1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.line-clamp-1 { overflow: hidden; text-overflow: ellipsis;     white-space: nowrap;
+}
+
+/* ─── Leader badge editor (Perfil → Mis Grupos) ─────────────── */
+.leader-badge-swatch {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.08);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.leader-badge-swatch:hover { transform: scale(1.08); }
+
+.leader-badge-swatch--selected {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px var(--uerre-heading);
+}
+
+
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
@@ -1298,13 +1337,14 @@ a:hover .home-quicklink {
     background: var(--uerre-gold);
 }
 
-/* ─── Calendar: mobile grid sizing (<768px, Home mini-calendar widget) ───
-   Calendario.razor hides .calendar-grid below 768px in favor of the agenda
-   list below, so this only affects the Home widget — the desktop 82px
-   min-height reads as tall pills at ~44px column width. Placed after the
-   base rules above (not in the top responsive block) because same-
-   specificity selectors resolve by source order, and the unconditional
-   base .calendar-cell/.calendar-grid rules above would otherwise win. */
+/* ─── Calendar: mobile grid sizing (<768px, both Home widget and /calendario) ───
+   Calendario.razor renders the same .calendar-grid at every viewport size (no
+   separate mobile view), so this sizing applies to both the Home mini-widget
+   and the full calendar page — the desktop 82px min-height reads as tall
+   pills at ~44px column width otherwise. Placed after the base rules above
+   (not in the top responsive block) because same-specificity selectors
+   resolve by source order, and the unconditional base .calendar-cell/
+   .calendar-grid rules above would otherwise win. */
 @media (max-width: 768px) {
     .calendar-grid { gap: 4px; }
     .calendar-cell {
@@ -1323,40 +1363,6 @@ a:hover .home-quicklink {
     .calendar-indicator-dot { width: 5px; height: 5px; }
 }
 
-/* ─── Calendar: mobile agenda (<768px replacement for the grid) ─── */
-.calendar-agenda { display: flex; flex-direction: column; gap: 1rem; }
-
-.calendar-agenda-day {
-    background: #fff;
-    border: 1px solid var(--uerre-border);
-    border-radius: var(--bs-border-radius-xl);
-    padding: 1rem 1.125rem;
-}
-
-.calendar-agenda-date {
-    font-size: .78rem; font-weight: 700;
-    text-transform: capitalize;
-    color: var(--uerre-muted);
-    margin-bottom: .75rem;
-}
-
-.calendar-agenda-date--today { color: var(--uerre-purple); }
-
-.calendar-agenda-event {
-    display: block;
-    padding: .625rem .75rem;
-    border-radius: 10px;
-    border-left: 3px solid var(--uerre-gold);
-    background: #fffbeb;
-}
-
-.calendar-agenda-event + .calendar-agenda-event { margin-top: .1rem; }
-
-.calendar-agenda-event--mine {
-    border-left-color: var(--uerre-purple);
-    background: var(--uerre-tag-bg);
-}
-
 /* ─── Mobile hardening (<=390px) ─────────────────────────────── */
 @media (max-width: 390px) {
     .container-uerre { padding: 0 .75rem; }
@@ -1364,7 +1370,6 @@ a:hover .home-quicklink {
     .card-uerre,
     .stat-card,
     .admin-kpi-card,
-    .calendar-agenda-day,
     .term-card,
     .timeline-content {
         padding: 1rem;

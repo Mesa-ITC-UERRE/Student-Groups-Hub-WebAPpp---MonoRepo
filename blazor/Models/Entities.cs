@@ -93,6 +93,7 @@ public class RoleAssignment
     [ForeignKey(nameof(UserId))] public User? User { get; set; }
     [Required, MaxLength(32)] public string PermissionRole { get; set; } = "leader";
     [MaxLength(100)] public string? DisplayRole { get; set; }
+    [MaxLength(7)] public string? BadgeColor { get; set; }
     public DateOnly? StartDate { get; set; }
     public DateOnly? EndDate { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -177,7 +178,9 @@ public class GroupTerm
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<TermMember> Members { get; set; } = [];
-    public bool IsCurrent => Status == "active" && EndDate is null;
+    // Date-driven — see the identical property on GroupTermModel for why Status
+    // alone isn't trusted here.
+    public bool IsCurrent => EndDate is null || EndDate >= DateOnly.FromDateTime(DateTime.UtcNow);
 }
 
 public class TermMember
