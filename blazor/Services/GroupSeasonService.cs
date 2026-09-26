@@ -24,6 +24,15 @@ public class GroupSeasonService(
         using var db = dbFactory.CreateDbContext();
         using var tx = await db.Database.BeginTransactionAsync();
 
+        var activeGroupIds = await db.Groups
+            .Where(g => targetIds.Contains(g.Id) && g.Status == "active")
+            .Select(g => g.Id)
+            .ToListAsync();
+        if (activeGroupIds.Count == 0)
+            return new GroupSeasonResetResult(0, 0, 0, 0);
+
+        targetIds = activeGroupIds;
+
         var leaderAssignments = await db.RoleAssignments
             .Where(r => targetIds.Contains(r.GroupId) && r.PermissionRole == "leader")
             .ToListAsync();
