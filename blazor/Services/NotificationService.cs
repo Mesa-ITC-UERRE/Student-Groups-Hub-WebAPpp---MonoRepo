@@ -35,6 +35,13 @@ public class NotificationService(IDbContextFactory<AppDbContext> dbFactory)
             .ExecuteUpdateAsync(s => s.SetProperty(n => n.Read, true));
     }
 
+    public async Task<bool> ExistsAsync(Guid userId, string kind, Guid referenceId)
+    {
+        using var db = dbFactory.CreateDbContext();
+        return await db.Notifications.AnyAsync(n =>
+            n.UserId == userId && n.Kind == kind && n.ReferenceId == referenceId);
+    }
+
     public async Task CreateAsync(Guid userId, string kind, string title,
         string? body = null, string? href = null,
         Guid? referenceId = null, string? referenceType = null)
