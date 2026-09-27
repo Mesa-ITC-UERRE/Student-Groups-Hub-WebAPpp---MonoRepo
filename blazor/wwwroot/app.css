@@ -235,6 +235,42 @@ a:hover { color: var(--uerre-purple-dark); }
     transform: translateY(-1px);
 }
 
+.nav-arrow-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .375rem;
+    width: fit-content;
+    background: #fff;
+    border: 1px solid rgba(255, 255, 255, .78);
+    border-radius: 999px;
+    color: var(--uerre-purple-dark);
+    box-shadow: 0 6px 18px rgba(49, 16, 105, .16);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, color .18s ease;
+}
+
+.nav-arrow-pill:hover,
+.nav-arrow-pill:focus-visible {
+    background: var(--uerre-surface);
+    color: var(--uerre-purple);
+    box-shadow: 0 9px 24px rgba(49, 16, 105, .24);
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.nav-arrow-pill:active {
+    transform: translateY(0);
+}
+
+.nav-arrow-pill:disabled {
+    opacity: .55;
+    transform: none;
+    box-shadow: 0 3px 10px rgba(49, 16, 105, .1);
+}
+
 .btn-xs { padding: .2rem .6rem; font-size: .7rem; border-radius: 6px; }
 
 /* ─── Hero ghost button (white text on gradient backgrounds) ─── */

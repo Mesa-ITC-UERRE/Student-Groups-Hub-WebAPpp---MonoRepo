@@ -42,18 +42,18 @@
         {
             <!-- Month navigator -->
             <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-4">
-                <button class="btn btn-uerre-outline btn-sm d-inline-flex align-items-center gap-1 px-3"
+                <button class="btn btn-sm nav-arrow-pill px-3"
                         @onclick="PrevMonth" disabled="@_navigating">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10.733 19.79a.75.75 0 0 0 1.034-1.083l-5.963-5.707H20.25a.75.75 0 0 0 0-1.5H5.804l5.963-5.707a.75.75 0 0 0-1.034-1.083l-7.25 6.938a.75.75 0 0 0 0 1.083z"/></svg>
+                    <FluentIcon Name="chevron-left" Size="14" />
                     <span class="d-none d-sm-inline">Anterior</span>
                 </button>
                 <h4 class="fw-bold mb-0 text-capitalize text-center" style="font-size:1.1rem;">
                     @CurrentMonthModel?.MonthLabel
                 </h4>
-                <button class="btn btn-uerre-outline btn-sm d-inline-flex align-items-center gap-1 px-3"
+                <button class="btn btn-sm nav-arrow-pill px-3"
                         @onclick="NextMonth" disabled="@_navigating">
                     <span class="d-none d-sm-inline">Siguiente</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.267 4.21a.75.75 0 0 0-1.034 1.082l5.963 5.708H3.75a.75.75 0 0 0 0 1.5h14.446l-5.963 5.707a.75.75 0 0 0 1.034 1.083l7.25-6.938a.75.75 0 0 0 0-1.083z"/></svg>
+                    <FluentIcon Name="chevron-right" Size="14" />
                 </button>
             </div>
 
