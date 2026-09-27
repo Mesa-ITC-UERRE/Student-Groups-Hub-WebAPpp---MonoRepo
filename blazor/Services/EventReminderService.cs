@@ -48,7 +48,7 @@ public class EventReminderService(
                 if (await notificationService.ExistsAsync(rsvp.UserId, Kind, ev.Id)) continue;
                 await notificationService.CreateAsync(rsvp.UserId, Kind,
                     $"Hoy es {ev.Title}",
-                    $"Tu evento confirmado es hoy a las {ev.StartAt:HH:mm} UTC.",
+                    $"Confirmaste asistencia para hoy a las {ev.StartAt:HH:mm} UTC.",
                     $"/events/{ev.Id}",
                     ev.Id, "event");
             }
