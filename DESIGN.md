@@ -66,6 +66,18 @@ Status colors retain the existing Bootstrap-compatible success, warning, danger,
 - **Desktop**: seven-column month grid with selectable event days.
 - **Mobile**: date-grouped agenda cards; month navigation remains visible and does not overflow.
 
+### Notification tray
+- **Structure**: persistent bell trigger, unread-count badge, activity feed rows with kind icon, title, context, relative time, and unread state.
+- **Desktop**: anchored popover aligned to the header bell with a dimmed dismissal scrim.
+- **Mobile**: equal-width bottom-navigation trigger opening an above-navigation bottom sheet.
+- **Full history**: `/notifications` provides a dedicated, responsive activity-feed page and preserves click-through navigation.
+- **States**: loading, empty, error, read, unread, marking-all-read, and keyboard focus.
+
+### Mobile expanded navigation
+- **Structure**: three-column grid of direct destinations inside the navbar collapse; each item uses an icon tile and a short label.
+- **Color**: each destination keeps the semantic accent used by its desktop nav link; icon tiles carry the color while labels remain neutral.
+- **States**: default, hover/focus lift, active surface, authorized/admin-only destinations, and unauthenticated sign-in.
+
 ## 6. Motion & Interaction
 
 - Micro interactions: 150-200ms ease-out.

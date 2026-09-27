@@ -1,0 +1,192 @@
+@rendermode InteractiveServer
+@implements IDisposable
+@inject NotificationApiService NotificationSvc
+@inject NavigationManager Navigation
+@inject ILogger<NotificationBell> Logger
+
+<div class="notification-bell @(Compact ? "notification-bell-mobile" : "notification-bell-desktop")">
+    <button type="button"
+            class="@(Compact ? "mobile-tab-item notification-bell-trigger" : "navbar-user-btn notification-bell-trigger notification-bell-trigger-desktop")"
+            title="Notificaciones"
+            aria-label="Notificaciones@(_unreadCount > 0 ? $", {_unreadCount} sin leer" : "")"
+            aria-expanded="@_open"
+            @onclick="ToggleOpen">
+        <span class="notification-bell-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
+            </svg>
+            @if (_unreadCount > 0)
+            {
+                <span class="notif-badge">@BadgeText</span>
+            }
+        </span>
+        @if (Compact)
+        {
+            <span>Alertas</span>
+        }
+    </button>
+
+    @if (_open)
+    {
+        <button type="button" class="notification-scrim" aria-label="Cerrar notificaciones" @onclick="Close"></button>
+        <section class="notification-tray" aria-label="Notificaciones recientes" @onclick:stopPropagation="true">
+            <header class="notification-tray-header">
+                <div>
+                    <h2>Notificaciones</h2>
+                    <p>@(_unreadCount == 0 ? "Todo está al día" : $"{_unreadCount} sin leer")</p>
+                </div>
+                <div class="notification-tray-actions">
+                    <a class="notification-view-all" href="/notifications">Ver todas</a>
+                    @if (_unreadCount > 0)
+                    {
+                        <button type="button" class="notification-mark-all" disabled="@_markingAll" @onclick="OnMarkAllReadAsync">
+                            Marcar todo como leído
+                        </button>
+                    }
+                    <button type="button" class="notification-close" aria-label="Cerrar" @onclick="Close">&times;</button>
+                </div>
+            </header>
+
+            <div class="notification-feed">
+                @if (_loading)
+                {
+                    <div class="notification-state">Cargando notificaciones...</div>
+                }
+                else if (_loadFailed)
+                {
+                    <div class="notification-state">No pudimos cargar tus notificaciones.</div>
+                }
+                else if (_notifications.Count == 0)
+                {
+                    <div class="notification-state">
+                        <span class="notification-empty-icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
+                            </svg>
+                        </span>
+                        <strong>No tienes notificaciones.</strong>
+                        <span>Las solicitudes y recordatorios aparecerán aquí.</span>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var notification in _notifications.Take(20))
+                    {
+                        <button type="button"
+                                class="notification-feed-item @(!notification.Read ? "notification-feed-item-unread" : "")"
+                                @onclick="() => OnNotificationClickAsync(notification)">
+                            <span class="notification-kind-icon @KindClass(notification.Kind)" aria-hidden="true">
+                                @if (notification.Kind == "event_today")
+                                {
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h.5A1.5 1.5 0 0 1 15 2.5v12a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 14.5v-12A1.5 1.5 0 0 1 2.5 1H3V.5a.5.5 0 0 1 .5-.5M2 4v10.5a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5V4z"/></svg>
+                                }
+                                else
+                                {
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>
+                                }
+                            </span>
+                            <span class="notification-feed-copy">
+                                <strong>@notification.Title</strong>
+                                @if (!string.IsNullOrWhiteSpace(notification.Body))
+                                {
+                                    <span>@notification.Body</span>
+                                }
+                                <time datetime="@notification.CreatedAt.ToString("O")">@RelativeTime(notification.CreatedAt)</time>
+                            </span>
+                            @if (!notification.Read)
+                            {
+                                <span class="notification-unread-dot" aria-label="Sin leer"></span>
+                            }
+                        </button>
+                    }
+                }
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    [Parameter] public bool Compact { get; set; }
+
+    private List<NotificationModel> _notifications = [];
+    private bool _open;
+    private bool _loading = true;
+    private bool _loadFailed;
+    private bool _markingAll;
+
+    private int _unreadCount => _notifications.Count(n => !n.Read);
+    private string BadgeText => _unreadCount > 9 ? "9+" : _unreadCount.ToString();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        try
+        {
+            _notifications = await NotificationSvc.GetMineAsync();
+        }
+        catch (Exception ex)
+        {
+            _loadFailed = true;
+            Logger.LogWarning(ex, "Could not load notifications for the bell.");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ToggleOpen() => _open = !_open;
+    private void Close() => _open = false;
+
+    private async Task OnNotificationClickAsync(NotificationModel notification)
+    {
+        if (!notification.Read)
+        {
+            await NotificationSvc.MarkReadAsync(notification.Id);
+            var index = _notifications.FindIndex(n => n.Id == notification.Id);
+            if (index >= 0) _notifications[index] = notification with { Read = true };
+        }
+
+        Close();
+        if (!string.IsNullOrWhiteSpace(notification.Href))
+            Navigation.NavigateTo(notification.Href);
+    }
+
+    private async Task OnMarkAllReadAsync()
+    {
+        _markingAll = true;
+        try
+        {
+            await NotificationSvc.MarkAllReadAsync();
+            _notifications = _notifications.Select(n => n with { Read = true }).ToList();
+        }
+        finally
+        {
+            _markingAll = false;
+        }
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+        => InvokeAsync(Close);
+
+    private static string KindClass(string kind) => kind switch
+    {
+        "event_today" => "notification-kind-event",
+        "new_membership_request" => "notification-kind-request",
+        "membership_approved" => "notification-kind-approved",
+        "membership_rejected" => "notification-kind-rejected",
+        _ => "notification-kind-default",
+    };
+
+    private static string RelativeTime(DateTime createdAt)
+    {
+        var elapsed = DateTime.UtcNow - createdAt.ToUniversalTime();
+        if (elapsed.TotalMinutes < 1) return "Ahora";
+        if (elapsed.TotalHours < 1) return $"Hace {(int)elapsed.TotalMinutes} min";
+        if (elapsed.TotalDays < 1) return $"Hace {(int)elapsed.TotalHours} h";
+        if (elapsed.TotalDays < 7) return $"Hace {(int)elapsed.TotalDays} d";
+        return createdAt.ToLocalTime().ToString("dd/MM/yyyy");
+    }
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}

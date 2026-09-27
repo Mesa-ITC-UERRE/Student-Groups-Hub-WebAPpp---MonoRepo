@@ -138,6 +138,9 @@ builder.Services.AddScoped<GroupPostService>();
 builder.Services.AddScoped<EventPostService>();
 builder.Services.AddScoped<GroupSeasonService>();
 
+// ─── Background jobs ──────────────────────────────────────────────────────────
+builder.Services.AddHostedService<EventReminderService>();
+
 // Current user context (reads ClaimsPrincipal, upserts user on first call)
 builder.Services.AddScoped<CurrentUserService>();
 

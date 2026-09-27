@@ -203,6 +203,45 @@ public class EventService(IDbContextFactory<AppDbContext> dbFactory)
         return await q.OrderBy(e => e.StartAt).ToListAsync();
     }
 
+    /// <summary>
+    /// Returns published events whose StartAt falls on "today" in the event's own
+    /// timezone. Use GetRsvpsAsync(event.Id) to fetch confirmed ("going") attendees.
+    /// </summary>
+    public async Task<List<Event>> GetEventsHappeningTodayAsync()
+    {
+        using var db = dbFactory.CreateDbContext();
+        var utcNow = DateTime.UtcNow;
+        var from = utcNow.AddDays(-1);
+        var to = utcNow.AddDays(1);
+
+        var candidates = await db.Events
+            .Where(e => e.Status == "published" && e.StartAt >= from && e.StartAt <= to)
+            .ToListAsync();
+
+        return candidates.Where(e => IsHappeningToday(e, utcNow)).ToList();
+    }
+
+    private static bool IsHappeningToday(Event e, DateTime utcNow)
+    {
+        TimeZoneInfo tz;
+        try
+        {
+            tz = TimeZoneInfo.FindSystemTimeZoneById(e.Timezone);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            tz = TimeZoneInfo.Utc;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            tz = TimeZoneInfo.Utc;
+        }
+
+        var localStartDate = TimeZoneInfo.ConvertTimeFromUtc(e.StartAt, tz).Date;
+        var localToday = TimeZoneInfo.ConvertTimeFromUtc(utcNow, tz).Date;
+        return localStartDate == localToday;
+    }
+
     public async Task<EventResponse> ToResponseAsync(Event e)
     {
         var count = await GetRsvpCountAsync(e.Id);
