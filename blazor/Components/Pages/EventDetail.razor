@@ -21,35 +21,47 @@ else if (_event is null)
 }
 else
 {
-    <section class="hero-gradient py-4 py-md-5 text-white"
-             style="@(_event.BannerUrl is not null ? $"background-image:linear-gradient(rgba(76,29,149,.85),rgba(124,58,237,.85)),url({_event.BannerUrl});background-size:cover;" : "")">
-        <div class="container" style="max-width:1200px;">
-            <a href="/events" class="text-white-50 text-decoration-none small mb-3 d-inline-block">← Todos los eventos</a>
-            <div class="d-flex flex-column flex-md-row align-items-start gap-4">
-                <div class="event-date-badge flex-shrink-0">
-                    <span class="event-date-month">@_event.MonthLabel</span>
-                    <span class="event-date-day">@_event.DayLabel</span>
-                </div>
-                <div class="flex-grow-1">
-                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                        <h1 class="fw-bold text-white mb-0" style="font-family:'Montserrat',sans-serif;font-size:1.75rem;">@_event.Title</h1>
-                        @if (_event.IsCanceled)
+    var eventHeroStyle = !string.IsNullOrWhiteSpace(_event.BannerUrl)
+        ? $"background-image:linear-gradient(rgba(76,29,149,.1),rgba(124,58,237,.2)),url({_event.BannerUrl});background-size:cover;background-position:center;"
+        : "";
+
+    <section class="hero-gradient event-detail-hero py-4 py-md-5 text-white @(!string.IsNullOrWhiteSpace(_event.BannerUrl) ? "event-detail-hero--banner" : "")"
+             style="@eventHeroStyle">
+        <div class="container-uerre">
+            <a href="/events" class="btn btn-sm nav-arrow-pill mb-3 px-3">
+                <FluentIcon Name="chevron-left" Size="14" />
+                <span>Todos los eventos</span>
+            </a>
+            <div class="event-hero-layout d-flex flex-column flex-lg-row align-items-stretch align-items-lg-end gap-3">
+                <div class="event-hero-identity d-flex align-items-start gap-3 @(!string.IsNullOrWhiteSpace(_event.BannerUrl) ? "event-hero-identity--banner" : "")">
+                    <div class="event-date-badge flex-shrink-0">
+                        <span class="event-date-month">@_event.MonthLabel</span>
+                        <span class="event-date-day">@_event.DayLabel</span>
+                    </div>
+                    <div class="event-hero-copy flex-grow-1 min-w-0">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                            <h1 class="fw-bold text-white mb-0">@_event.Title</h1>
+                            @if (_event.IsCanceled)
+                            {
+                                <span class="badge bg-secondary">Cancelado</span>
+                            }
+                        </div>
+                        <p class="event-hero-group fw-semibold mb-2">@_event.GroupName</p>
+                        <div class="event-hero-meta d-flex flex-wrap gap-3 mb-3">
+                            <span class="d-inline-flex align-items-center gap-1"><FluentIcon Name="clock" Size="14" /> @_event.StartLocal</span>
+                            @if (_event.Location is not null)
+                            {
+                                <span class="d-inline-flex align-items-center gap-1"><FluentIcon Name="location" Size="14" /> @_event.Location</span>
+                            }
+                            <span class="d-inline-flex align-items-center gap-1"><FluentIcon Name="people" Size="14" /> @_event.AttendanceSummary</span>
+                        </div>
+                        @if (_event.Description is not null)
                         {
-                            <span class="badge bg-secondary">Cancelado</span>
+                            <p class="event-hero-description mb-0">@_event.Description</p>
                         }
                     </div>
-                    <p class="fw-semibold mb-2" style="color:rgba(255,255,255,.7);font-size:.875rem;">@_event.GroupName</p>
-                    <div class="d-flex flex-wrap gap-4 mb-3" style="color:rgba(255,255,255,.7);font-size:.875rem;">
-                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2m0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17M12 7a.75.75 0 0 1 .75.75v4.69l2.28 2.28a.75.75 0 1 1-1.06 1.06l-2.5-2.5a.75.75 0 0 1-.22-.53V7.75A.75.75 0 0 1 12 7"/></svg> @_event.StartLocal</span>
-                        @if (_event.Location is not null) { <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7.5 7.5 0 0 1 7.5 7.5c0 3.5-2.404 7.268-7.066 11.35a.75.75 0 0 1-.968 0C6.904 16.768 4.5 13 4.5 9.5A7.5 7.5 0 0 1 12 2m0 1.5a6 6 0 0 0-6 6c0 2.885 2.066 6.276 6 10.066 3.934-3.79 6-7.181 6-10.066a6 6 0 0 0-6-6m0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 1.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/></svg> @_event.Location</span> }
-                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg> @_event.AttendanceSummary</span>
-                    </div>
-                    @if (_event.Description is not null)
-                    {
-                        <p style="color:rgba(255,255,255,.75);max-width:560px;">@_event.Description</p>
-                    }
                 </div>
-                <div class="flex-shrink-0 d-flex flex-column gap-2 event-hero-actions">
+                <div class="flex-shrink-0 d-flex flex-column align-items-stretch gap-2 event-hero-actions">
                     @if (_canManage)
                     {
                         <button type="button" class="btn btn-hero" @onclick="OpenEditEvent">
@@ -251,14 +263,48 @@ else
                             <label for="editEventLocation" class="form-label">Lugar</label>
                             <input id="editEventLocation" class="form-control" maxlength="300" @bind="_editLocation" />
                         </div>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                                <label class="form-label mb-0">Banner del evento</label>
+                                <span class="text-muted" style="font-size:.7rem;">Opcional · máximo 5 MB</span>
+                            </div>
+                            @if (_editBannerPreview is not null)
+                            {
+                                <img src="@_editBannerPreview" alt="Vista previa del banner"
+                                     class="event-banner-picker-preview mb-2" />
+                            }
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <label for="editEventBannerInput"
+                                       class="btn btn-sm btn-uerre-outline d-inline-flex align-items-center gap-1"
+                                       style="cursor:pointer;">
+                                    <FluentIcon Name="image" Size="14" />
+                                    @(_editBannerPreview is null ? "Elegir imagen" : "Cambiar imagen")
+                                </label>
+                                <InputFile id="editEventBannerInput"
+                                           OnChange="OnEditBannerSelected"
+                                           accept="image/jpeg,image/png,image/webp,image/gif"
+                                           style="display:none;" />
+                                @if (_editBannerPreview is not null)
+                                {
+                                    <button type="button" class="btn btn-sm btn-link text-danger p-0"
+                                            @onclick="RemoveEditBanner">
+                                        Quitar
+                                    </button>
+                                }
+                            </div>
+                        </div>
                         <div class="row g-3 mb-3">
                             <div class="col-12 col-sm-6">
-                                <label for="editEventStart" class="form-label">Inicio</label>
-                                <input id="editEventStart" type="datetime-local" class="form-control" @bind="_editStart" />
+                                <EventDateTimeInput Id="editEventStart"
+                                                    Label="Inicio"
+                                                    @bind-DateText="_editStartDate"
+                                                    @bind-TimeText="_editStartTime" />
                             </div>
                             <div class="col-12 col-sm-6">
-                                <label for="editEventEnd" class="form-label">Fin</label>
-                                <input id="editEventEnd" type="datetime-local" class="form-control" @bind="_editEnd" />
+                                <EventDateTimeInput Id="editEventEnd"
+                                                    Label="Fin"
+                                                    @bind-DateText="_editEndDate"
+                                                    @bind-TimeText="_editEndTime" />
                             </div>
                         </div>
                         <div class="row g-3">
@@ -349,11 +395,18 @@ else
     private string _editTitle = "";
     private string? _editDescription;
     private string? _editLocation;
-    private DateTime _editStart;
-    private DateTime _editEnd;
+    private string _editStartDate = "";
+    private string _editStartTime = "";
+    private string _editEndDate = "";
+    private string _editEndTime = "";
     private int? _editCapacity;
     private string _editStatus = "published";
     private string _editVisibility = "public";
+    private byte[]? _editBannerBytes;
+    private string? _editBannerContentType;
+    private string? _editBannerExt;
+    private string? _editBannerPreview;
+    private bool _removeEditBanner;
     private bool _savingEdit;
     private string? _editError;
     private string? _editSuccess;
@@ -498,11 +551,16 @@ else
         _editTitle = _event.Title;
         _editDescription = _event.Description;
         _editLocation = _event.Location;
-        _editStart = _event.StartAt.ToLocalTime();
-        _editEnd = _event.EndAt.ToLocalTime();
+        var localStart = _event.StartAt.ToLocalTime();
+        var localEnd = _event.EndAt.ToLocalTime();
+        _editStartDate = EventDateTimeInput.FormatDate(localStart);
+        _editStartTime = EventDateTimeInput.FormatTime(localStart);
+        _editEndDate = EventDateTimeInput.FormatDate(localEnd);
+        _editEndTime = EventDateTimeInput.FormatTime(localEnd);
         _editCapacity = _event.Capacity;
         _editStatus = _event.Status;
         _editVisibility = _event.Visibility;
+        ResetEditBanner();
         _editError = null;
         _editSuccess = null;
         _showEditEvent = true;
@@ -513,6 +571,56 @@ else
         if (_savingEdit) return;
         _showEditEvent = false;
         _editError = null;
+        ResetEditBanner();
+    }
+
+    private async Task OnEditBannerSelected(InputFileChangeEventArgs e)
+    {
+        _editError = null;
+        ResetEditBanner();
+
+        var file = e.File;
+        if (!StorageService.AllowedMimeTypes.Contains(file.ContentType))
+        {
+            _editError = "Formato no permitido. Usa JPEG, PNG, WebP o GIF.";
+            return;
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream(StorageService.MaxBytes);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            _editBannerBytes = ms.ToArray();
+        }
+        catch (IOException)
+        {
+            _editError = "La imagen supera el límite de 5 MB.";
+            return;
+        }
+
+        var rawExt = Path.GetExtension(file.Name).TrimStart('.').ToLowerInvariant();
+        _editBannerExt = string.IsNullOrEmpty(rawExt) ? "jpg" : rawExt;
+        _editBannerContentType = file.ContentType;
+        _editBannerPreview = $"data:{file.ContentType};base64,{Convert.ToBase64String(_editBannerBytes)}";
+    }
+
+    private void RemoveEditBanner()
+    {
+        _editBannerBytes = null;
+        _editBannerContentType = null;
+        _editBannerExt = null;
+        _editBannerPreview = null;
+        _removeEditBanner = true;
+    }
+
+    private void ResetEditBanner()
+    {
+        _editBannerBytes = null;
+        _editBannerContentType = null;
+        _editBannerExt = null;
+        _editBannerPreview = _event?.BannerUrl;
+        _removeEditBanner = false;
     }
 
     private async Task SaveEventEdit()
@@ -523,7 +631,17 @@ else
             _editError = "El título es requerido.";
             return;
         }
-        if (_editEnd <= _editStart)
+        if (!EventDateTimeInput.TryParse(_editStartDate, _editStartTime, out var editStart))
+        {
+            _editError = "La fecha de inicio debe usar el formato DD/MM/YYYY y una hora válida.";
+            return;
+        }
+        if (!EventDateTimeInput.TryParse(_editEndDate, _editEndTime, out var editEnd))
+        {
+            _editError = "La fecha de fin debe usar el formato DD/MM/YYYY y una hora válida.";
+            return;
+        }
+        if (editEnd <= editStart)
         {
             _editError = "La fecha de fin debe ser posterior a la de inicio.";
             return;
@@ -542,14 +660,18 @@ else
                 _event.GroupId,
                 _event.Id,
                 new BlazorUpdateEventRequest(
-                    _editTitle.Trim(),
-                    string.IsNullOrWhiteSpace(_editDescription) ? null : _editDescription.Trim(),
-                    string.IsNullOrWhiteSpace(_editLocation) ? null : _editLocation.Trim(),
-                    _editStart.ToUniversalTime(),
-                    _editEnd.ToUniversalTime(),
-                    _editCapacity,
-                    _editStatus,
-                    _editVisibility));
+                     _editTitle.Trim(),
+                     string.IsNullOrWhiteSpace(_editDescription) ? null : _editDescription.Trim(),
+                     string.IsNullOrWhiteSpace(_editLocation) ? null : _editLocation.Trim(),
+                     editStart.ToUniversalTime(),
+                     editEnd.ToUniversalTime(),
+                     _editCapacity,
+                     _editStatus,
+                     _editVisibility),
+                 _editBannerBytes,
+                 _editBannerContentType,
+                 _editBannerExt,
+                 _removeEditBanner);
 
             if (updated is null)
             {

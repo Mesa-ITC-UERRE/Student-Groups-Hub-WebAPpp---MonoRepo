@@ -1,0 +1,72 @@
+<a href="/events/@Event.Id" class="event-card-link text-decoration-none d-block h-100">
+    <article class="card-event h-100">
+        <div class="event-card-media @(string.IsNullOrWhiteSpace(Event.BannerUrl) ? "event-card-media--fallback" : "")"
+             style="@MediaStyle">
+            <div class="event-date-badge">
+                <span class="event-date-month">@Event.MonthLabel</span>
+                <span class="event-date-day">@Event.DayLabel</span>
+            </div>
+
+            @if (Event.IsCanceled)
+            {
+                <span class="event-card-status badge badge-inactive">Cancelado</span>
+            }
+            else if (StatusLabel is not null)
+            {
+                <span class="event-card-status badge rounded-pill @StatusClass">@StatusLabel</span>
+            }
+        </div>
+
+        <div class="event-card-body">
+            <h6 class="event-card-title fw-bold mb-1 text-dark line-clamp-1">@Event.Title</h6>
+            @if (ShowGroupName)
+            {
+                <p class="event-card-group fw-semibold text-purple mb-2">@Event.GroupName</p>
+            }
+
+            <div class="event-card-meta d-flex flex-wrap gap-3 text-muted-sm">
+                <span class="d-inline-flex align-items-center gap-1">
+                    <FluentIcon Name="clock" Size="12" />
+                    @Event.StartLocal
+                </span>
+                @if (Event.Location is not null)
+                {
+                    <span class="d-inline-flex align-items-center gap-1">
+                        <FluentIcon Name="location" Size="12" />
+                        @Event.Location
+                    </span>
+                }
+                @if (ShowAttendance)
+                {
+                    <span class="d-inline-flex align-items-center gap-1">
+                        <FluentIcon Name="people" Size="12" />
+                        @Event.AttendanceSummary
+                    </span>
+                }
+            </div>
+
+            @if (EvidenceImages is { Count: > 0 })
+            {
+                <div class="event-card-evidence d-flex gap-2 mt-3 flex-wrap">
+                    @foreach (var imageUrl in EvidenceImages)
+                    {
+                        <img src="@imageUrl" alt="Evidencia del evento" />
+                    }
+                </div>
+            }
+        </div>
+    </article>
+</a>
+
+@code {
+    [Parameter, EditorRequired] public EventModel Event { get; set; } = default!;
+    [Parameter] public bool ShowGroupName { get; set; } = true;
+    [Parameter] public bool ShowAttendance { get; set; } = true;
+    [Parameter] public string? StatusLabel { get; set; }
+    [Parameter] public string StatusClass { get; set; } = "bg-success-subtle text-success";
+    [Parameter] public IReadOnlyList<string>? EvidenceImages { get; set; }
+
+    private string MediaStyle => string.IsNullOrWhiteSpace(Event.BannerUrl)
+        ? string.Empty
+        : $"background-image:linear-gradient(180deg,rgba(30,27,75,.04),rgba(30,27,75,.42)),url({Event.BannerUrl});";
+}

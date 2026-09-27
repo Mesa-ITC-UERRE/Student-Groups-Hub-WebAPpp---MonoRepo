@@ -36,24 +36,22 @@ else
 {
     var activeBannerUrl = _bannerPreviewUrl ?? _group.BannerUrl;
     var heroStyle = activeBannerUrl is not null
-        ? $"background:linear-gradient(rgba(76,29,149,.88),rgba(124,58,237,.88)),url({activeBannerUrl});background-size:cover;background-position:center;"
+        ? $"background:linear-gradient(rgba(76,29,149,.1),rgba(124,58,237,.2)),url({activeBannerUrl});background-size:cover;background-position:center;"
         : "";
 
     <!-- Hero banner -->
     <section class="page-header position-relative" style="@heroStyle">
         <div class="container-uerre">
-            <a href="/groups" class="d-inline-flex align-items-center gap-1 mb-3 text-decoration-none"
-               style="color:rgba(255,255,255,.6);font-size:.8125rem;transition:color .15s;"
-               onmouseover="this.style.color='rgba(255,255,255,.9)'"
-               onmouseout="this.style.color='rgba(255,255,255,.6)'">
-                ← Todos los grupos
+            <a href="/groups"
+               class="btn btn-sm nav-arrow-pill mb-3 px-3">
+                <FluentIcon Name="chevron-left" Size="14" />
+                <span>Todos los grupos</span>
             </a>
 
-            <div class="d-flex flex-column flex-md-row align-items-start gap-4">
-                <!-- Logo -->
-                <div class="position-relative rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
-                     style="width:68px;height:68px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);
-                    border:1px solid rgba(255,255,255,.2);">
+            <div class="group-hero-layout d-flex flex-column flex-lg-row align-items-stretch align-items-lg-end gap-3">
+                <div class="group-hero-identity d-flex align-items-start gap-3 @(activeBannerUrl is not null ? "group-hero-identity--banner" : "")">
+                    <!-- Logo -->
+                    <div class="group-hero-logo position-relative rounded-3 d-flex align-items-center justify-content-center flex-shrink-0">
                     @if (_logoPreviewUrl is not null)
                     {
                         <img src="@_logoPreviewUrl" alt="Vista previa"
@@ -89,56 +87,54 @@ else
                                    accept="image/jpeg,image/png,image/webp,image/gif"
                                    style="display:none;" />
                     }
-                </div>
-
-                <!-- Info -->
-                <div class="flex-grow-1">
-                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                        <h1 class="fw-bold text-white mb-0"
-                            style="font-family:'Montserrat',sans-serif;font-size:clamp(1.375rem,4vw,1.875rem);">
-                            @_group.Name
-                        </h1>
-
-                        @if (_group.Category is not null)
-                        {
-                            <span class="rounded-pill px-3 py-1"
-                                  style="background:rgba(255,255,255,.15);color:#fff;font-size:.72rem;font-weight:600;letter-spacing:.03em;">
-                                @_group.Category
-                            </span>
-                        }
                     </div>
 
-                    @if (_group.Description is not null)
-                    {
-                        <p class="mb-3" style="color:rgba(255,255,255,.75);max-width:560px;font-size:.9375rem;line-height:1.6;">
-                            @_group.Description
-                        </p>
-                    }
+                    <!-- Info -->
+                    <div class="group-hero-copy flex-grow-1 min-w-0">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                            <h1 class="fw-bold text-white mb-0">
+                                @_group.Name
+                            </h1>
 
-                    <div class="d-flex flex-wrap gap-4" style="font-size:.8125rem;color:rgba(255,255,255,.65);">
-                        <span class="d-inline-flex align-items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg>
-                            <strong class="text-white">@_members.Count</strong>
-                            @(_members.Count == 1 ? "miembro" : "miembros")
-                        </span>
+                            @if (_group.Category is not null)
+                            {
+                                <span class="group-hero-category rounded-pill px-3 py-1">
+                                    @_group.Category
+                                </span>
+                            }
+                        </div>
 
-                        @if (_events.Count > 0)
+                        @if (_group.Description is not null)
                         {
-                            <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg> <strong class="text-white">@_events.Count</strong> eventos</span>
+                            <p class="group-hero-description mb-3">
+                                @_group.Description
+                            </p>
                         }
 
-                        @if (_group.ContactEmail is not null)
-                        {
-                            <a href="mailto:@_group.ContactEmail"
-                               style="color:rgba(255,255,255,.65);text-decoration:none;">
-                                @_group.ContactEmail
-                            </a>
-                        }
+                        <div class="group-hero-meta d-flex flex-wrap align-items-center gap-3">
+                            <span class="group-hero-meta-item d-inline-flex align-items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg>
+                                <strong class="text-white">@_members.Count</strong>
+                                @(_members.Count == 1 ? "miembro" : "miembros")
+                            </span>
+
+                            @if (_events.Count > 0)
+                            {
+                                <span class="group-hero-meta-item d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg> <strong class="text-white">@_events.Count</strong> eventos</span>
+                            }
+
+                            @if (_group.ContactEmail is not null)
+                            {
+                                <a href="mailto:@_group.ContactEmail" class="group-hero-meta-item group-hero-email">
+                                    @_group.ContactEmail
+                                </a>
+                            }
+                        </div>
                     </div>
                 </div>
 
                 <!-- Join button + banner button -->
-                <div class="flex-shrink-0 mt-1 d-flex flex-column align-items-end gap-2 group-hero-actions">
+                <div class="flex-shrink-0 d-flex flex-column align-items-stretch align-items-lg-end gap-2 group-hero-actions">
                     <JoinButton GroupId="@_group.Id"
                                 InitialStatus="@_membershipStatus"
                                 ButtonClass="group-hero-action-btn"
@@ -372,37 +368,115 @@ else
                     <div class="row g-3">
                         @foreach (var member in _members)
                         {
-                            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                                <div class="card-uerre no-hover p-3 d-flex align-items-center gap-3 @(member.BadgeTitle is not null ? "member-card--leader" : "")"
-                                     style="@(member.BadgeTitle is not null ? $"border-color:{member.BadgeColor} !important;box-shadow:0 0 0 2px {member.BadgeColor}2e;" : "")">
-                                    @if (!string.IsNullOrEmpty(member.AvatarUrl))
-                                    {
-                                        <img src="@member.AvatarUrl" alt=""
-                                             class="rounded-circle flex-shrink-0"
-                                             style="width:42px;height:42px;object-fit:cover;" />
-                                    }
-                                    else
-                                    {
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
-                                             style="width:42px;height:42px;background:linear-gradient(135deg,var(--uerre-purple),var(--uerre-purple-vivid));font-size:.875rem;">
-                                            @member.Initial
-                                        </div>
-                                    }
+                            var editorId = $"member-position-editor-{member.UserId:N}";
+                            var inputId = $"member-position-input-{member.UserId:N}";
 
-                                    <div class="min-w-0">
-                                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                                            <span class="fw-600 text-dark line-clamp-1 small">
-                                                @member.DisplayLabel
-                                            </span>
-                                            @if (member.BadgeTitle is not null)
-                                            {
-                                                <span class="member-leader-tag" style="background:@member.BadgeColor;">@member.BadgeTitle</span>
-                                            }
-                                        </div>
-                                        <div class="text-muted line-clamp-1" style="font-size:.72rem;">
-                                            @member.Email
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                <div class="card-uerre no-hover p-3 @(member.BadgeTitle is not null ? "member-card--leader" : "")"
+                                     style="@(member.BadgeTitle is not null ? $"border-color:{member.BadgeColor} !important;box-shadow:0 0 0 2px {member.BadgeColor}2e;" : "")">
+                                    <div class="d-flex align-items-center gap-3">
+                                        @if (!string.IsNullOrEmpty(member.AvatarUrl))
+                                        {
+                                            <img src="@member.AvatarUrl" alt=""
+                                                 class="rounded-circle flex-shrink-0"
+                                                 style="width:42px;height:42px;object-fit:cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                                                 style="width:42px;height:42px;background:linear-gradient(135deg,var(--uerre-purple),var(--uerre-purple-vivid));font-size:.875rem;">
+                                                @member.Initial
+                                            </div>
+                                        }
+
+                                        <div class="min-w-0">
+                                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                <span class="fw-600 text-dark line-clamp-1 small">
+                                                    @member.DisplayLabel
+                                                </span>
+                                                @if (member.BadgeTitle is not null)
+                                                {
+                                                    <span class="member-leader-tag" style="background:@member.BadgeColor;">@member.BadgeTitle</span>
+                                                }
+                                            </div>
+                                            <div class="text-muted line-clamp-1" style="font-size:.72rem;">
+                                                @member.Email
+                                            </div>
                                         </div>
                                     </div>
+
+                                    @if (_isGroupLeader && !member.IsLeader)
+                                    {
+                                        <button type="button"
+                                                class="btn btn-sm btn-uerre-outline w-100 mt-3"
+                                                aria-expanded="@(_editingMemberBadgeId == member.UserId)"
+                                                aria-controls="@editorId"
+                                                @onclick="() => ToggleMemberBadgeEditor(member)"
+                                                disabled="@_savingMemberBadge">
+                                            @(_editingMemberBadgeId == member.UserId
+                                                ? "Cerrar"
+                                                : member.BadgeTitle is null ? "Asignar puesto" : "Editar puesto")
+                                        </button>
+                                    }
+
+                                    @if (_isGroupLeader && !member.IsLeader && _editingMemberBadgeId == member.UserId)
+                                    {
+                                        <div id="@editorId" class="leader-badge-editor mt-3 pt-3 border-top">
+                                            <label for="@inputId" class="form-label text-muted small fw-semibold mb-2">
+                                                Puesto dentro del grupo
+                                            </label>
+                                            <input id="@inputId"
+                                                   type="text"
+                                                   class="form-control form-control-sm"
+                                                   placeholder="Ej. Vicepresidente, Secretario, Tesorero..."
+                                                   maxlength="@LeaderBadgeOptions.MaxAssignedTitleLength"
+                                                   @bind="_memberBadgeTitle" />
+
+                                            <div class="text-muted small fw-semibold mt-3 mb-2">Color del tag</div>
+                                            <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+                                                @foreach (var (hex, name) in LeaderBadgeOptions.Colors)
+                                                {
+                                                    <button type="button"
+                                                            class="leader-badge-swatch @(_memberBadgeColor == hex ? "leader-badge-swatch--selected" : "")"
+                                                            style="background:@hex;"
+                                                            title="@name"
+                                                            aria-label="Color @name"
+                                                            aria-pressed="@(_memberBadgeColor == hex)"
+                                                            @onclick="() => _memberBadgeColor = hex"
+                                                            disabled="@_savingMemberBadge"></button>
+                                                }
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                <button type="button"
+                                                        class="btn btn-sm btn-uerre-primary px-3"
+                                                        @onclick="() => SaveMemberBadge(member.UserId)"
+                                                        disabled="@(_savingMemberBadge || string.IsNullOrWhiteSpace(_memberBadgeTitle))">
+                                                    @(_savingMemberBadge ? "Guardando..." : "Guardar puesto")
+                                                </button>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-link text-muted px-2"
+                                                        @onclick="CloseMemberBadgeEditor"
+                                                        disabled="@_savingMemberBadge">
+                                                    Cancelar
+                                                </button>
+                                                @if (member.BadgeTitle is not null)
+                                                {
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-link text-danger px-2"
+                                                            @onclick="() => RemoveMemberBadge(member.UserId)"
+                                                            disabled="@_savingMemberBadge">
+                                                        Quitar puesto
+                                                    </button>
+                                                }
+                                            </div>
+
+                                            @if (_memberBadgeError is not null)
+                                            {
+                                                <div class="text-danger small mt-2" role="alert">@_memberBadgeError</div>
+                                            }
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         }
@@ -444,45 +518,10 @@ else
                                 @foreach (var ev in _events.Where(e => !e.IsPast).OrderBy(e => e.StartAt))
                                 {
                                     <div class="col-12 col-md-6">
-                                        <a href="/events/@ev.Id" class="text-decoration-none">
-                                            <div class="card-event">
-                                                @if (!string.IsNullOrEmpty(ev.BannerUrl))
-                                                {
-                                                    <img src="@ev.BannerUrl" alt="" class="rounded-3 flex-shrink-0"
-                                                         style="width:96px;height:96px;object-fit:cover;" />
-                                                }
-                                                else
-                                                {
-                                                    <div class="event-date-badge">
-                                                        <span class="event-date-month">@ev.MonthLabel</span>
-                                                        <span class="event-date-day">@ev.DayLabel</span>
-                                                    </div>
-                                                }
-                                                <div class="flex-grow-1 min-w-0">
-                                                    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                                                        <h6 class="fw-bold mb-0 text-dark line-clamp-1">@ev.Title</h6>
-                                                        <span class="badge rounded-pill bg-success-subtle text-success">Próximo</span>
-                                                    </div>
-                                                    <div class="d-flex flex-wrap gap-3 text-muted-sm mt-2">
-                                                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg> @ev.EventDateLocal</span>
-                                                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2m0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17M12 7a.75.75 0 0 1 .75.75v4.69l2.28 2.28a.75.75 0 1 1-1.06 1.06l-2.5-2.5a.75.75 0 0 1-.22-.53V7.75A.75.75 0 0 1 12 7"/></svg> @ev.StartLocal</span>
-                                                        @if (ev.Location is not null) { <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7.5 7.5 0 0 1 7.5 7.5c0 3.5-2.404 7.268-7.066 11.35a.75.75 0 0 1-.968 0C6.904 16.768 4.5 13 4.5 9.5A7.5 7.5 0 0 1 12 2m0 1.5a6 6 0 0 0-6 6c0 2.885 2.066 6.276 6 10.066 3.934-3.79 6-7.181 6-10.066a6 6 0 0 0-6-6m0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 1.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/></svg> @ev.Location</span> }
-                                                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg> @ev.AttendanceSummary</span>
-                                                    </div>
-                                                    @if (_eventEvidenceImages.TryGetValue(ev.Id, out var evidenceImages) && evidenceImages.Count > 0)
-                                                    {
-                                                        <div class="d-flex gap-2 mt-3 flex-wrap">
-                                                            @foreach (var imageUrl in evidenceImages)
-                                                            {
-                                                                <img src="@imageUrl" alt="Evidencia del evento"
-                                                                     class="rounded-3"
-                                                                     style="width:56px;height:56px;object-fit:cover;border:1px solid var(--uerre-border);" />
-                                                            }
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </a>
+                                        <EventCard Event="@ev"
+                                                   ShowGroupName="false"
+                                                   StatusLabel="Próximo"
+                                                   EvidenceImages="@(_eventEvidenceImages.GetValueOrDefault(ev.Id, []))" />
                                     </div>
                                 }
                             </div>
@@ -497,44 +536,11 @@ else
                                 @foreach (var ev in _events.Where(e => e.IsPast).OrderByDescending(e => e.StartAt))
                                 {
                                     <div class="col-12 col-md-6">
-                                        <a href="/events/@ev.Id" class="text-decoration-none">
-                                            <div class="card-event">
-                                                @if (!string.IsNullOrEmpty(ev.BannerUrl))
-                                                {
-                                                    <img src="@ev.BannerUrl" alt="" class="rounded-3 flex-shrink-0"
-                                                         style="width:96px;height:96px;object-fit:cover;" />
-                                                }
-                                                else
-                                                {
-                                                    <div class="event-date-badge">
-                                                        <span class="event-date-month">@ev.MonthLabel</span>
-                                                        <span class="event-date-day">@ev.DayLabel</span>
-                                                    </div>
-                                                }
-                                                <div class="flex-grow-1 min-w-0">
-                                                    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                                                        <h6 class="fw-bold mb-0 text-dark line-clamp-1">@ev.Title</h6>
-                                                        <span class="badge rounded-pill bg-secondary-subtle text-secondary">Finalizado</span>
-                                                    </div>
-                                                    <div class="d-flex flex-wrap gap-3 text-muted-sm mt-2">
-                                                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.75 3A3.25 3.25 0 0 1 21 6.25v11.5A3.25 3.25 0 0 1 17.75 21H6.25A3.25 3.25 0 0 1 3 17.75V6.25A3.25 3.25 0 0 1 6.25 3zM19.5 8.5h-15v9.25c0 .966.784 1.75 1.75 1.75h11.5a1.75 1.75 0 0 0 1.75-1.75zm-11.75 6a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m-4.25-4a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m4.25 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5m1-6h-11.5A1.75 1.75 0 0 0 4.5 6.25V7h15v-.75a1.75 1.75 0 0 0-1.75-1.75"/></svg> @ev.EventDateLocal</span>
-                                                        @if (ev.Location is not null) { <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7.5 7.5 0 0 1 7.5 7.5c0 3.5-2.404 7.268-7.066 11.35a.75.75 0 0 1-.968 0C6.904 16.768 4.5 13 4.5 9.5A7.5 7.5 0 0 1 12 2m0 1.5a6 6 0 0 0-6 6c0 2.885 2.066 6.276 6 10.066 3.934-3.79 6-7.181 6-10.066a6 6 0 0 0-6-6m0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 1.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/></svg> @ev.Location</span> }
-                                                        <span class="d-inline-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.75 14.5c2.343 0 4.25 1.907 4.25 4.25v.75a.75.75 0 0 1-1.5 0v-.75a2.75 2.75 0 0 0-2.75-2.75H9.25A2.75 2.75 0 0 0 6.5 18.75v.75a.75.75 0 0 1-1.5 0v-.75A4.25 4.25 0 0 1 9.25 14.5zm-2.75-10a4 4 0 1 1 0 8 4 4 0 0 1 0-8m0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5"/></svg> @ev.AttendanceSummary</span>
-                                                    </div>
-                                                    @if (_eventEvidenceImages.TryGetValue(ev.Id, out var evidenceImages) && evidenceImages.Count > 0)
-                                                    {
-                                                        <div class="d-flex gap-2 mt-3 flex-wrap">
-                                                            @foreach (var imageUrl in evidenceImages)
-                                                            {
-                                                                <img src="@imageUrl" alt="Evidencia del evento"
-                                                                     class="rounded-3"
-                                                                     style="width:56px;height:56px;object-fit:cover;border:1px solid var(--uerre-border);" />
-                                                            }
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </a>
+                                        <EventCard Event="@ev"
+                                                   ShowGroupName="false"
+                                                   StatusLabel="Finalizado"
+                                                   StatusClass="bg-secondary-subtle text-secondary"
+                                                   EvidenceImages="@(_eventEvidenceImages.GetValueOrDefault(ev.Id, []))" />
                                     </div>
                                 }
                             </div>
@@ -714,7 +720,7 @@ else
     {
         <div class="modal-backdrop fade show" style="z-index:1040;"></div>
         <div class="modal fade show d-block" tabindex="-1" style="z-index:1050;" role="dialog">
-            <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:560px;">
                 <div class="modal-content rounded-4 border-0 shadow-lg">
                     <div class="modal-header border-0 pb-0">
                         <h5 class="modal-title fw-bold" style="font-size:.95rem;">Nuevo Evento</h5>
@@ -739,14 +745,48 @@ else
                             <label class="form-label fw-semibold small">Lugar</label>
                             <input class="form-control rounded-3" @bind="_evLocation" maxlength="300" />
                         </div>
-                        <div class="row g-3 mb-3">
-                            <div class="col-6">
-                                <label class="form-label fw-semibold small">Inicio *</label>
-                                <input type="datetime-local" class="form-control rounded-3" @bind="_evStart" />
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                                <label class="form-label fw-semibold small mb-0">Banner del evento</label>
+                                <span class="text-muted" style="font-size:.7rem;">Opcional · máximo 5 MB</span>
                             </div>
-                            <div class="col-6">
-                                <label class="form-label fw-semibold small">Fin *</label>
-                                <input type="datetime-local" class="form-control rounded-3" @bind="_evEnd" />
+                            @if (_evBannerPreview is not null)
+                            {
+                                <img src="@_evBannerPreview" alt="Vista previa del banner"
+                                     class="event-banner-picker-preview mb-2" />
+                            }
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <label for="createEventBannerInput"
+                                       class="btn btn-sm btn-uerre-outline d-inline-flex align-items-center gap-1"
+                                       style="cursor:pointer;">
+                                    <FluentIcon Name="image" Size="14" />
+                                    @(_evBannerPreview is null ? "Elegir imagen" : "Cambiar imagen")
+                                </label>
+                                <InputFile id="createEventBannerInput"
+                                           OnChange="OnCreateEventBannerSelected"
+                                           accept="image/jpeg,image/png,image/webp,image/gif"
+                                           style="display:none;" />
+                                @if (_evBannerPreview is not null)
+                                {
+                                    <button type="button" class="btn btn-sm btn-link text-danger p-0"
+                                            @onclick="RemoveCreateEventBanner">
+                                        Quitar
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-sm-6">
+                                <EventDateTimeInput Id="createEventStart"
+                                                    Label="Inicio *"
+                                                    @bind-DateText="_evStartDate"
+                                                    @bind-TimeText="_evStartTime" />
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <EventDateTimeInput Id="createEventEnd"
+                                                    Label="Fin *"
+                                                    @bind-DateText="_evEndDate"
+                                                    @bind-TimeText="_evEndTime" />
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
@@ -788,8 +828,82 @@ else
 }
 
 <style>
+    .group-hero-layout {
+        position: relative;
+    }
+
+    .group-hero-identity {
+        width: fit-content;
+        max-width: 600px;
+        min-width: 0;
+    }
+
+    .group-hero-identity--banner {
+        padding: 1rem 1.125rem;
+        border: 1px solid rgba(255, 255, 255, .24);
+        border-radius: 1rem;
+        background: linear-gradient(135deg,
+            color-mix(in srgb, var(--uerre-purple-dark) 82%, transparent),
+            color-mix(in srgb, var(--uerre-purple) 68%, transparent));
+        box-shadow: 0 16px 36px rgba(49, 16, 105, .22);
+        backdrop-filter: blur(10px);
+    }
+
+    .group-hero-logo {
+        width: 68px;
+        height: 68px;
+        background: rgba(255, 255, 255, .16);
+        border: 1px solid rgba(255, 255, 255, .28);
+        box-shadow: 0 8px 20px rgba(49, 16, 105, .16);
+        backdrop-filter: blur(10px);
+    }
+
+    .group-hero-copy h1 {
+        font-family: 'Montserrat', sans-serif;
+        font-size: clamp(1.375rem, 4vw, 1.875rem);
+        text-shadow: 0 2px 12px rgba(0, 0, 0, .18);
+    }
+
+    .group-hero-category {
+        background: rgba(255, 255, 255, .14);
+        border: 1px solid rgba(255, 255, 255, .18);
+        color: #fff;
+        font-size: .72rem;
+        font-weight: 600;
+        letter-spacing: .03em;
+    }
+
+    .group-hero-description {
+        max-width: 560px;
+        color: rgba(255, 255, 255, .88);
+        font-size: .9375rem;
+        line-height: 1.5;
+    }
+
+    .group-hero-meta {
+        color: rgba(255, 255, 255, .76);
+        font-size: .8125rem;
+    }
+
+    .group-hero-meta-item {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .group-hero-email {
+        overflow-wrap: anywhere;
+    }
+
+    .group-hero-email:hover,
+    .group-hero-email:focus-visible {
+        color: #fff;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
     .group-hero-actions {
         width: 191px;
+        margin-left: auto;
     }
 
     .group-hero-action-btn {
@@ -800,6 +914,20 @@ else
         font-size: 1rem;
         line-height: 1.5;
         border-radius: .75rem;
+    }
+
+    .group-hero-actions .btn-uerre-primary {
+        background: #fff;
+        border: 1px solid rgba(255, 255, 255, .8);
+        color: var(--uerre-purple-dark);
+        box-shadow: 0 10px 24px rgba(49, 16, 105, .24);
+    }
+
+    .group-hero-actions .btn-uerre-primary:hover,
+    .group-hero-actions .btn-uerre-primary:focus-visible {
+        background: var(--uerre-surface);
+        color: var(--uerre-purple);
+        box-shadow: 0 14px 30px rgba(49, 16, 105, .3);
     }
 
     .group-leadership-btn {
@@ -817,6 +945,51 @@ else
         box-shadow: 0 16px 30px rgba(76, 29, 149, .24);
         transform: translateY(-2px);
     }
+
+    @@media (max-width: 991.98px) {
+        .group-hero-identity {
+            width: 100%;
+            max-width: none;
+        }
+
+        .group-hero-actions {
+            width: 100%;
+            margin-left: 0;
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .group-hero-identity--banner {
+            padding: .875rem;
+        }
+
+        .group-hero-identity {
+            gap: .75rem !important;
+        }
+
+        .group-hero-logo {
+            width: 58px;
+            height: 58px;
+        }
+
+        .group-hero-logo img {
+            width: 52px !important;
+            height: 52px !important;
+        }
+
+        .group-hero-copy h1 {
+            font-size: 1.35rem;
+        }
+
+        .group-hero-description {
+            margin-bottom: .625rem !important;
+            font-size: .875rem;
+        }
+
+        .group-hero-meta {
+            gap: .5rem 1rem !important;
+        }
+    }
 </style>
 
 @code {
@@ -833,10 +1006,18 @@ else
     private string? _membershipStatus;
     private string _activeTab = "members";
     private bool _canManage;
+    private bool _isGroupLeader;
     private bool _canPost;
     private bool _canRequestLeadership;
     private Guid _currentUserId;
     private Dictionary<Guid, List<string>> _eventEvidenceImages = [];
+
+    // ── Member position badge state ───────────────────────────────────────────
+    private Guid? _editingMemberBadgeId;
+    private string _memberBadgeTitle = "";
+    private string _memberBadgeColor = LeaderBadgeOptions.DefaultColor;
+    private bool _savingMemberBadge;
+    private string? _memberBadgeError;
 
     // ── Logo upload state ──────────────────────────────────────────────────────
     private string? _logoPreviewUrl;
@@ -866,9 +1047,12 @@ else
             _posts = [];
             _membershipStatus = null;
             _canManage = false;
+            _isGroupLeader = false;
             _canPost = false;
             _canRequestLeadership = false;
             _currentUserId = Guid.Empty;
+            CloseMemberBadgeEditor();
+            _savingMemberBadge = false;
             _logoPreviewUrl = null;
             _logoError = null;
             _showLogoCropper = false;
@@ -953,7 +1137,8 @@ else
         await Task.WhenAll(statusTask, leaderTask, canPostTask);
 
         _membershipStatus = statusTask.Result;
-        _canManage = role.Equals("admin", StringComparison.OrdinalIgnoreCase) || leaderTask.Result;
+        _isGroupLeader = leaderTask.Result;
+        _canManage = role.Equals("admin", StringComparison.OrdinalIgnoreCase) || _isGroupLeader;
         _canPost   = _canManage || canPostTask.Result;
         _canRequestLeadership = !_canManage && await LeadershipService.CanRequestAsync(groupId);
 
@@ -993,6 +1178,88 @@ else
     {
         _membershipStatus = status;
         StateHasChanged();
+    }
+
+    private void ToggleMemberBadgeEditor(GroupMemberModel member)
+    {
+        if (_editingMemberBadgeId == member.UserId)
+        {
+            CloseMemberBadgeEditor();
+            return;
+        }
+
+        _editingMemberBadgeId = member.UserId;
+        _memberBadgeTitle = member.BadgeTitle ?? "";
+        _memberBadgeColor = member.BadgeColor ?? LeaderBadgeOptions.DefaultColor;
+        _memberBadgeError = null;
+    }
+
+    private void CloseMemberBadgeEditor()
+    {
+        _editingMemberBadgeId = null;
+        _memberBadgeTitle = "";
+        _memberBadgeColor = LeaderBadgeOptions.DefaultColor;
+        _memberBadgeError = null;
+    }
+
+    private async Task SaveMemberBadge(Guid userId)
+    {
+        if (_group is null) return;
+
+        _savingMemberBadge = true;
+        _memberBadgeError = null;
+        try
+        {
+            var title = _memberBadgeTitle.Trim();
+            await GroupService.AssignMemberBadgeAsync(_group.Id, userId, _memberBadgeColor, title);
+            ReplaceMemberBadgeLocally(userId, title, _memberBadgeColor);
+            CloseMemberBadgeEditor();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _memberBadgeError = ex.Message;
+        }
+        catch
+        {
+            _memberBadgeError = "No se pudo guardar el puesto. Intenta de nuevo.";
+        }
+        finally
+        {
+            _savingMemberBadge = false;
+        }
+    }
+
+    private async Task RemoveMemberBadge(Guid userId)
+    {
+        if (_group is null) return;
+
+        _savingMemberBadge = true;
+        _memberBadgeError = null;
+        try
+        {
+            await GroupService.RemoveMemberBadgeAsync(_group.Id, userId);
+            ReplaceMemberBadgeLocally(userId, null, null);
+            CloseMemberBadgeEditor();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _memberBadgeError = ex.Message;
+        }
+        catch
+        {
+            _memberBadgeError = "No se pudo quitar el puesto. Intenta de nuevo.";
+        }
+        finally
+        {
+            _savingMemberBadge = false;
+        }
+    }
+
+    private void ReplaceMemberBadgeLocally(Guid userId, string? title, string? color)
+    {
+        var index = _members.FindIndex(member => member.UserId == userId);
+        if (index >= 0)
+            _members[index] = _members[index] with { BadgeTitle = title, BadgeColor = color };
     }
 
     // ── Logo upload methods ────────────────────────────────────────────────────
@@ -1187,10 +1454,16 @@ else
     private string  _evTitle       = "";
     private string? _evDescription;
     private string? _evLocation;
-    private DateTime _evStart      = DateTime.Now.AddDays(1);
-    private DateTime _evEnd        = DateTime.Now.AddDays(1).AddHours(2);
+    private string _evStartDate = EventDateTimeInput.FormatDate(DateTime.Now.AddDays(1));
+    private string _evStartTime = EventDateTimeInput.FormatTime(DateTime.Now.AddDays(1));
+    private string _evEndDate = EventDateTimeInput.FormatDate(DateTime.Now.AddDays(1).AddHours(2));
+    private string _evEndTime = EventDateTimeInput.FormatTime(DateTime.Now.AddDays(1).AddHours(2));
     private int?    _evCapacity;
     private string  _evVisibility  = "public";
+    private byte[]? _evBannerBytes;
+    private string? _evBannerContentType;
+    private string? _evBannerExt;
+    private string? _evBannerPreview;
     private bool    _savingEvent;
     private string? _eventError;
 
@@ -1200,11 +1473,55 @@ else
         _evTitle         = "";
         _evDescription   = null;
         _evLocation      = null;
-        _evStart         = DateTime.Now.AddDays(1);
-        _evEnd           = DateTime.Now.AddDays(1).AddHours(2);
+        var defaultStart = DateTime.Now.AddDays(1);
+        var defaultEnd = defaultStart.AddHours(2);
+        _evStartDate     = EventDateTimeInput.FormatDate(defaultStart);
+        _evStartTime     = EventDateTimeInput.FormatTime(defaultStart);
+        _evEndDate       = EventDateTimeInput.FormatDate(defaultEnd);
+        _evEndTime       = EventDateTimeInput.FormatTime(defaultEnd);
         _evCapacity      = null;
         _evVisibility    = "public";
+        RemoveCreateEventBanner();
         _eventError      = null;
+    }
+
+    private async Task OnCreateEventBannerSelected(InputFileChangeEventArgs e)
+    {
+        _eventError = null;
+        RemoveCreateEventBanner();
+
+        var file = e.File;
+        if (!StorageService.AllowedMimeTypes.Contains(file.ContentType))
+        {
+            _eventError = "Formato no permitido. Usa JPEG, PNG, WebP o GIF.";
+            return;
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream(StorageService.MaxBytes);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            _evBannerBytes = ms.ToArray();
+        }
+        catch (IOException)
+        {
+            _eventError = "La imagen supera el límite de 5 MB.";
+            return;
+        }
+
+        var rawExt = Path.GetExtension(file.Name).TrimStart('.').ToLowerInvariant();
+        _evBannerExt = string.IsNullOrEmpty(rawExt) ? "jpg" : rawExt;
+        _evBannerContentType = file.ContentType;
+        _evBannerPreview = $"data:{file.ContentType};base64,{Convert.ToBase64String(_evBannerBytes)}";
+    }
+
+    private void RemoveCreateEventBanner()
+    {
+        _evBannerBytes = null;
+        _evBannerContentType = null;
+        _evBannerExt = null;
+        _evBannerPreview = null;
     }
 
     private async Task SubmitCreateEvent()
@@ -1214,7 +1531,17 @@ else
             _eventError = "El título es requerido.";
             return;
         }
-        if (_evEnd <= _evStart)
+        if (!EventDateTimeInput.TryParse(_evStartDate, _evStartTime, out var eventStart))
+        {
+            _eventError = "La fecha de inicio debe usar el formato DD/MM/YYYY y una hora válida.";
+            return;
+        }
+        if (!EventDateTimeInput.TryParse(_evEndDate, _evEndTime, out var eventEnd))
+        {
+            _eventError = "La fecha de fin debe usar el formato DD/MM/YYYY y una hora válida.";
+            return;
+        }
+        if (eventEnd <= eventStart)
         {
             _eventError = "La fecha de fin debe ser posterior a la de inicio.";
             return;
@@ -1228,14 +1555,17 @@ else
             var created = await EventService.CreateEventAsync(
                 _group.Id,
                 new BlazorCreateEventRequest(
-                    _evTitle.Trim(),
-                    string.IsNullOrWhiteSpace(_evDescription) ? null : _evDescription.Trim(),
-                    string.IsNullOrWhiteSpace(_evLocation)    ? null : _evLocation.Trim(),
-                    _evStart.ToUniversalTime(),
-                    _evEnd.ToUniversalTime(),
-                    _evCapacity,
-                    "published",
-                    _evVisibility));
+                     _evTitle.Trim(),
+                     string.IsNullOrWhiteSpace(_evDescription) ? null : _evDescription.Trim(),
+                     string.IsNullOrWhiteSpace(_evLocation)    ? null : _evLocation.Trim(),
+                     eventStart.ToUniversalTime(),
+                     eventEnd.ToUniversalTime(),
+                     _evCapacity,
+                     "published",
+                     _evVisibility),
+                 _evBannerBytes,
+                 _evBannerContentType,
+                 _evBannerExt);
 
             if (created is not null)
             {

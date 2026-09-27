@@ -163,11 +163,16 @@
                                             <div class="text-muted" style="font-size:.7rem;">@member.Email</div>
                                         </div>
                                         <div class="d-flex gap-2 flex-shrink-0">
-                                            <button class="btn btn-sm btn-uerre-outline rounded-pill px-3"
-                                                    @onclick="() => ToggleMemberBadgeEditor(member)"
-                                                    disabled="@_acting">
-                                                @(_editingMemberId == member.UserId ? "Cerrar" : "Personalizar")
-                                            </button>
+                                            @if (!member.IsLeader)
+                                            {
+                                                <button class="btn btn-sm btn-uerre-outline rounded-pill px-3"
+                                                        @onclick="() => ToggleMemberBadgeEditor(member)"
+                                                        disabled="@_acting">
+                                                    @(_editingMemberId == member.UserId
+                                                        ? "Cerrar"
+                                                        : member.BadgeTitle is null ? "Asignar puesto" : "Editar puesto")
+                                                </button>
+                                            }
                                             <button class="btn btn-sm btn-outline-danger rounded-pill px-3"
                                                     @onclick="() => RemoveMember(g.Id, member.UserId)"
                                                     disabled="@_acting">
@@ -176,7 +181,7 @@
                                         </div>
                                     </div>
 
-                                    @if (_editingMemberId == member.UserId)
+                                    @if (!member.IsLeader && _editingMemberId == member.UserId)
                                     {
                                         <div class="leader-badge-editor mt-3 pt-3 border-top">
                                             <div class="text-muted small fw-semibold mb-2">Asignar rol e insignia</div>
@@ -240,18 +245,7 @@
         @foreach (var ev in Data.UpcomingEvents)
         {
             <div class="col-12 col-md-6">
-                <a href="/events/@ev.Id" class="text-decoration-none">
-                    <div class="card-event">
-                        <div class="event-date-badge">
-                            <span class="event-date-month">@ev.MonthLabel</span>
-                            <span class="event-date-day">@ev.DayLabel</span>
-                        </div>
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="fw-bold small text-dark text-truncate">@ev.Title</div>
-                            <div class="text-muted" style="font-size:.7rem;">@ev.GroupName</div>
-                        </div>
-                    </div>
-                </a>
+                <EventCard Event="@ev" />
             </div>
         }
     </div>
